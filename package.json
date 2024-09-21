@@ -9,19 +9,471 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [ ],
+  "activationEvents": [ "*" ],
   "main": "./out/extension.js",
   "contributes": {
     "keybindings": [
       {
-        "command": "whichkey.helloWorld",
-        "key": "alt+w"
+        "key": "space",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "SPC"
+      },
+      {
+        "key": "0",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "0"
+      },
+      {
+        "key": "1",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "1"
+      },
+      {
+        "key": "2",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "2"
+      },
+      {
+        "key": "3",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "3"
+      },
+      {
+        "key": "4",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "4"
+      },
+      {
+        "key": "5",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "5"
+      },
+      {
+        "key": "6",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "6"
+      },
+      {
+        "key": "7",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "7"
+      },
+      {
+        "key": "8",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "8"
+      },
+      {
+        "key": "tab",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "TAB"
+      },
+      {
+        "key": ";",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": ";"
+      },
+      {
+        "key": "shift+;",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": ":"
+      },
+      {
+        "key": ".",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "."
+      },
+      {
+        "key": "b",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "b"
+      },
+      {
+        "key": "c",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "c"
+      },
+      {
+        "key": "g",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "g"
+      },
+      {
+        "key": "l",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "l"
+      },
+      {
+        "key": "shift+r",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "R"
+      },
+      {
+        "key": "t",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "t"
+      },
+      {
+        "key": "x",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "x"
+      },
+      {
+        "key": "shift+1",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "!"
+      },
+      {
+        "key": "shift+/",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "?"
+      },
+      {
+        "key": "'",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "'"
+      },
+      {
+        "key": "shift+'",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "\""
+      },
+      {
+        "key": "shift+8",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "*"
+      },
+      {
+        "key": "/",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "/"
+      },
+      {
+        "key": "shift+4",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "$"
+      },
+      {
+        "key": "9",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "9"
+      },
+      {
+        "key": "shift+b",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "B"
+      },
+      {
+        "key": "d",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "d"
+      },
+      {
+        "key": "h",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "h"
+      },
+      {
+        "key": "shift+h",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "H"
+      },
+      {
+        "key": "j",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "j"
+      },
+      {
+        "key": "shift+j",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "J"
+      },
+      {
+        "key": "k",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "k"
+      },
+      {
+        "key": "shift+k",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "K"
+      },
+      {
+        "key": "shift+l",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "L"
+      },
+      {
+        "key": "shift+m",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "M"
+      },
+      {
+        "key": "n",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "n"
+      },
+      {
+        "key": "shift+n",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "N"
+      },
+      {
+        "key": "p",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "p"
+      },
+      {
+        "key": "shift+p",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "P"
+      },
+      {
+        "key": "s",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "s"
+      },
+      {
+        "key": "shift+t",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "T"
+      },
+      {
+        "key": "u",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "u"
+      },
+      {
+        "key": "shift+y",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "Y"
+      },
+      {
+        "key": "shift+d",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "D"
+      },
+      {
+        "key": "e",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "e"
+      },
+      {
+        "key": "shift+e",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "E"
+      },
+      {
+        "key": "f",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "f"
+      },
+      {
+        "key": "i",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "i"
+      },
+      {
+        "key": "shift+s",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "S"
+      },
+      {
+        "key": "shift+c",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "C"
+      },
+      {
+        "key": "o",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "o"
+      },
+      {
+        "key": "v",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "v"
+      },
+      {
+        "key": "w",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "w"
+      },
+      {
+        "key": "shift+w",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "W"
+      },
+      {
+        "key": "m",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "m"
+      },
+      {
+        "key": "r",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "r"
+      },
+      {
+        "key": "y",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "y"
+      },
+      {
+        "key": "shift+f",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "F"
+      },
+      {
+        "key": "shift+u",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "U"
+      },
+      {
+        "key": "shift+i",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "I"
+      },
+      {
+        "key": "shift+=",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "+"
+      },
+      {
+        "key": "=",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "="
+      },
+      {
+        "key": "q",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "q"
+      },
+      {
+        "key": "shift+q",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "Q"
+      },
+      {
+        "key": "z",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "z"
+      },
+      {
+        "key": "shift+v",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "V"
+      },
+      {
+        "key": "-",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "-"
+      },
+      {
+        "key": "[",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "["
+      },
+      {
+        "key": "]",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "]"
+      },
+      {
+        "key": "a",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "a"
+      },
+      {
+        "key": "shift+g",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "G"
+      },
+      {
+        "key": "shift+o",
+        "when": "whichkeyState && whichkeyState != ''",
+        "command": "whichkey.onkey",
+        "args": "O"
       }
     ],
     "commands": [
       {
-        "command": "whichkey.helloWorld",
-        "title": "Hello World"
+        "command": "whichkey.render",
+        "title": "Render WhichKey menu"
       }
     ]
   },

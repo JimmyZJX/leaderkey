@@ -21,8 +21,8 @@ import { Bindings, sanitize } from "./command";
 //   writeFileSync(vsc, JSON.stringify(loop(vspacecodeBindings), undefined, 2));
 //   window.showInformationMessage("whichkey: finish writing file");
 
-const rawRoot: Bindings = {
-  name: "<root>",
+const SpaceRoot: Bindings = {
+  name: "<SPC>",
   keys: {
     "0": {
       name: "Focus on files explorer",
@@ -1606,7 +1606,7 @@ const rawRoot: Bindings = {
   },
 };
 
-export const root = sanitize(rawRoot);
+export const root = { name: "root", keys: { SPC: sanitize(SpaceRoot) } };
 
 // const m: Bindings = {
 //   name: "+Major",

@@ -35,6 +35,28 @@ function* chunks<T>(arr: T[], n: number) {
   }
 }
 
+const shiftNumChars = '~!@#$%^&*()_+<>?{}:"|';
+const shiftNum_Nums = "`1234567890-=,./[];'\\";
+
+export function toVSCodeKey(key: string) {
+  if (key.length === 1) {
+    if (/^[A-Z]*$/.test(key)) {
+      return "shift+" + key.toLowerCase();
+    }
+    const idxNumChar = shiftNumChars.indexOf(key);
+    if (idxNumChar >= 0) {
+      return "shift+" + shiftNum_Nums.substring(idxNumChar, idxNumChar + 1);
+    }
+  }
+  return key
+    .replaceAll("SPC", "space")
+    .replaceAll("TAB", "tab")
+    .replaceAll("RET", "enter")
+    .replaceAll("C-", "ctrl+")
+    .replaceAll("M-", "alt+")
+    .replaceAll("S-", "shift+");
+}
+
 function sanitizeKey(key: string) {
   return key
     .replaceAll("space", "SPC")
@@ -63,6 +85,20 @@ export function sanitize(b: Bindings): Bindings {
   return { ...b, keys: Object.fromEntries(entries) };
 }
 
+export function go(
+  root: Bindings,
+  path: string
+): Bindings | Command | undefined {
+  const keys = path.split(" ").filter((v) => v !== "");
+  for (const k of keys) {
+    const n = root.keys[k];
+    // TODO isCommand early quit?
+    if (n === undefined || isCommand(n)) return n;
+    root = n;
+  }
+  return root;
+}
+
 function renderToTokens(
   binding: Bindings,
   ncol: number
@@ -83,7 +119,7 @@ function renderToTokens(
     return { key, name: bOrC.name, type: "command" };
   });
   const tokens: RenderedToken[] = [];
-  const cols = [...chunks(dispEntries, dispEntries.length / ncol)];
+  const cols = [...chunks(dispEntries, Math.ceil(dispEntries.length / ncol))];
   let curChar = 0;
   cols.forEach((col) => {
     const keyLen = Math.max(...col.map(({ key }) => key.length));
