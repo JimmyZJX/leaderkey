@@ -475,7 +475,17 @@
         "command": "whichkey.render",
         "title": "Render WhichKey menu"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "whichkey",
+      "properties": {
+        "whichkey.overrides.user": {
+          "type": "object",
+          "default": { },
+          "description": "Whichkey user configuration dictionary.\nThe key of the dict is a whichkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

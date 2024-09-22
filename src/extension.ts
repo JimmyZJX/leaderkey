@@ -8,8 +8,17 @@ import {
   ThemableDecorationAttachmentRenderOptions,
   ThemeColor,
   window,
+  workspace,
 } from "vscode";
-import { go, isBindings, isCommand, render } from "./command";
+import {
+  Command,
+  go,
+  isBindings,
+  isCommand,
+  overrideExn,
+  render,
+  sanitize,
+} from "./command";
 import { root } from "./vspacecode";
 import { WHICHKEY_STATE, writeKeyBinding } from "./writeKeyBinding";
 
@@ -53,7 +62,7 @@ function getHeaderDeco(text: string, tableLines: number) {
     before: {
       contentText: text,
       backgroundColor: "#5d4d7a",
-      height: "200%",
+      height: "100%",
       width: "200ch",
       margin: `0 -1ch 0 0; position: absolute; z-index: 2; top: ${tableLines}00%`,
     },
@@ -61,10 +70,11 @@ function getHeaderDeco(text: string, tableLines: number) {
 }
 
 let globalPath = "";
+let globalRoot = structuredClone(root);
 
 function onkey(key: string) {
-  const newPath = globalPath === "" ? "" : globalPath + " " + key;
-  const bOrC = go(root, newPath);
+  const newPath = (globalPath === "" ? "" : globalPath + " ") + key;
+  const bOrC = go(globalRoot, newPath);
   if (bOrC === undefined) {
     // TODO error
     setToInit();
@@ -99,7 +109,6 @@ function onkey(key: string) {
 }
 
 function setToInit() {
-  commands.executeCommand("_setContext", WHICHKEY_STATE, "");
   setAndRenderPath("");
 }
 
@@ -115,8 +124,9 @@ function setAndRenderPath(path: string) {
     statusBar.backgroundColor = undefined;
     statusBar.text = path === "" ? "" : path + "-";
   }
+  commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
   if (path === "") return;
-  const binding = go(root, path);
+  const binding = go(globalRoot, path);
   if (binding === undefined || isCommand(binding)) return;
 
   const editor = window.activeTextEditor;
@@ -192,6 +202,49 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand("whichkey.render", setAndRenderPath),
     commands.registerCommand("whichkey.onkey", onkey)
   );
+
+  workspace.onDidChangeConfiguration((event) => {
+    if (event.affectsConfiguration("whichkey")) {
+      confOverrideRefresh();
+    }
+  });
+  confOverrideRefresh();
+}
+
+function confOverrideRefresh() {
+  const newRoot = structuredClone(root);
+  const overrides = workspace.getConfiguration("whichkey.overrides");
+  const overrideEntries = Object.entries(overrides);
+  overrideEntries.sort(([k1, _1], [k2, _2]) => k1.localeCompare(k2));
+  for (const [key, v] of overrideEntries) {
+    if (typeof v === "function") continue;
+    if (typeof v === "object" && !Array.isArray(v)) {
+      const entries = Object.entries(v);
+      entries.sort(([k1, _1], [k2, _2]) => k1.localeCompare(k2));
+      for (const [path, cmd] of entries) {
+        try {
+          overrideExn(
+            newRoot,
+            path,
+            typeof cmd === "string"
+              ? cmd
+              : (Object.fromEntries(
+                  Object.entries(cmd as any)
+                ) as any as Command)
+          );
+        } catch (e) {
+          window.showErrorMessage(
+            `Error parsing config whichkey.overrides.${key}`
+          );
+        }
+      }
+    } else {
+      window.showWarningMessage(
+        `Config whichkey.overrides.${key} is not a dict`
+      );
+    }
+  }
+  globalRoot = sanitize(newRoot);
 }
 
 export function deactivate() {}

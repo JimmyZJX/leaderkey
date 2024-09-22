@@ -1606,7 +1606,10 @@ const SpaceRoot: Bindings = {
   },
 };
 
-export const root = { name: "root", keys: { SPC: sanitize(SpaceRoot) } };
+export const root: Bindings = {
+  name: "root",
+  keys: { SPC: sanitize(SpaceRoot) },
+};
 
 // const m: Bindings = {
 //   name: "+Major",

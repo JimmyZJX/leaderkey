@@ -1,3 +1,5 @@
+import { window } from "vscode";
+
 export interface Bindings {
   name: string;
   keys: { [key: string]: Bindings | Command };
@@ -18,6 +20,48 @@ export function isBindings(x: Bindings | Command): x is Bindings {
 
 export function isCommand(x: Bindings | Command): x is Command {
   return (x as any).keys === undefined;
+}
+
+export function overrideExn(
+  b: Bindings,
+  path: string,
+  commandOrBindingName: Command | string
+) {
+  const keys = path.split(" ").filter((s) => s !== "");
+  if (keys.length == 0) throw "whichkey: path is empty";
+  keys.forEach((key, i) => {
+    if (i == keys.length - 1) {
+      const next = b.keys[key];
+      if (next !== undefined) {
+        window.showWarningMessage(
+          `whichkey: overriding [${keys
+            .slice(0, i + 1)
+            .join(" ")}] (${JSON.stringify(b.keys[key])})`
+        );
+      }
+      if (typeof commandOrBindingName === "string") {
+        if (next != undefined && isBindings(next)) {
+          next.name = commandOrBindingName;
+        } else {
+          b.keys[key] = { name: commandOrBindingName, keys: {} };
+        }
+      } else {
+        b.keys[key] = commandOrBindingName;
+      }
+    } else {
+      const next = b.keys[key];
+      if (next !== undefined && isBindings(next)) {
+        b = next;
+      } else {
+        if (next !== undefined) {
+          window.showWarningMessage(
+            `whichkey: overriding command [${keys.slice(0, i + 1).join(" ")}]`
+          );
+        }
+        b = b.keys[key] = { name: `${key}...`, keys: {} };
+      }
+    }
+  });
 }
 
 type tokenType = "key" | "arrow" | "command" | "binding";
@@ -147,16 +191,16 @@ function tokensToStrings(tokens: RenderedToken[]): {
   const nLines = Math.max(...tokens.map((tk) => tk.line)) + 1;
   const decos: [tokenType, string][] = [];
   const tokenTypes = ["key", "arrow", "command", "binding"];
-  tokenTypes.forEach((tt) => {
+  for (const tt of tokenTypes) {
     const lines: string[] = new Array(nLines).fill("");
-    tokens.forEach(({ line, char, text, type }) => {
+    for (const { line, char, text, type } of tokens) {
       if (type === tt) {
         const len = lines[line].length;
         lines[line] = lines[line] + " ".repeat(char - len) + text;
       }
-    });
+    }
     decos.push([tt as tokenType, lines.join("\n")]);
-  });
+  }
   return { nLines, decos };
 }
 
