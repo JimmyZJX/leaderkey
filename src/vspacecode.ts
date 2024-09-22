@@ -95,11 +95,11 @@ const SpaceRoot: Bindings = {
         "search.action.focusSearchList",
       ],
     },
-    ".": {
-      name: "Repeat most recent action",
-      command: "whichkey.repeatMostRecent",
-      args: "vspacecode.bindings",
-    },
+    // ".": {
+    //   name: "Repeat most recent action",
+    //   command: "whichkey.repeatMostRecent",
+    //   args: "vspacecode.bindings",
+    // },
     "/": {
       name: "Search in project",
       command: "workbench.action.findInFiles",
@@ -108,10 +108,10 @@ const SpaceRoot: Bindings = {
       name: "Toggle comment",
       command: "editor.action.commentLine",
     },
-    "?": {
-      name: "Search keybindings",
-      command: "whichkey.searchBindings",
-    },
+    // "?": {
+    //   name: "Search keybindings",
+    //   command: "whichkey.searchBindings",
+    // },
     v: {
       name: "Smart select/expand region",
       command: "editor.action.smartSelect.grow",

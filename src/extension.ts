@@ -49,9 +49,9 @@ function getBgDeco(height: number) {
     before: {
       contentText: " ",
       backgroundColor: "#292b2e",
-      height: `${100 * height}%`,
+      height: `${100 * height + 200}%`,
       width: "200ch",
-      margin: `0 -1ch 0 0; position: absolute; z-index: 1;`,
+      margin: `0 -1ch 0 0; position: absolute; z-index: 1; top: -50%;`,
     },
   });
 }
@@ -101,9 +101,15 @@ function onkey(key: string) {
   // command
   const cmd = bOrC;
   if (cmd.commands) {
-    commands.executeCommand("runCommands", { commands: cmd.commands });
+    const cmds = cmd.commands.map((command) =>
+      typeof command === "string" ? { command } : command
+    );
+    commands.executeCommand("runCommands", { commands: cmds });
   } else {
-    commands.executeCommand(cmd.command!, cmd.args);
+    commands.executeCommand(
+      cmd.command!,
+      ...(cmd.args === undefined ? [] : [cmd.args])
+    );
   }
   setToInit();
 }

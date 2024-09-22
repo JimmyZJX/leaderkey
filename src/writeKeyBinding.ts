@@ -51,7 +51,7 @@ export function writeKeyBinding() {
       }
     });
   }
-  loop(root, "");
+  loop(structuredClone(root), "");
 
   const vsc = join(tmpdir(), "vsc_keys.json");
   writeFileSync(vsc, JSON.stringify(keys, undefined, 2));
