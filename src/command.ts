@@ -28,13 +28,13 @@ export function overrideExn(
   commandOrBindingName: Command | string
 ) {
   const keys = path.split(" ").filter((s) => s !== "");
-  if (keys.length === 0) throw "whichkey: path is empty";
+  if (keys.length === 0) throw "leaderkey: path is empty";
   keys.forEach((key, i) => {
     if (i === keys.length - 1) {
       const next = b.keys[key];
       if (next !== undefined) {
         window.showWarningMessage(
-          `whichkey: overriding [${keys
+          `leaderkey: overriding [${keys
             .slice(0, i + 1)
             .join(" ")}] (${JSON.stringify(b.keys[key])})`
         );
@@ -55,7 +55,7 @@ export function overrideExn(
       } else {
         if (next !== undefined) {
           window.showWarningMessage(
-            `whichkey: overriding command [${keys.slice(0, i + 1).join(" ")}]`
+            `leaderkey: overriding command [${keys.slice(0, i + 1).join(" ")}]`
           );
         }
         b = b.keys[key] = { name: `${key}...`, keys: {} };
@@ -79,28 +79,35 @@ function* chunks<T>(arr: T[], n: number) {
   }
 }
 
-const shiftNumChars = '~!@#$%^&*()_+<>?{}:"|';
-const shiftNum_Nums = "`1234567890-=,./[];'\\";
+const shiftChars = '~!@#$%^&*()_+<>?{}:"|';
+const unshiftChars = "`1234567890-=,./[];'\\";
 
 export function toVSCodeKey(key: string) {
-  if (key.length === 1) {
-    if (/^[A-Z]*$/.test(key)) {
-      return "shift+" + key.toLowerCase();
-    }
-    const idxNumChar = shiftNumChars.indexOf(key);
-    if (idxNumChar >= 0) {
-      return "shift+" + shiftNum_Nums.substring(idxNumChar, idxNumChar + 1);
-    }
+  const lastChar = key.at(-1)!;
+  if (/^[A-Z]*$/.test(lastChar)) {
+    key = key.slice(0, key.length - 1) + "shift+" + lastChar.toLowerCase();
   }
+  const idxNumChar = shiftChars.indexOf(lastChar);
+  if (idxNumChar >= 0) {
+    key =
+      key.slice(0, key.length - 1) +
+      "shift+" +
+      unshiftChars.substring(idxNumChar, idxNumChar + 1);
+  }
+
   return key
     .replaceAll("SPC", "space")
     .replaceAll("TAB", "tab")
     .replaceAll("RET", "enter")
+    .replaceAll("ESC", "escape")
+    .replaceAll("Backspace", "backspace")
     .replaceAll("C-", "ctrl+")
     .replaceAll("M-", "alt+")
-    .replaceAll("S-", "shift+");
+    .replaceAll("S-", "shift+")
+    .replaceAll("shift+shift+", "shift+");
 }
 
+/** turn keys into how they are displayed on which-key */
 function sanitizeKey(key: string) {
   return key
     .replaceAll("space", "SPC")
@@ -109,9 +116,12 @@ function sanitizeKey(key: string) {
     .replaceAll("tab", "TAB")
     .replaceAll("\n", "RET")
     .replaceAll("enter", "RET")
+    .replaceAll("escape", "ESC")
+    .replaceAll("backspace", "Backspace")
     .replaceAll("ctrl+", "C-")
     .replaceAll("alt+", "M-")
-    .replaceAll("shift+", "S-");
+    .replaceAll("shift+", "S-")
+    .replaceAll(/S-([a-z])$/g, (_m, ch) => (ch as string).toUpperCase());
 }
 
 export function sanitize(b: Bindings): Bindings {

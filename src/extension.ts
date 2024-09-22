@@ -80,7 +80,7 @@ function onkey(key: string) {
     // TODO error
     setToInit();
     if (statusBar !== undefined) {
-      const msg = `Unknown whichkey: ${newPath}`;
+      const msg = `Unknown leaderkey: ${newPath}`;
       statusBar.backgroundColor = statusBarWarning;
       statusBar.text = msg;
       clearTimeout(statusBarTimeout);
@@ -199,19 +199,17 @@ function setAndRenderPath(path: string) {
 }
 
 export async function activate(context: ExtensionContext) {
-  writeKeyBinding();
-
-  statusBar = window.createStatusBarItem("whichkeyState");
+  statusBar = window.createStatusBarItem("leaderkeyState");
   statusBar.show();
 
   await commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
   context.subscriptions.push(
-    commands.registerCommand("whichkey.render", setAndRenderPath),
-    commands.registerCommand("whichkey.onkey", onkey)
+    commands.registerCommand("leaderkey.render", setAndRenderPath),
+    commands.registerCommand("leaderkey.onkey", onkey)
   );
 
   workspace.onDidChangeConfiguration((event) => {
-    if (event.affectsConfiguration("whichkey")) {
+    if (event.affectsConfiguration("leaderkey")) {
       confOverrideRefresh();
     }
   });
@@ -220,7 +218,7 @@ export async function activate(context: ExtensionContext) {
 
 function confOverrideRefresh() {
   const newRoot = structuredClone(root);
-  const overrides = workspace.getConfiguration("whichkey.overrides");
+  const overrides = workspace.getConfiguration("leaderkey.overrides");
   const overrideEntries = Object.entries(overrides);
   overrideEntries.sort(([k1, _1], [k2, _2]) => k1.localeCompare(k2));
   for (const [key, v] of overrideEntries) {
@@ -241,13 +239,13 @@ function confOverrideRefresh() {
           );
         } catch (e) {
           window.showErrorMessage(
-            `Error parsing config whichkey.overrides.${key}`
+            `Error parsing config leaderkey.overrides.${key}`
           );
         }
       }
     } else {
       window.showWarningMessage(
-        `Config whichkey.overrides.${key} is not a dict`
+        `Config leaderkey.overrides.${key} is not a dict`
       );
     }
   }

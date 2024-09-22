@@ -5,7 +5,7 @@ import { window } from "vscode";
 import { Bindings, isCommand, toVSCodeKey } from "./command";
 import { root } from "./vspacecode";
 
-export const WHICHKEY_STATE = "whichkeyState";
+export const WHICHKEY_STATE = "leaderkeyState";
 
 export function writeKeyBinding() {
   const setKeys = new Set<string>();
@@ -26,7 +26,7 @@ export function writeKeyBinding() {
         }
         commands.unshift(
           { command: "_setContext", args: [WHICHKEY_STATE, ""] },
-          { command: "whichkey.render", args: "" }
+          { command: "leaderkey.render", args: "" }
         );
         keys.push({
           key,
@@ -43,7 +43,7 @@ export function writeKeyBinding() {
           args: {
             commands: [
               { command: "_setContext", args: [WHICHKEY_STATE, newPath] },
-              { command: "whichkey.render", args: newPath },
+              { command: "leaderkey.render", args: newPath },
             ],
           },
         });
@@ -63,7 +63,7 @@ export function writeKeyBinding() {
     flatKeys.push({
       key,
       when: whenInWhichkey,
-      command: "whichkey.onkey",
+      command: "leaderkey.onkey",
       args: k,
     });
   }
@@ -72,5 +72,5 @@ export function writeKeyBinding() {
     JSON.stringify(flatKeys, undefined, 2)
   );
 
-  window.showInformationMessage("whichkey: finish writing file");
+  window.showInformationMessage("leaderkey: finish writing file");
 }

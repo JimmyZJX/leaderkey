@@ -950,11 +950,11 @@ const SpaceRoot: Bindings = {
     r: {
       name: "+Resume/Repeat",
       keys: {
-        ".": {
-          name: "Repeat recent actions",
-          command: "whichkey.repeatRecent",
-          args: "vspacecode.bindings",
-        },
+        // ".": {
+        //   name: "Repeat recent actions",
+        //   command: "whichkey.repeatRecent",
+        //   args: "vspacecode.bindings",
+        // },
         b: {
           name: "Recent buffers",
           command: "workbench.action.showAllEditorsByMostRecentlyUsed",
