@@ -4,12 +4,18 @@ import {
   ExtensionContext,
   Position,
   Range,
+  StatusBarItem,
   ThemableDecorationAttachmentRenderOptions,
+  ThemeColor,
   window,
 } from "vscode";
 import { go, isBindings, isCommand, render } from "./command";
 import { root } from "./vspacecode";
 import { WHICHKEY_STATE, writeKeyBinding } from "./writeKeyBinding";
+
+let statusBar: StatusBarItem | undefined = undefined;
+const statusBarWarning = new ThemeColor("statusBarItem.warningBackground");
+let statusBarTimeout: NodeJS.Timeout | undefined = undefined;
 
 function renderTextDeco(
   text: string
@@ -22,7 +28,7 @@ function renderTextDeco(
   return {
     backgroundColor: "transparent",
     margin: `0 -1ch 0 0; position: absolute; white-space: pre;
-             z-index: 2; content: '${escaped}';`,
+             z-index: 3; content: '${escaped}';`,
   };
 }
 
@@ -35,21 +41,21 @@ function getBgDeco(height: number) {
       contentText: " ",
       backgroundColor: "#292b2e",
       height: `${100 * height}%`,
-      width: "100ch",
+      width: "200ch",
       margin: `0 -1ch 0 0; position: absolute; z-index: 1;`,
     },
   });
 }
 
-function getHeaderDeco(text: string) {
+function getHeaderDeco(text: string, tableLines: number) {
   return window.createTextEditorDecorationType({
     color: "transparent",
     before: {
       contentText: text,
       backgroundColor: "#5d4d7a",
-      height: "100%",
-      width: "100ch",
-      margin: `0 -1ch 0 0; position: absolute; z-index: 1;`,
+      height: "200%",
+      width: "200ch",
+      margin: `0 -1ch 0 0; position: absolute; z-index: 2; top: ${tableLines}00%`,
     },
   });
 }
@@ -62,6 +68,20 @@ function onkey(key: string) {
   if (bOrC === undefined) {
     // TODO error
     setToInit();
+    if (statusBar !== undefined) {
+      const msg = `Unknown whichkey: ${newPath}`;
+      statusBar.backgroundColor = statusBarWarning;
+      statusBar.text = msg;
+      clearTimeout(statusBarTimeout);
+      statusBarTimeout = setTimeout(function () {
+        if (statusBar !== undefined) {
+          if (statusBar.text == msg) {
+            statusBar.text = globalPath;
+            statusBar.backgroundColor = undefined;
+          }
+        }
+      }, 2000);
+    }
     return;
   }
   if (isBindings(bOrC)) {
@@ -91,6 +111,10 @@ function setAndRenderPath(path: string) {
   //     "vscode.getEditorLayout"
   //   );
 
+  if (statusBar !== undefined) {
+    statusBar.backgroundColor = undefined;
+    statusBar.text = path === "" ? "" : path + "-";
+  }
   if (path === "") return;
   const binding = go(root, path);
   if (binding === undefined || isCommand(binding)) return;
@@ -110,7 +134,7 @@ function setAndRenderPath(path: string) {
     visibleRange.end.line - totalLines + 1
   );
 
-  const decoHeader = getHeaderDeco(`${path}-`);
+  const decoHeader = getHeaderDeco(`${path}-`, rendered.nLines);
   const decoBg = getBgDeco(rendered.nLines);
 
   const decoTypes = rendered.decos.map(([tt, str]) => {
@@ -138,16 +162,20 @@ function setAndRenderPath(path: string) {
     });
   });
 
-  editor.setDecorations(decoHeader, [
-    editor.document.lineAt(lineToStart + rendered.nLines),
-  ]);
-  const tableStart = new Position(lineToStart, 0);
-  const tableEnd = editor.document.lineAt(lineToStart + rendered.nLines).range
-    .end;
-  editor.setDecorations(decoBg, [new Range(tableStart, tableEnd)]);
+  const docLines = editor.document.lineCount;
+  const tableEndLine = editor.document.lineAt(
+    Math.min(docLines - 1, lineToStart + rendered.nLines - 1)
+  );
+
+  const tableRange = new Range(
+    new Position(lineToStart, 0),
+    tableEndLine.range.end
+  );
+  editor.setDecorations(decoHeader, [tableRange]);
+  editor.setDecorations(decoBg, [tableRange]);
   decoTypes.forEach((dt) => {
     disposableDecos.push(dt);
-    editor.setDecorations(dt, [new Range(tableStart, tableEnd)]);
+    editor.setDecorations(dt, [tableRange]);
   });
   disposableDecos.push(decoHeader);
   disposableDecos.push(decoBg);
@@ -155,6 +183,9 @@ function setAndRenderPath(path: string) {
 
 export async function activate(context: ExtensionContext) {
   writeKeyBinding();
+
+  statusBar = window.createStatusBarItem("whichkeyState");
+  statusBar.show();
 
   await commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
   context.subscriptions.push(
