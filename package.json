@@ -3,6 +3,7 @@
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
   "version": "0.0.1",
+  "repository": "https://github.com/JimmyZJX/leaderkey",
   "engines": {
     "vscode": "^1.93.0"
   },

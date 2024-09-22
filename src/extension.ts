@@ -20,7 +20,8 @@ import {
   sanitize,
 } from "./command";
 import { root } from "./vspacecode";
-import { WHICHKEY_STATE, writeKeyBinding } from "./writeKeyBinding";
+
+const WHICHKEY_STATE = "leaderkeyState";
 
 let statusBar: StatusBarItem | undefined = undefined;
 const statusBarWarning = new ThemeColor("statusBarItem.warningBackground");
