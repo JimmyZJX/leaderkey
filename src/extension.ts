@@ -86,7 +86,7 @@ function onkey(key: string) {
       clearTimeout(statusBarTimeout);
       statusBarTimeout = setTimeout(function () {
         if (statusBar !== undefined) {
-          if (statusBar.text == msg) {
+          if (statusBar.text === msg) {
             statusBar.text = globalPath;
             statusBar.backgroundColor = undefined;
           }

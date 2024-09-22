@@ -28,9 +28,9 @@ export function overrideExn(
   commandOrBindingName: Command | string
 ) {
   const keys = path.split(" ").filter((s) => s !== "");
-  if (keys.length == 0) throw "whichkey: path is empty";
+  if (keys.length === 0) throw "whichkey: path is empty";
   keys.forEach((key, i) => {
-    if (i == keys.length - 1) {
+    if (i === keys.length - 1) {
       const next = b.keys[key];
       if (next !== undefined) {
         window.showWarningMessage(
@@ -207,7 +207,7 @@ function tokensToStrings(tokens: RenderedToken[]): {
 export function render(binding: Bindings, targetLineLength: number) {
   for (let nCol = 5; ; nCol--) {
     const { tokens, lineLen } = renderToTokens(binding, nCol);
-    if (lineLen <= targetLineLength || nCol == 1) {
+    if (lineLen <= targetLineLength || nCol === 1) {
       return tokensToStrings(tokens);
     }
   }
