@@ -2,6 +2,7 @@ import {
   commands,
   Disposable,
   ExtensionContext,
+  Position,
   Range,
   ThemableDecorationAttachmentRenderOptions,
   window,
@@ -34,6 +35,19 @@ function getBgDeco(height: number) {
       contentText: " ",
       backgroundColor: "#292b2e",
       height: `${100 * height}%`,
+      width: "100ch",
+      margin: `0 -1ch 0 0; position: absolute; z-index: 1;`,
+    },
+  });
+}
+
+function getHeaderDeco(text: string) {
+  return window.createTextEditorDecorationType({
+    color: "transparent",
+    before: {
+      contentText: text,
+      backgroundColor: "#5d4d7a",
+      height: "100%",
       width: "100ch",
       margin: `0 -1ch 0 0; position: absolute; z-index: 1;`,
     },
@@ -88,12 +102,15 @@ function setAndRenderPath(path: string) {
 
   const rendered = render(binding, 100);
 
+  const totalLines = rendered.nLines + 1;
   const visibleRange = editor.visibleRanges[0];
   const lineToStart = Math.max(
     visibleRange.start.line,
-    (visibleRange.end.line + visibleRange.start.line - rendered.nLines) >> 1
+    // (visibleRange.end.line + visibleRange.start.line - totalLines) >> 1
+    visibleRange.end.line - totalLines + 1
   );
 
+  const decoHeader = getHeaderDeco(`${path}-`);
   const decoBg = getBgDeco(rendered.nLines);
 
   const decoTypes = rendered.decos.map(([tt, str]) => {
@@ -121,13 +138,18 @@ function setAndRenderPath(path: string) {
     });
   });
 
-  editor.setDecorations(decoBg, [
-    new Range(lineToStart, 0, lineToStart + rendered.nLines, 0),
+  editor.setDecorations(decoHeader, [
+    editor.document.lineAt(lineToStart + rendered.nLines),
   ]);
+  const tableStart = new Position(lineToStart, 0);
+  const tableEnd = editor.document.lineAt(lineToStart + rendered.nLines).range
+    .end;
+  editor.setDecorations(decoBg, [new Range(tableStart, tableEnd)]);
   decoTypes.forEach((dt) => {
     disposableDecos.push(dt);
-    editor.setDecorations(dt, [new Range(lineToStart, 0, lineToStart, 0)]);
+    editor.setDecorations(dt, [new Range(tableStart, tableEnd)]);
   });
+  disposableDecos.push(decoHeader);
   disposableDecos.push(decoBg);
 }
 
