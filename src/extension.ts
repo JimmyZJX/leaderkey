@@ -61,6 +61,7 @@ function getHeaderDeco(text: string, tableLines: number) {
     color: "transparent",
     before: {
       contentText: text,
+      color: "#ccc",
       backgroundColor: "#5d4d7a",
       height: "100%",
       width: "200ch",
