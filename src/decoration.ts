@@ -6,16 +6,15 @@ import {
 } from "vscode";
 import { Bindings, render } from "./command";
 
-function renderTextDeco(text: string): ThemableDecorationAttachmentRenderOptions {
-  const escaped = text
-    .replaceAll("'", "\\'")
-    .replaceAll(" ", "\\00a0 ")
-    .replaceAll("\n", " \\A ");
+function escapeTextForBeforeContentText(text: string) {
+  return text.replaceAll("'", "\\'").replaceAll(" ", "\\00a0 ").replaceAll("\n", " \\A ");
+}
 
+function renderTextDeco(text: string): ThemableDecorationAttachmentRenderOptions {
   return {
     backgroundColor: "transparent",
     margin: `0 -1ch 0 0; position: absolute; white-space: pre;
-             z-index: 3; content: '${escaped}';`,
+             z-index: 3; content: '${escapeTextForBeforeContentText(text)}';`,
   };
 }
 
@@ -36,12 +35,12 @@ function getHeaderDeco(text: string, tableLines: number) {
   return window.createTextEditorDecorationType({
     color: "transparent",
     before: {
-      contentText: text,
       color: "#ccc",
       backgroundColor: "#5d4d7a",
       height: "100%",
       width: "200ch",
-      margin: `0 -1ch 0 0; position: absolute; z-index: 2; top: ${tableLines}00%`,
+      margin: `0 -1ch 0 0; position: absolute; z-index: 2; top: ${tableLines}00%;
+               content: '${escapeTextForBeforeContentText(text)}'`,
     },
   });
 }
@@ -58,9 +57,11 @@ export function renderBinding(binding: Bindings, path: string, when: string | un
     visibleRange.end.line - totalLines + 1
   );
 
-  const headerWhen = when ?? "";
-  let header = `${path}- `;
-  header += " ".repeat(Math.max(0, 100 - header.length - headerWhen.length)) + headerWhen;
+  const headerWhen = when === undefined ? "" : `(${when})`;
+  let header = `${path}-   `;
+  header +=
+    " ".repeat(Math.max(0, rendered.maxLen - header.length - headerWhen.length)) +
+    headerWhen;
   const decoHeader = getHeaderDeco(header, rendered.nLines);
   const decoBg = getBackgroundDeco(rendered.nLines);
 

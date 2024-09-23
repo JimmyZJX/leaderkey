@@ -260,9 +260,11 @@ function renderToTokens(
 
 function tokensToStrings(tokens: RenderedToken[]): {
   nLines: number;
+  maxLen: number;
   decos: [tokenType, string][];
 } {
   const nLines = Math.max(...tokens.map((tk) => tk.line)) + 1;
+  let maxLen = 0;
   const decos: [tokenType, string][] = [];
   const tokenTypes = ["key", "arrow", "command", "binding"];
   for (const tt of tokenTypes) {
@@ -273,9 +275,10 @@ function tokensToStrings(tokens: RenderedToken[]): {
         lines[line] = lines[line] + " ".repeat(char - len) + text;
       }
     }
+    maxLen = Math.max(maxLen, ...lines.map((l) => l.length));
     decos.push([tt as tokenType, lines.join("\n")]);
   }
-  return { nLines, decos };
+  return { nLines, maxLen, decos };
 }
 
 export function render(

@@ -8,6 +8,9 @@
   "engines": {
     "vscode": "^1.93.0"
   },
+  "extensionKind": [
+    "ui"
+  ],
   "categories": [
     "Keymaps"
   ],

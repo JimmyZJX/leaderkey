@@ -584,10 +584,18 @@ const SpaceRoot: Bindings = {
           name: "+Emacs/VSpaceCode",
           keys: {
             d: {
+              name: "Open settings JSON",
+              command: "workbench.action.openSettingsJson",
+            },
+            D: {
               name: "Open settings",
               command: "workbench.action.openGlobalSettings",
             },
             k: {
+              name: "Open global key bindings JSON",
+              command: "workbench.action.openGlobalKeybindingsFile",
+            },
+            K: {
               name: "Open global key bindings",
               command: "workbench.action.openGlobalKeybindings",
             },
@@ -595,25 +603,25 @@ const SpaceRoot: Bindings = {
               name: "Open language settings",
               command: "workbench.action.configureLanguageBasedSettings",
             },
+            r: {
+              name: "Open workspace settings JSON",
+              command: "workbench.action.openRemoteSettingsFile",
+            },
+            R: {
+              name: "Open workspace settings",
+              command: "workbench.action.openRemoteSettings",
+            },
             s: {
               name: "Configure user snippets",
               command: "workbench.action.openSnippets",
             },
             w: {
-              name: "Open workspace settings",
-              command: "workbench.action.openWorkspaceSettings",
-            },
-            D: {
-              name: "Open settings JSON",
-              command: "workbench.action.openSettingsJson",
-            },
-            K: {
-              name: "Open global key bindings JSON",
-              command: "workbench.action.openGlobalKeybindingsFile",
-            },
-            W: {
               name: "Open workspace settings JSON",
               command: "workbench.action.openWorkspaceSettingsFile",
+            },
+            W: {
+              name: "Open workspace settings",
+              command: "workbench.action.openWorkspaceSettings",
             },
           },
         },
