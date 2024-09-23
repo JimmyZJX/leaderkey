@@ -46,11 +46,11 @@ function getHeaderDeco(text: string, tableLines: number) {
   });
 }
 
-export function renderBinding(binding: Bindings, path: string) {
+export function renderBinding(binding: Bindings, path: string, when: string | undefined) {
   const editor = window.activeTextEditor;
   if (editor === undefined) return [];
 
-  const rendered = render(binding, 100);
+  const rendered = render(binding, 100, when);
   const totalLines = rendered.nLines + 1;
   const visibleRange = editor.visibleRanges[0];
   const lineToStart = Math.max(
@@ -58,7 +58,10 @@ export function renderBinding(binding: Bindings, path: string) {
     visibleRange.end.line - totalLines + 1
   );
 
-  const decoHeader = getHeaderDeco(`${path}-`, rendered.nLines);
+  const headerWhen = when ?? "";
+  let header = `${path}- `;
+  header += " ".repeat(Math.max(0, 100 - header.length - headerWhen.length)) + headerWhen;
+  const decoHeader = getHeaderDeco(header, rendered.nLines);
   const decoBg = getBackgroundDeco(rendered.nLines);
 
   const decoTypes = rendered.decos.map(([tt, str]) => {

@@ -4,13 +4,16 @@ interface DispEntry {
   key: string;
   name: string;
   type: "binding" | "command";
+  when?: string;
 }
 
 export interface Bindings {
   name: string;
   // [key] might be "key" or "key:when"
   keys: { [key: string]: Bindings | Command };
-  orderedKeys?: DispEntry[];
+  orderedKeys?: {
+    [when: string]: /* in fact `when: string | undefined` */ DispEntry[];
+  };
 }
 
 export interface Command {
@@ -113,9 +116,21 @@ export function toVSCodeKey(key: string) {
 
 const RE_KEY_WHEN = /^((^:|\+:|[^:])+)(|:.+)$/;
 
-function containsWhen(key: string) {
+function _containsWhen(key: string) {
   const match = key.match(RE_KEY_WHEN);
   return match && match[3] !== "";
+}
+
+function getRaw(key: string) {
+  const match = key.match(RE_KEY_WHEN);
+  if (match !== null) return match[1];
+  return key;
+}
+
+function getWhen(key: string) {
+  const match = key.match(RE_KEY_WHEN);
+  if (match !== null && match[3] !== "") return match[3].substring(1);
+  return undefined;
 }
 
 function normalizeBindingName(name: string) {
@@ -150,31 +165,50 @@ export function normalizeKey(key: string) {
 }
 
 export function normalize(b: Bindings): Bindings {
-  const orderedKeys: DispEntry[] = [];
+  const dispEntries: DispEntry[] = [];
+  const whens: Set<string | undefined> = new Set();
   const entries = Object.entries(b.keys).map<[string, Bindings | Command]>(([key, v]) => {
     const nKey = normalizeKey(key);
+    const when = getWhen(nKey);
+    whens.add(when);
     if (isBindings(v)) {
       const binding = normalize(v);
-      if (!containsWhen(nKey)) {
-        orderedKeys.push({
-          key: nKey,
-          name: normalizeBindingName(binding.name),
-          type: "binding",
-        });
-      }
+      dispEntries.push({
+        key: getRaw(nKey),
+        name: normalizeBindingName(binding.name),
+        type: "binding",
+        when,
+      });
       return [nKey, binding];
     } else {
-      if (!containsWhen(nKey)) {
-        orderedKeys.push({ key: nKey, name: v.name, type: "command" });
-      }
+      dispEntries.push({
+        key: getRaw(nKey),
+        name: v.name,
+        type: "command",
+        when,
+      });
       return [nKey, v];
     }
   });
-  orderedKeys.sort(({ key: k1 }, { key: k2 }) => {
+  dispEntries.sort(({ key: k1 }, { key: k2 }) => {
     if (k1.length > k2.length) return -1;
     if (k1.length < k2.length) return 1;
     return k1.localeCompare(k2);
   });
+
+  const orderedKeys: Bindings["orderedKeys"] = {};
+  for (const when of whens) {
+    const keysWithWhen: Set<string> = new Set();
+    if (when !== undefined) {
+      for (const de of dispEntries) {
+        if (de.when === when) keysWithWhen.add(de.key);
+      }
+    }
+    orderedKeys[when!] = dispEntries.filter(
+      (de) => (de.when === undefined && !keysWithWhen.has(de.key)) || de.when === when
+    );
+  }
+
   return { ...b, keys: Object.fromEntries(entries), orderedKeys };
 }
 
@@ -196,9 +230,10 @@ export function go(
 
 function renderToTokens(
   binding: Bindings,
-  ncol: number
+  ncol: number,
+  when: string | undefined
 ): { tokens: RenderedToken[]; lineLen: number } {
-  const dispEntries: DispEntry[] = binding.orderedKeys ?? [
+  const dispEntries: DispEntry[] = binding.orderedKeys?.[when!] ?? [
     { key: "ERROR", name: "No item found", type: "command" },
   ];
   const tokens: RenderedToken[] = [];
@@ -243,9 +278,13 @@ function tokensToStrings(tokens: RenderedToken[]): {
   return { nLines, decos };
 }
 
-export function render(binding: Bindings, targetLineLength: number) {
+export function render(
+  binding: Bindings,
+  targetLineLength: number,
+  when: string | undefined
+) {
   for (let nCol = 5; ; nCol--) {
-    const { tokens, lineLen } = renderToTokens(binding, nCol);
+    const { tokens, lineLen } = renderToTokens(binding, nCol, when);
     if (lineLen <= targetLineLength || nCol === 1) {
       return tokensToStrings(tokens);
     }

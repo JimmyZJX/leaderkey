@@ -34,11 +34,11 @@ function patch(packageJson: any) {
 
   const specialKeyBindings = [
     {
-      // special conditional `t` for `SPC f t`
-      key: "t",
-      when: "sideBarVisible&&explorerViewletVisible",
+      // special conditional `f` for `SPC f t`
+      key: "f",
+      when: "leaderkeyState && sideBarVisible && explorerViewletVisible",
       command: "leaderkey.onkey",
-      args: "t:sideBarVisible&&explorerViewletVisible",
+      args: { key: "f", when: "sideBarVisible&&explorerViewletVisible" },
     },
     {
       // `ESC`

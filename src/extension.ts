@@ -19,7 +19,7 @@ let globalWhen: string | undefined = undefined;
 function onkey(keyOrObj: string | { key: string; when: string }) {
   const [key, when] =
     typeof keyOrObj === "string" ? [keyOrObj, undefined] : [keyOrObj.key, keyOrObj.when];
-  globalWhen = when || globalWhen;
+  globalWhen = when ?? globalWhen;
 
   const newPath = (globalPath === "" ? "" : globalPath + " ") + key;
   const bOrC = go(globalRoot, newPath, globalWhen);
@@ -59,7 +59,7 @@ function setAndRenderPath(path: string, binding: Bindings | undefined) {
     }
     const bOrC = binding ?? go(globalRoot, path, globalWhen);
     if (bOrC === undefined || isCommand(bOrC)) return;
-    disposableDecos = renderBinding(bOrC, path);
+    disposableDecos = renderBinding(bOrC, path, globalWhen);
   } finally {
     for (const dsp of oldDisposables) dsp.dispose();
   }

@@ -8,9 +8,6 @@
   "engines": {
     "vscode": "^1.93.0"
   },
-  "extensionKind": [
-    "ui"
-  ],
   "categories": [
     "Keymaps"
   ],
@@ -935,10 +932,13 @@
         "args": "S-RET"
       },
       {
-        "key": "t",
-        "when": "sideBarVisible&&explorerViewletVisible",
+        "key": "f",
+        "when": "leaderkeyState && sideBarVisible && explorerViewletVisible",
         "command": "leaderkey.onkey",
-        "args": "t:sideBarVisible&&explorerViewletVisible"
+        "args": {
+          "key": "f",
+          "when": "sideBarVisible&&explorerViewletVisible"
+        }
       },
       {
         "key": "escape",
