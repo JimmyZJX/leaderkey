@@ -60,21 +60,10 @@ function patch(packageJson: any) {
     },
     {
       // `backspace`
-      key: "backspace", // TODO actually implement backspace!
+      key: "backspace",
       when: "leaderkeyState",
-      command: "runCommands",
-      args: {
-        commands: [
-          {
-            command: "_setContext",
-            args: ["leaderkeyState", ""],
-          },
-          {
-            command: "leaderkey.render",
-            args: "",
-          },
-        ],
-      },
+      command: "leaderkey.onkey",
+      args: "<back>",
     },
   ];
 

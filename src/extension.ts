@@ -16,12 +16,20 @@ let globalPath = "";
 let globalRoot = structuredClone(root);
 let globalWhen: string | undefined = undefined;
 
+function pop(path: string): string {
+  const lastSpaceIndex = path.lastIndexOf(" ");
+  return lastSpaceIndex === -1 ? "" : path.slice(0, lastSpaceIndex);
+}
+
 function onkey(keyOrObj: string | { key: string; when: string }) {
   const [key, when] =
     typeof keyOrObj === "string" ? [keyOrObj, undefined] : [keyOrObj.key, keyOrObj.when];
   globalWhen = when ?? globalWhen;
 
-  const newPath = (globalPath === "" ? "" : globalPath + " ") + key;
+  const newPath =
+    key === "<back>"
+      ? pop(globalPath)
+      : (globalPath === "" ? "" : globalPath + " ") + key;
   const bOrC = go(globalRoot, newPath, globalWhen);
   if (bOrC === undefined) {
     setStatusBar(`Unknown leaderkey: ${newPath}`, "warning");
