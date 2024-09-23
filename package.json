@@ -935,6 +935,12 @@
         "args": "S-RET"
       },
       {
+        "key": "t",
+        "when": "sideBarVisible&&explorerViewletVisible",
+        "command": "leaderkey.onkey",
+        "args": "t:sideBarVisible&&explorerViewletVisible"
+      },
+      {
         "key": "escape",
         "when": "leaderkeyState",
         "command": "runCommands",
@@ -1039,7 +1045,7 @@
     "testw": "jest --watchAll",
     "prettier": "prettier",
     "prettier-check": "prettier \"src/**/*.ts\" --check --log-level warn",
-    "vsce": "vsce package --out dist/vsce.vsix"
+    "vsce": "vsce package --out dist/leaderkey.vsix"
   },
   "devDependencies": {
     "@types/jest": "^29.1.2",

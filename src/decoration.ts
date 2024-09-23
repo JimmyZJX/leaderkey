@@ -19,7 +19,7 @@ function renderTextDeco(text: string): ThemableDecorationAttachmentRenderOptions
   };
 }
 
-function getBgDeco(height: number) {
+function getBackgroundDeco(height: number) {
   return window.createTextEditorDecorationType({
     color: "transparent",
     before: {
@@ -59,7 +59,7 @@ export function renderBinding(binding: Bindings, path: string) {
   );
 
   const decoHeader = getHeaderDeco(`${path}-`, rendered.nLines);
-  const decoBg = getBgDeco(rendered.nLines);
+  const decoBg = getBackgroundDeco(rendered.nLines);
 
   const decoTypes = rendered.decos.map(([tt, str]) => {
     let tro: ThemableDecorationAttachmentRenderOptions = {};

@@ -1,22 +1,35 @@
 import { commands, Disposable, ExtensionContext, window, workspace } from "vscode";
-import { Command, go, isBindings, isCommand, overrideExn, sanitize } from "./command";
+import {
+  Bindings,
+  Command,
+  go,
+  isBindings,
+  isCommand,
+  normalize,
+  overrideExn,
+} from "./command";
 import { renderBinding } from "./decoration";
-import { init, setStatusBar, WHICHKEY_STATE } from "./global";
+import { init, log, setStatusBar, WHICHKEY_STATE } from "./global";
 import { root } from "./vspacecode";
 
 let globalPath = "";
 let globalRoot = structuredClone(root);
+let globalWhen: string | undefined = undefined;
 
-function onkey(key: string) {
+function onkey(keyOrObj: string | { key: string; when: string }) {
+  const [key, when] =
+    typeof keyOrObj === "string" ? [keyOrObj, undefined] : [keyOrObj.key, keyOrObj.when];
+  globalWhen = when || globalWhen;
+
   const newPath = (globalPath === "" ? "" : globalPath + " ") + key;
-  const bOrC = go(globalRoot, newPath);
+  const bOrC = go(globalRoot, newPath, globalWhen);
   if (bOrC === undefined) {
     setStatusBar(`Unknown leaderkey: ${newPath}`, "warning");
-    setAndRenderPath("");
+    setAndRenderPath("", undefined);
     return;
   }
   if (isBindings(bOrC)) {
-    setAndRenderPath(newPath);
+    setAndRenderPath(newPath, bOrC);
     return;
   }
   // command
@@ -29,22 +42,24 @@ function onkey(key: string) {
   } else {
     commands.executeCommand(cmd.command!, ...(cmd.args === undefined ? [] : [cmd.args]));
   }
-  setAndRenderPath("");
+  setAndRenderPath("", undefined);
 }
 
 let disposableDecos: Disposable[] = [];
 
-function setAndRenderPath(path: string) {
+function setAndRenderPath(path: string, binding: Bindings | undefined) {
   globalPath = path;
   const oldDisposables = disposableDecos;
   try {
     setStatusBar(path === "" ? "" : path + "-");
     commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
-    if (path === "") return;
-    const binding = go(globalRoot, path);
-    if (binding === undefined || isCommand(binding)) return;
-
-    disposableDecos = renderBinding(binding, path);
+    if (path === "") {
+      globalWhen = undefined;
+      return;
+    }
+    const bOrC = binding ?? go(globalRoot, path, globalWhen);
+    if (bOrC === undefined || isCommand(bOrC)) return;
+    disposableDecos = renderBinding(bOrC, path);
   } finally {
     for (const dsp of oldDisposables) dsp.dispose();
   }
@@ -55,7 +70,17 @@ export async function activate(context: ExtensionContext) {
 
   await commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
   context.subscriptions.push(
-    commands.registerCommand("leaderkey.render", setAndRenderPath),
+    commands.registerCommand(
+      "leaderkey.render",
+      (pathOrWithWhen: string | { path: string; when: string }) => {
+        if (typeof pathOrWithWhen === "string") {
+          return setAndRenderPath(pathOrWithWhen, undefined);
+        } else {
+          globalWhen = pathOrWithWhen.when;
+          return setAndRenderPath(pathOrWithWhen.path, undefined);
+        }
+      }
+    ),
     commands.registerCommand("leaderkey.onkey", onkey)
   );
 
@@ -96,7 +121,9 @@ function confOverrideRefresh() {
       window.showWarningMessage(`Config leaderkey.overrides.${key} is not a dict`);
     }
   }
-  globalRoot = sanitize(newRoot);
+  globalRoot = normalize(newRoot);
+  log("Normalized root:\n" + JSON.stringify(globalRoot, undefined, 2));
+  if (global.gc) global.gc();
 }
 
 export function deactivate() {}

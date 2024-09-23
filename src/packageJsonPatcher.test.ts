@@ -1,5 +1,5 @@
 import { readFileSync, unlinkSync, writeFileSync } from "fs";
-import { sanitizeKey, unshiftChars } from "./command";
+import { normalizeKey, unshiftChars } from "./command";
 
 function patch(packageJson: any) {
   const ALL_KEY_CHARS = [
@@ -16,25 +16,32 @@ function patch(packageJson: any) {
       key: k,
       when: "leaderkeyState",
       command: "leaderkey.onkey",
-      args: sanitizeKey(k),
+      args: normalizeKey(k),
     },
     {
       key: "ctrl+" + k,
       when: "leaderkeyState",
       command: "leaderkey.onkey",
-      args: sanitizeKey("C-" + k),
+      args: normalizeKey("C-" + k),
     },
     {
       key: "shift+" + k,
       when: "leaderkeyState",
       command: "leaderkey.onkey",
-      args: sanitizeKey("S-" + k),
+      args: normalizeKey("S-" + k),
     },
   ]);
 
-  packageJson.contributes.keybindings = [
-    ...allKeyCharBindings,
+  const specialKeyBindings = [
     {
+      // special conditional `t` for `SPC f t`
+      key: "t",
+      when: "sideBarVisible&&explorerViewletVisible",
+      command: "leaderkey.onkey",
+      args: "t:sideBarVisible&&explorerViewletVisible",
+    },
+    {
+      // `ESC`
       key: "escape",
       when: "leaderkeyState",
       command: "runCommands",
@@ -52,6 +59,7 @@ function patch(packageJson: any) {
       },
     },
     {
+      // `backspace`
       key: "backspace", // TODO actually implement backspace!
       when: "leaderkeyState",
       command: "runCommands",
@@ -69,6 +77,8 @@ function patch(packageJson: any) {
       },
     },
   ];
+
+  packageJson.contributes.keybindings = [...allKeyCharBindings, ...specialKeyBindings];
 }
 
 test("package.json", () => {

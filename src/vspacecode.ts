@@ -1,4 +1,4 @@
-import { Bindings, sanitize } from "./command";
+import { Bindings, normalize } from "./command";
 
 const SpaceRoot: Bindings = {
   name: "<SPC>",
@@ -549,17 +549,12 @@ const SpaceRoot: Bindings = {
           command: "workbench.action.files.save",
         },
         t: {
-          name: "Toggle tree/explorer view",
-          keys: {
-            "": {
-              name: "Show explorer view",
-              command: "workbench.view.explorer",
-            },
-            "when:sideBarVisible && explorerViewletVisible": {
-              name: "Hide side bar",
-              command: "workbench.action.toggleSidebarVisibility",
-            },
-          },
+          name: "Show explorer view",
+          command: "workbench.view.explorer",
+        },
+        "t:sideBarVisible&&explorerViewletVisible": {
+          name: "Hide side bar",
+          command: "workbench.action.toggleSidebarVisibility",
         },
         w: {
           name: "Open active in new window",
@@ -1672,7 +1667,7 @@ const CommaRoot: Bindings = {
   },
 };
 
-export const root: Bindings = sanitize({
+export const root: Bindings = normalize({
   name: "root",
   keys: { SPC: SpaceRoot, ",": CommaRoot },
 });

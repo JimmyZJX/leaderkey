@@ -6,3 +6,7 @@ exports.window = {
     appendLine: console.error,
   }),
 };
+class ThemeColor {
+    constructor(_) {}
+}
+exports.ThemeColor = ThemeColor;

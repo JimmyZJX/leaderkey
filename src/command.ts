@@ -1,9 +1,16 @@
 import { log } from "./global";
 
+interface DispEntry {
+  key: string;
+  name: string;
+  type: "binding" | "command";
+}
+
 export interface Bindings {
   name: string;
+  // [key] might be "key" or "key:when"
   keys: { [key: string]: Bindings | Command };
-  when?: string;
+  orderedKeys?: DispEntry[];
 }
 
 export interface Command {
@@ -11,7 +18,6 @@ export interface Command {
   command?: string;
   commands?: (string | { command: string; args?: any })[];
   args?: any;
-  when?: string;
 }
 
 export function isBindings(x: Bindings | Command): x is Bindings {
@@ -105,45 +111,82 @@ export function toVSCodeKey(key: string) {
     .replaceAll("shift+shift+", "shift+");
 }
 
-/** turn keys into how they are displayed on which-key */
-export function sanitizeKey(key: string) {
-  return key
-    .replaceAll("space", "SPC")
-    .replaceAll(" ", "SPC")
-    .replaceAll("\t", "TAB")
-    .replaceAll("tab", "TAB")
-    .replaceAll("\n", "RET")
-    .replaceAll("enter", "RET")
-    .replaceAll("escape", "ESC")
-    .replaceAll("backspace", "Backspace")
-    .replaceAll("ctrl+", "C-")
-    .replaceAll("alt+", "M-")
-    .replaceAll("shift+", "S-")
-    .replaceAll(/S-([`1234567890=,./[\];'\\-])$/g, (match, ch) => {
-      const idx = unshiftChars.indexOf(ch);
-      if (idx >= 0) return shiftChars.substring(idx, idx + 1);
-      return match;
-    })
-    .replaceAll(/S-([a-z])$/g, (_m, ch) => (ch as string).toUpperCase());
+const RE_KEY_WHEN = /^((^:|\+:|[^:])+)(|:.+)$/;
+
+function containsWhen(key: string) {
+  const match = key.match(RE_KEY_WHEN);
+  return match && match[3] !== "";
 }
 
-export function sanitize(b: Bindings): Bindings {
+function normalizeBindingName(name: string) {
+  return `+${name.replace(/^\++/, "")}`;
+}
+
+/** turn keys into how they are displayed on which-key */
+export function normalizeKey(key: string) {
+  return key.replace(
+    RE_KEY_WHEN,
+    (_all, k: string, _2, when: string) =>
+      k
+        .replaceAll("space", "SPC")
+        .replaceAll(" ", "SPC")
+        .replaceAll("\t", "TAB")
+        .replaceAll("tab", "TAB")
+        .replaceAll("\n", "RET")
+        .replaceAll("enter", "RET")
+        .replaceAll("escape", "ESC")
+        .replaceAll("backspace", "Backspace")
+        .replaceAll("ctrl+", "C-")
+        .replaceAll("alt+", "M-")
+        .replaceAll("shift+", "S-")
+        .replaceAll(/S-([`1234567890=,./[\];'\\-])$/g, (match, ch) => {
+          const idx = unshiftChars.indexOf(ch);
+          if (idx >= 0) return shiftChars.substring(idx, idx + 1);
+          return match;
+        })
+        .replaceAll(/S-([a-z])$/g, (_m, ch) => (ch as string).toUpperCase()) + // suffix
+      when
+  );
+}
+
+export function normalize(b: Bindings): Bindings {
+  const orderedKeys: DispEntry[] = [];
   const entries = Object.entries(b.keys).map<[string, Bindings | Command]>(([key, v]) => {
-    const val = isBindings(v) ? sanitize(v) : v;
-    return [sanitizeKey(key), val];
+    const nKey = normalizeKey(key);
+    if (isBindings(v)) {
+      const binding = normalize(v);
+      if (!containsWhen(nKey)) {
+        orderedKeys.push({
+          key: nKey,
+          name: normalizeBindingName(binding.name),
+          type: "binding",
+        });
+      }
+      return [nKey, binding];
+    } else {
+      if (!containsWhen(nKey)) {
+        orderedKeys.push({ key: nKey, name: v.name, type: "command" });
+      }
+      return [nKey, v];
+    }
   });
-  entries.sort(([k1, _1], [k2, _2]) => {
+  orderedKeys.sort(({ key: k1 }, { key: k2 }) => {
     if (k1.length > k2.length) return -1;
     if (k1.length < k2.length) return 1;
     return k1.localeCompare(k2);
   });
-  return { ...b, keys: Object.fromEntries(entries) };
+  return { ...b, keys: Object.fromEntries(entries), orderedKeys };
 }
 
-export function go(root: Bindings, path: string): Bindings | Command | undefined {
+export function go(
+  root: Bindings,
+  path: string,
+  when: string | undefined
+): Bindings | Command | undefined {
   const keys = path.split(" ").filter((v) => v !== "");
   for (const k of keys) {
-    const n = root.keys[k];
+    const n =
+      (when === undefined ? undefined : root.keys[`${k}:${when}`]) ?? root.keys[k];
     // TODO isCommand early quit?
     if (n === undefined || isCommand(n)) return n;
     root = n;
@@ -155,25 +198,13 @@ function renderToTokens(
   binding: Bindings,
   ncol: number
 ): { tokens: RenderedToken[]; lineLen: number } {
-  const dispEntries: {
-    key: string;
-    name: string;
-    type: "binding" | "command";
-  }[] = Object.entries(binding.keys).map(([k, bOrC]) => {
-    const key = sanitizeKey(k);
-    if (isBindings(bOrC)) {
-      return {
-        key,
-        name: `+${bOrC.name.replace(/^\++/, "")}`,
-        type: "binding",
-      };
-    }
-    return { key, name: bOrC.name, type: "command" };
-  });
+  const dispEntries: DispEntry[] = binding.orderedKeys ?? [
+    { key: "ERROR", name: "No item found", type: "command" },
+  ];
   const tokens: RenderedToken[] = [];
   const cols = [...chunks(dispEntries, Math.ceil(dispEntries.length / ncol))];
   let curChar = 0;
-  cols.forEach((col) => {
+  for (const col of cols) {
     const keyLen = Math.max(...col.map(({ key }) => key.length));
     const nameLen = Math.max(...col.map(({ name }) => name.length));
     const charAfterKey = curChar + keyLen;
@@ -188,7 +219,7 @@ function renderToTokens(
       tokens.push({ line, char: charAfterKey + 3, text: name, type });
       curChar = charAfterKey + 4 + nameLen;
     });
-  });
+  }
   return { tokens, lineLen: curChar - 1 };
 }
 
