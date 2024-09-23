@@ -233,9 +233,10 @@ function renderToTokens(
   ncol: number,
   when: string | undefined
 ): { tokens: RenderedToken[]; lineLen: number } {
-  const dispEntries: DispEntry[] = binding.orderedKeys?.[when!] ?? [
-    { key: "ERROR", name: "No item found", type: "command" },
-  ];
+  const dispEntries: DispEntry[] = binding.orderedKeys?.[when!] ??
+    binding.orderedKeys?.[undefined!] ?? [
+      { key: "ERROR", name: "No item found", type: "command" },
+    ];
   const tokens: RenderedToken[] = [];
   const cols = [...chunks(dispEntries, Math.ceil(dispEntries.length / ncol))];
   let curChar = 0;
