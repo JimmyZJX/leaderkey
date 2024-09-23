@@ -1,26 +1,5 @@
 import { Bindings, sanitize } from "./command";
 
-//   function loop(r: any): any {
-//     if (r.bindings !== undefined) {
-//       const keys: { [key: string]: any } = {};
-//       r.bindings.forEach((binding: any) => {
-//         const key = binding.key;
-//         if (key === undefined)
-//           throw `Unexpected 'key' not found: ${JSON.stringify(binding.name)}`;
-//         delete binding.key;
-//         keys[key] = loop(binding);
-//       });
-//       r.keys = keys;
-//       delete r.bindings;
-//     }
-//     delete r.type;
-//     return r;
-//   }
-
-//   const vsc = join(tmpdir(), "vsc.json");
-//   writeFileSync(vsc, JSON.stringify(loop(vspacecodeBindings), undefined, 2));
-//   window.showInformationMessage("whichkey: finish writing file");
-
 const SpaceRoot: Bindings = {
   name: "<SPC>",
   keys: {
@@ -280,10 +259,7 @@ const SpaceRoot: Bindings = {
         },
         P: {
           name: "Paste clipboard to buffer",
-          commands: [
-            "editor.action.selectAll",
-            "editor.action.clipboardPasteAction",
-          ],
+          commands: ["editor.action.selectAll", "editor.action.clipboardPasteAction"],
         },
         R: {
           name: "Revert the current buffer",
@@ -441,8 +417,7 @@ const SpaceRoot: Bindings = {
             },
             f: {
               name: "Add function breakpoint",
-              command:
-                "workbench.debug.viewlet.action.addFunctionBreakpointAction",
+              command: "workbench.debug.viewlet.action.addFunctionBreakpointAction",
             },
             i: {
               name: "Toggle inline breakpoint",
@@ -592,10 +567,7 @@ const SpaceRoot: Bindings = {
         },
         D: {
           name: "Delete current file",
-          commands: [
-            "workbench.files.action.showActiveFileInExplorer",
-            "deleteFile",
-          ],
+          commands: ["workbench.files.action.showActiveFileInExplorer", "deleteFile"],
         },
         L: {
           name: "Locate file",
@@ -932,10 +904,7 @@ const SpaceRoot: Bindings = {
         },
         s: {
           name: "Save all and close frame",
-          commands: [
-            "workbench.action.files.saveAll",
-            "workbench.action.closeWindow",
-          ],
+          commands: ["workbench.action.files.saveAll", "workbench.action.closeWindow"],
         },
         Q: {
           name: "Quit application",

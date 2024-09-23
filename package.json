@@ -1,30 +1,56 @@
 {
   "name": "leaderkey",
+  "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "repository": "https://github.com/JimmyZJX/leaderkey",
   "engines": {
     "vscode": "^1.93.0"
   },
-  "categories": [
-    "Other"
+  "extensionKind": [
+    "ui"
   ],
-  "activationEvents": [ ],
+  "categories": [
+    "Keymaps"
+  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "leaderkey.render",
+        "title": "Render leaderkey menu"
+      }
+    ],
+    "configuration": {
+      "title": "leaderkey",
+      "properties": {
+        "leaderkey.overrides.user": {
+          "type": "object",
+          "default": {},
+          "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
+        }
+      }
+    },
     "keybindings": [
       {
-        "key": "space",
+        "key": "`",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "SPC"
+        "args": "`"
       },
       {
-        "key": "0",
+        "key": "ctrl+`",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "0"
+        "args": "C-`"
+      },
+      {
+        "key": "shift+`",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "~"
       },
       {
         "key": "1",
@@ -33,112 +59,10 @@
         "args": "1"
       },
       {
-        "key": "2",
+        "key": "ctrl+1",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "2"
-      },
-      {
-        "key": "3",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "3"
-      },
-      {
-        "key": "4",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "4"
-      },
-      {
-        "key": "5",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "5"
-      },
-      {
-        "key": "6",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "6"
-      },
-      {
-        "key": "7",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "7"
-      },
-      {
-        "key": "8",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "8"
-      },
-      {
-        "key": "tab",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "TAB"
-      },
-      {
-        "key": ";",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": ";"
-      },
-      {
-        "key": "shift+;",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": ":"
-      },
-      {
-        "key": ".",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "."
-      },
-      {
-        "key": "b",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "b"
-      },
-      {
-        "key": "c",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "c"
-      },
-      {
-        "key": "g",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "g"
-      },
-      {
-        "key": "l",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "l"
-      },
-      {
-        "key": "shift+r",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "R"
-      },
-      {
-        "key": "t",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "t"
-      },
-      {
-        "key": "x",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "x"
+        "args": "C-1"
       },
       {
         "key": "shift+1",
@@ -147,34 +71,52 @@
         "args": "!"
       },
       {
-        "key": "shift+/",
+        "key": "2",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "?"
+        "args": "2"
       },
       {
-        "key": "'",
+        "key": "ctrl+2",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "'"
+        "args": "C-2"
       },
       {
-        "key": "shift+'",
+        "key": "shift+2",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "\""
+        "args": "@"
       },
       {
-        "key": "shift+8",
+        "key": "3",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "*"
+        "args": "3"
       },
       {
-        "key": "/",
+        "key": "ctrl+3",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "/"
+        "args": "C-3"
+      },
+      {
+        "key": "shift+3",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "#"
+      },
+      {
+        "key": "4",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "4"
+      },
+      {
+        "key": "ctrl+4",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-4"
       },
       {
         "key": "shift+4",
@@ -183,10 +125,322 @@
         "args": "$"
       },
       {
+        "key": "5",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "5"
+      },
+      {
+        "key": "ctrl+5",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-5"
+      },
+      {
+        "key": "shift+5",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "%"
+      },
+      {
+        "key": "6",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "6"
+      },
+      {
+        "key": "ctrl+6",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-6"
+      },
+      {
+        "key": "shift+6",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "^"
+      },
+      {
+        "key": "7",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "7"
+      },
+      {
+        "key": "ctrl+7",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-7"
+      },
+      {
+        "key": "shift+7",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "&"
+      },
+      {
+        "key": "8",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "8"
+      },
+      {
+        "key": "ctrl+8",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-8"
+      },
+      {
+        "key": "shift+8",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "*"
+      },
+      {
         "key": "9",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
         "args": "9"
+      },
+      {
+        "key": "ctrl+9",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-9"
+      },
+      {
+        "key": "shift+9",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "("
+      },
+      {
+        "key": "0",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "0"
+      },
+      {
+        "key": "ctrl+0",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-0"
+      },
+      {
+        "key": "shift+0",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": ")"
+      },
+      {
+        "key": "-",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "-"
+      },
+      {
+        "key": "ctrl+-",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C--"
+      },
+      {
+        "key": "shift+-",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "_"
+      },
+      {
+        "key": "=",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "="
+      },
+      {
+        "key": "ctrl+=",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-="
+      },
+      {
+        "key": "shift+=",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "+"
+      },
+      {
+        "key": ",",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": ","
+      },
+      {
+        "key": "ctrl+,",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-,"
+      },
+      {
+        "key": "shift+,",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "<"
+      },
+      {
+        "key": ".",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "."
+      },
+      {
+        "key": "ctrl+.",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-."
+      },
+      {
+        "key": "shift+.",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": ">"
+      },
+      {
+        "key": "/",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "/"
+      },
+      {
+        "key": "ctrl+/",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-/"
+      },
+      {
+        "key": "shift+/",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "?"
+      },
+      {
+        "key": "[",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "["
+      },
+      {
+        "key": "ctrl+[",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-["
+      },
+      {
+        "key": "shift+[",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "{"
+      },
+      {
+        "key": "]",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "]"
+      },
+      {
+        "key": "ctrl+]",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-]"
+      },
+      {
+        "key": "shift+]",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "}"
+      },
+      {
+        "key": ";",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": ";"
+      },
+      {
+        "key": "ctrl+;",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-;"
+      },
+      {
+        "key": "shift+;",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": ":"
+      },
+      {
+        "key": "'",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "'"
+      },
+      {
+        "key": "ctrl+'",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-'"
+      },
+      {
+        "key": "shift+'",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "\""
+      },
+      {
+        "key": "\\",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "\\"
+      },
+      {
+        "key": "ctrl+\\",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-\\"
+      },
+      {
+        "key": "shift+\\",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "|"
+      },
+      {
+        "key": "a",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "a"
+      },
+      {
+        "key": "ctrl+a",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-a"
+      },
+      {
+        "key": "shift+a",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "A"
+      },
+      {
+        "key": "b",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "b"
+      },
+      {
+        "key": "ctrl+b",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-b"
       },
       {
         "key": "shift+b",
@@ -195,106 +449,34 @@
         "args": "B"
       },
       {
+        "key": "c",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "c"
+      },
+      {
+        "key": "ctrl+c",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-c"
+      },
+      {
+        "key": "shift+c",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C"
+      },
+      {
         "key": "d",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
         "args": "d"
       },
       {
-        "key": "h",
+        "key": "ctrl+d",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "h"
-      },
-      {
-        "key": "shift+h",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "H"
-      },
-      {
-        "key": "j",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "j"
-      },
-      {
-        "key": "shift+j",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "J"
-      },
-      {
-        "key": "k",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "k"
-      },
-      {
-        "key": "shift+k",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "K"
-      },
-      {
-        "key": "shift+l",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "L"
-      },
-      {
-        "key": "shift+m",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "M"
-      },
-      {
-        "key": "n",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "n"
-      },
-      {
-        "key": "shift+n",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "N"
-      },
-      {
-        "key": "p",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "p"
-      },
-      {
-        "key": "shift+p",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "P"
-      },
-      {
-        "key": "s",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "s"
-      },
-      {
-        "key": "shift+t",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "T"
-      },
-      {
-        "key": "u",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "u"
-      },
-      {
-        "key": "shift+y",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "Y"
+        "args": "C-d"
       },
       {
         "key": "shift+d",
@@ -309,6 +491,12 @@
         "args": "e"
       },
       {
+        "key": "ctrl+e",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-e"
+      },
+      {
         "key": "shift+e",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
@@ -321,64 +509,10 @@
         "args": "f"
       },
       {
-        "key": "i",
+        "key": "ctrl+f",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "i"
-      },
-      {
-        "key": "shift+s",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "S"
-      },
-      {
-        "key": "shift+c",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "C"
-      },
-      {
-        "key": "o",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "o"
-      },
-      {
-        "key": "v",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "v"
-      },
-      {
-        "key": "w",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "w"
-      },
-      {
-        "key": "shift+w",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "W"
-      },
-      {
-        "key": "m",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "m"
-      },
-      {
-        "key": "r",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "r"
-      },
-      {
-        "key": "y",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "y"
+        "args": "C-f"
       },
       {
         "key": "shift+f",
@@ -387,76 +521,16 @@
         "args": "F"
       },
       {
-        "key": "shift+u",
+        "key": "g",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "U"
+        "args": "g"
       },
       {
-        "key": "shift+i",
+        "key": "ctrl+g",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
-        "args": "I"
-      },
-      {
-        "key": "shift+=",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "+"
-      },
-      {
-        "key": "=",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "="
-      },
-      {
-        "key": "q",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "q"
-      },
-      {
-        "key": "shift+q",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "Q"
-      },
-      {
-        "key": "z",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "z"
-      },
-      {
-        "key": "shift+v",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "V"
-      },
-      {
-        "key": "-",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "-"
-      },
-      {
-        "key": "[",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "["
-      },
-      {
-        "key": "]",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "]"
-      },
-      {
-        "key": "a",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "a"
+        "args": "C-g"
       },
       {
         "key": "shift+g",
@@ -465,28 +539,495 @@
         "args": "G"
       },
       {
+        "key": "h",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "h"
+      },
+      {
+        "key": "ctrl+h",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-h"
+      },
+      {
+        "key": "shift+h",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "H"
+      },
+      {
+        "key": "i",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "i"
+      },
+      {
+        "key": "ctrl+i",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-i"
+      },
+      {
+        "key": "shift+i",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "I"
+      },
+      {
+        "key": "j",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "j"
+      },
+      {
+        "key": "ctrl+j",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-j"
+      },
+      {
+        "key": "shift+j",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "J"
+      },
+      {
+        "key": "k",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "k"
+      },
+      {
+        "key": "ctrl+k",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-k"
+      },
+      {
+        "key": "shift+k",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "K"
+      },
+      {
+        "key": "l",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "l"
+      },
+      {
+        "key": "ctrl+l",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-l"
+      },
+      {
+        "key": "shift+l",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "L"
+      },
+      {
+        "key": "m",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "m"
+      },
+      {
+        "key": "ctrl+m",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-m"
+      },
+      {
+        "key": "shift+m",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "M"
+      },
+      {
+        "key": "n",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "n"
+      },
+      {
+        "key": "ctrl+n",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-n"
+      },
+      {
+        "key": "shift+n",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "N"
+      },
+      {
+        "key": "o",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "o"
+      },
+      {
+        "key": "ctrl+o",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-o"
+      },
+      {
         "key": "shift+o",
         "when": "leaderkeyState",
         "command": "leaderkey.onkey",
         "args": "O"
-      }
-    ],
-    "commands": [
+      },
       {
-        "command": "leaderkey.render",
-        "title": "Render leaderkey menu"
-      }
-    ],
-    "configuration": {
-      "title": "leaderkey",
-      "properties": {
-        "leaderkey.overrides.user": {
-          "type": "object",
-          "default": { },
-          "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
+        "key": "p",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "p"
+      },
+      {
+        "key": "ctrl+p",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-p"
+      },
+      {
+        "key": "shift+p",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "P"
+      },
+      {
+        "key": "q",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "q"
+      },
+      {
+        "key": "ctrl+q",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-q"
+      },
+      {
+        "key": "shift+q",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "Q"
+      },
+      {
+        "key": "r",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "r"
+      },
+      {
+        "key": "ctrl+r",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-r"
+      },
+      {
+        "key": "shift+r",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "R"
+      },
+      {
+        "key": "s",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "s"
+      },
+      {
+        "key": "ctrl+s",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-s"
+      },
+      {
+        "key": "shift+s",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "S"
+      },
+      {
+        "key": "t",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "t"
+      },
+      {
+        "key": "ctrl+t",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-t"
+      },
+      {
+        "key": "shift+t",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "T"
+      },
+      {
+        "key": "u",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "u"
+      },
+      {
+        "key": "ctrl+u",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-u"
+      },
+      {
+        "key": "shift+u",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "U"
+      },
+      {
+        "key": "v",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "v"
+      },
+      {
+        "key": "ctrl+v",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-v"
+      },
+      {
+        "key": "shift+v",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "V"
+      },
+      {
+        "key": "w",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "w"
+      },
+      {
+        "key": "ctrl+w",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-w"
+      },
+      {
+        "key": "shift+w",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "W"
+      },
+      {
+        "key": "x",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "x"
+      },
+      {
+        "key": "ctrl+x",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-x"
+      },
+      {
+        "key": "shift+x",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "X"
+      },
+      {
+        "key": "y",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "y"
+      },
+      {
+        "key": "ctrl+y",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-y"
+      },
+      {
+        "key": "shift+y",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "Y"
+      },
+      {
+        "key": "z",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "z"
+      },
+      {
+        "key": "ctrl+z",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-z"
+      },
+      {
+        "key": "shift+z",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "Z"
+      },
+      {
+        "key": "tab",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "TAB"
+      },
+      {
+        "key": "ctrl+tab",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-TAB"
+      },
+      {
+        "key": "shift+tab",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "S-TAB"
+      },
+      {
+        "key": "escape",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "ESC"
+      },
+      {
+        "key": "ctrl+escape",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-ESC"
+      },
+      {
+        "key": "shift+escape",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "S-ESC"
+      },
+      {
+        "key": "enter",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "RET"
+      },
+      {
+        "key": "ctrl+enter",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "C-RET"
+      },
+      {
+        "key": "shift+enter",
+        "when": "leaderkeyState",
+        "command": "leaderkey.onkey",
+        "args": "S-RET"
+      },
+      {
+        "key": "escape",
+        "when": "leaderkeyState",
+        "command": "runCommands",
+        "args": {
+          "commands": [
+            {
+              "command": "_setContext",
+              "args": [
+                "leaderkeyState",
+                ""
+              ]
+            },
+            {
+              "command": "leaderkey.render",
+              "args": ""
+            }
+          ]
+        }
+      },
+      {
+        "key": "backspace",
+        "when": "leaderkeyState",
+        "command": "runCommands",
+        "args": {
+          "commands": [
+            {
+              "command": "_setContext",
+              "args": [
+                "leaderkeyState",
+                ""
+              ]
+            },
+            {
+              "command": "leaderkey.render",
+              "args": ""
+            }
+          ]
         }
       }
+    ]
+  },
+  "prettier": {
+    "printWidth": 90
+  },
+  "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+      "semi": [
+        2,
+        "always"
+      ],
+      "object-shorthand": [
+        "error",
+        "always"
+      ],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "args": "all",
+          "argsIgnorePattern": "^_",
+          "caughtErrors": "all",
+          "caughtErrorsIgnorePattern": "^_",
+          "destructuredArrayIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "ignoreRestSiblings": true
+        }
+      ],
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/explicit-module-boundary-types": 0,
+      "@typescript-eslint/no-non-null-assertion": 0,
+      "@typescript-eslint/no-namespace": 0,
+      "eqeqeq": [
+        "error",
+        "always"
+      ]
     }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "transform": {
+      "^.+\\.(ts|tsx)?$": "ts-jest"
+    },
+    "modulePathIgnorePatterns": [
+      "./out/"
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -494,17 +1035,21 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "jest",
+    "testw": "jest --watchAll",
+    "prettier": "prettier",
+    "prettier-check": "prettier \"src/**/*.ts\" --check --log-level warn",
+    "vsce": "vsce package --out dist/vsce.vsix"
   },
   "devDependencies": {
-    "@types/vscode": "^1.93.0",
-    "@types/mocha": "^10.0.7",
+    "@types/jest": "^29.1.2",
     "@types/node": "20.x",
+    "@types/vscode": "^1.93.0",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
-    "eslint": "^9.9.1",
-    "typescript": "^5.5.4",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/vsce": "^2.23.0",
+    "eslint": "^8.26.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.2 <5.6.0"
   }
 }

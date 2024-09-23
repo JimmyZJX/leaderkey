@@ -1,4 +1,4 @@
-import { window } from "vscode";
+import { log } from "./global";
 
 export interface Bindings {
   name: string;
@@ -33,14 +33,14 @@ export function overrideExn(
     if (i === keys.length - 1) {
       const next = b.keys[key];
       if (next !== undefined) {
-        window.showWarningMessage(
-          `leaderkey: overriding [${keys
-            .slice(0, i + 1)
-            .join(" ")}] (${JSON.stringify(b.keys[key])})`
+        log(
+          `Overriding [${keys.slice(0, i + 1).join(" ")}] (${JSON.stringify(
+            b.keys[key]
+          )})`
         );
       }
       if (typeof commandOrBindingName === "string") {
-        if (next != undefined && isBindings(next)) {
+        if (next !== undefined && isBindings(next)) {
           next.name = commandOrBindingName;
         } else {
           b.keys[key] = { name: commandOrBindingName, keys: {} };
@@ -54,9 +54,7 @@ export function overrideExn(
         b = next;
       } else {
         if (next !== undefined) {
-          window.showWarningMessage(
-            `leaderkey: overriding command [${keys.slice(0, i + 1).join(" ")}]`
-          );
+          log(`Overriding command [${keys.slice(0, i + 1).join(" ")}]`);
         }
         b = b.keys[key] = { name: `${key}...`, keys: {} };
       }
@@ -80,7 +78,7 @@ function* chunks<T>(arr: T[], n: number) {
 }
 
 const shiftChars = '~!@#$%^&*()_+<>?{}:"|';
-const unshiftChars = "`1234567890-=,./[];'\\";
+export const unshiftChars = "`1234567890-=,./[];'\\";
 
 export function toVSCodeKey(key: string) {
   const lastChar = key.at(-1)!;
@@ -108,7 +106,7 @@ export function toVSCodeKey(key: string) {
 }
 
 /** turn keys into how they are displayed on which-key */
-function sanitizeKey(key: string) {
+export function sanitizeKey(key: string) {
   return key
     .replaceAll("space", "SPC")
     .replaceAll(" ", "SPC")
@@ -121,16 +119,19 @@ function sanitizeKey(key: string) {
     .replaceAll("ctrl+", "C-")
     .replaceAll("alt+", "M-")
     .replaceAll("shift+", "S-")
+    .replaceAll(/S-([`1234567890=,./[\];'\\-])$/g, (match, ch) => {
+      const idx = unshiftChars.indexOf(ch);
+      if (idx >= 0) return shiftChars.substring(idx, idx + 1);
+      return match;
+    })
     .replaceAll(/S-([a-z])$/g, (_m, ch) => (ch as string).toUpperCase());
 }
 
 export function sanitize(b: Bindings): Bindings {
-  const entries = Object.entries(b.keys).map<[string, Bindings | Command]>(
-    ([key, v]) => {
-      const val = isBindings(v) ? sanitize(v) : v;
-      return [sanitizeKey(key), val];
-    }
-  );
+  const entries = Object.entries(b.keys).map<[string, Bindings | Command]>(([key, v]) => {
+    const val = isBindings(v) ? sanitize(v) : v;
+    return [sanitizeKey(key), val];
+  });
   entries.sort(([k1, _1], [k2, _2]) => {
     if (k1.length > k2.length) return -1;
     if (k1.length < k2.length) return 1;
@@ -139,10 +140,7 @@ export function sanitize(b: Bindings): Bindings {
   return { ...b, keys: Object.fromEntries(entries) };
 }
 
-export function go(
-  root: Bindings,
-  path: string
-): Bindings | Command | undefined {
+export function go(root: Bindings, path: string): Bindings | Command | undefined {
   const keys = path.split(" ").filter((v) => v !== "");
   for (const k of keys) {
     const n = root.keys[k];
