@@ -32,8 +32,8 @@ function onkey(keyOrObj: string | { key: string; when: string }) {
       : (globalPath === "" ? "" : globalPath + " ") + key;
   const bOrC = go(globalRoot, newPath, globalWhen);
   if (bOrC === undefined) {
-    setStatusBar(`Unknown leaderkey: ${newPath}`, "warning");
     setAndRenderPath("", undefined);
+    setStatusBar(`Unknown leaderkey: ${newPath}`, "warning");
     return;
   }
   if (isBindings(bOrC)) {

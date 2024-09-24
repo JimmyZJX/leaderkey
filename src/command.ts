@@ -204,7 +204,7 @@ export function normalize(b: Bindings): Bindings {
         if (de.when === when) keysWithWhen.add(de.key);
       }
     }
-    orderedKeys[when!] = dispEntries.filter(
+    orderedKeys[when ?? ""] = dispEntries.filter(
       (de) => (de.when === undefined && !keysWithWhen.has(de.key)) || de.when === when
     );
   }
@@ -233,8 +233,8 @@ function renderToTokens(
   ncol: number,
   when: string | undefined
 ): { tokens: RenderedToken[]; lineLen: number } {
-  const dispEntries: DispEntry[] = binding.orderedKeys?.[when!] ??
-    binding.orderedKeys?.[undefined!] ?? [
+  const dispEntries: DispEntry[] = binding.orderedKeys?.[when ?? ""] ??
+    binding.orderedKeys?.[""] ?? [
       { key: "ERROR", name: "No item found", type: "command" },
     ];
   const tokens: RenderedToken[] = [];

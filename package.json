@@ -21,6 +21,10 @@
       {
         "command": "leaderkey.render",
         "title": "Render leaderkey menu"
+      },
+      {
+        "command": "leaderkey.onkey",
+        "title": "Append keys to the leaderkey state"
       }
     ],
     "configuration": {
@@ -36,911 +40,929 @@
     "keybindings": [
       {
         "key": "`",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.backtick",
         "command": "leaderkey.onkey",
         "args": "`"
       },
       {
         "key": "ctrl+`",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-backtick",
         "command": "leaderkey.onkey",
         "args": "C-`"
       },
       {
         "key": "shift+`",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-backtick",
         "command": "leaderkey.onkey",
         "args": "~"
       },
       {
         "key": "1",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.1",
         "command": "leaderkey.onkey",
         "args": "1"
       },
       {
         "key": "ctrl+1",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-1",
         "command": "leaderkey.onkey",
         "args": "C-1"
       },
       {
         "key": "shift+1",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-1",
         "command": "leaderkey.onkey",
         "args": "!"
       },
       {
         "key": "2",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.2",
         "command": "leaderkey.onkey",
         "args": "2"
       },
       {
         "key": "ctrl+2",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-2",
         "command": "leaderkey.onkey",
         "args": "C-2"
       },
       {
         "key": "shift+2",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-2",
         "command": "leaderkey.onkey",
         "args": "@"
       },
       {
         "key": "3",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.3",
         "command": "leaderkey.onkey",
         "args": "3"
       },
       {
         "key": "ctrl+3",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-3",
         "command": "leaderkey.onkey",
         "args": "C-3"
       },
       {
         "key": "shift+3",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-3",
         "command": "leaderkey.onkey",
         "args": "#"
       },
       {
         "key": "4",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.4",
         "command": "leaderkey.onkey",
         "args": "4"
       },
       {
         "key": "ctrl+4",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-4",
         "command": "leaderkey.onkey",
         "args": "C-4"
       },
       {
         "key": "shift+4",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-4",
         "command": "leaderkey.onkey",
         "args": "$"
       },
       {
         "key": "5",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.5",
         "command": "leaderkey.onkey",
         "args": "5"
       },
       {
         "key": "ctrl+5",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-5",
         "command": "leaderkey.onkey",
         "args": "C-5"
       },
       {
         "key": "shift+5",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-5",
         "command": "leaderkey.onkey",
         "args": "%"
       },
       {
         "key": "6",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.6",
         "command": "leaderkey.onkey",
         "args": "6"
       },
       {
         "key": "ctrl+6",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-6",
         "command": "leaderkey.onkey",
         "args": "C-6"
       },
       {
         "key": "shift+6",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-6",
         "command": "leaderkey.onkey",
         "args": "^"
       },
       {
         "key": "7",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.7",
         "command": "leaderkey.onkey",
         "args": "7"
       },
       {
         "key": "ctrl+7",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-7",
         "command": "leaderkey.onkey",
         "args": "C-7"
       },
       {
         "key": "shift+7",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-7",
         "command": "leaderkey.onkey",
         "args": "&"
       },
       {
         "key": "8",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.8",
         "command": "leaderkey.onkey",
         "args": "8"
       },
       {
         "key": "ctrl+8",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-8",
         "command": "leaderkey.onkey",
         "args": "C-8"
       },
       {
         "key": "shift+8",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-8",
         "command": "leaderkey.onkey",
         "args": "*"
       },
       {
         "key": "9",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.9",
         "command": "leaderkey.onkey",
         "args": "9"
       },
       {
         "key": "ctrl+9",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-9",
         "command": "leaderkey.onkey",
         "args": "C-9"
       },
       {
         "key": "shift+9",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-9",
         "command": "leaderkey.onkey",
         "args": "("
       },
       {
         "key": "0",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.0",
         "command": "leaderkey.onkey",
         "args": "0"
       },
       {
         "key": "ctrl+0",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-0",
         "command": "leaderkey.onkey",
         "args": "C-0"
       },
       {
         "key": "shift+0",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-0",
         "command": "leaderkey.onkey",
         "args": ")"
       },
       {
         "key": "-",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.dash",
         "command": "leaderkey.onkey",
         "args": "-"
       },
       {
         "key": "ctrl+-",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-dash",
         "command": "leaderkey.onkey",
         "args": "C--"
       },
       {
         "key": "shift+-",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-dash",
         "command": "leaderkey.onkey",
         "args": "_"
       },
       {
         "key": "=",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.equal",
         "command": "leaderkey.onkey",
         "args": "="
       },
       {
         "key": "ctrl+=",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-equal",
         "command": "leaderkey.onkey",
         "args": "C-="
       },
       {
         "key": "shift+=",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-equal",
         "command": "leaderkey.onkey",
         "args": "+"
       },
       {
         "key": ",",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.comma",
         "command": "leaderkey.onkey",
         "args": ","
       },
       {
         "key": "ctrl+,",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-comma",
         "command": "leaderkey.onkey",
         "args": "C-,"
       },
       {
         "key": "shift+,",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-comma",
         "command": "leaderkey.onkey",
         "args": "<"
       },
       {
         "key": ".",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.dot",
         "command": "leaderkey.onkey",
         "args": "."
       },
       {
         "key": "ctrl+.",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-dot",
         "command": "leaderkey.onkey",
         "args": "C-."
       },
       {
         "key": "shift+.",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-dot",
         "command": "leaderkey.onkey",
         "args": ">"
       },
       {
         "key": "/",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.slash",
         "command": "leaderkey.onkey",
         "args": "/"
       },
       {
         "key": "ctrl+/",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-slash",
         "command": "leaderkey.onkey",
         "args": "C-/"
       },
       {
         "key": "shift+/",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-slash",
         "command": "leaderkey.onkey",
         "args": "?"
       },
       {
         "key": "[",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.openingbracket",
         "command": "leaderkey.onkey",
         "args": "["
       },
       {
         "key": "ctrl+[",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-openingbracket",
         "command": "leaderkey.onkey",
         "args": "C-["
       },
       {
         "key": "shift+[",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-openingbracket",
         "command": "leaderkey.onkey",
         "args": "{"
       },
       {
         "key": "]",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.closingbracket",
         "command": "leaderkey.onkey",
         "args": "]"
       },
       {
         "key": "ctrl+]",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-closingbracket",
         "command": "leaderkey.onkey",
         "args": "C-]"
       },
       {
         "key": "shift+]",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-closingbracket",
         "command": "leaderkey.onkey",
         "args": "}"
       },
       {
         "key": ";",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.semicolon",
         "command": "leaderkey.onkey",
         "args": ";"
       },
       {
         "key": "ctrl+;",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-semicolon",
         "command": "leaderkey.onkey",
         "args": "C-;"
       },
       {
         "key": "shift+;",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-semicolon",
         "command": "leaderkey.onkey",
         "args": ":"
       },
       {
         "key": "'",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.singlequote",
         "command": "leaderkey.onkey",
         "args": "'"
       },
       {
         "key": "ctrl+'",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-singlequote",
         "command": "leaderkey.onkey",
         "args": "C-'"
       },
       {
         "key": "shift+'",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-singlequote",
         "command": "leaderkey.onkey",
         "args": "\""
       },
       {
         "key": "\\",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.forwardslash",
         "command": "leaderkey.onkey",
         "args": "\\"
       },
       {
         "key": "ctrl+\\",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-forwardslash",
         "command": "leaderkey.onkey",
         "args": "C-\\"
       },
       {
         "key": "shift+\\",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-forwardslash",
         "command": "leaderkey.onkey",
         "args": "|"
       },
       {
         "key": "a",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.a",
         "command": "leaderkey.onkey",
         "args": "a"
       },
       {
         "key": "ctrl+a",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-a",
         "command": "leaderkey.onkey",
         "args": "C-a"
       },
       {
         "key": "shift+a",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-a",
         "command": "leaderkey.onkey",
         "args": "A"
       },
       {
         "key": "b",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.b",
         "command": "leaderkey.onkey",
         "args": "b"
       },
       {
         "key": "ctrl+b",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-b",
         "command": "leaderkey.onkey",
         "args": "C-b"
       },
       {
         "key": "shift+b",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-b",
         "command": "leaderkey.onkey",
         "args": "B"
       },
       {
         "key": "c",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.c",
         "command": "leaderkey.onkey",
         "args": "c"
       },
       {
         "key": "ctrl+c",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-c",
         "command": "leaderkey.onkey",
         "args": "C-c"
       },
       {
         "key": "shift+c",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-c",
         "command": "leaderkey.onkey",
         "args": "C"
       },
       {
         "key": "d",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.d",
         "command": "leaderkey.onkey",
         "args": "d"
       },
       {
         "key": "ctrl+d",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-d",
         "command": "leaderkey.onkey",
         "args": "C-d"
       },
       {
         "key": "shift+d",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-d",
         "command": "leaderkey.onkey",
         "args": "D"
       },
       {
         "key": "e",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.e",
         "command": "leaderkey.onkey",
         "args": "e"
       },
       {
         "key": "ctrl+e",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-e",
         "command": "leaderkey.onkey",
         "args": "C-e"
       },
       {
         "key": "shift+e",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-e",
         "command": "leaderkey.onkey",
         "args": "E"
       },
       {
         "key": "f",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.f",
         "command": "leaderkey.onkey",
         "args": "f"
       },
       {
         "key": "ctrl+f",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-f",
         "command": "leaderkey.onkey",
         "args": "C-f"
       },
       {
         "key": "shift+f",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-f",
         "command": "leaderkey.onkey",
         "args": "F"
       },
       {
         "key": "g",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.g",
         "command": "leaderkey.onkey",
         "args": "g"
       },
       {
         "key": "ctrl+g",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-g",
         "command": "leaderkey.onkey",
         "args": "C-g"
       },
       {
         "key": "shift+g",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-g",
         "command": "leaderkey.onkey",
         "args": "G"
       },
       {
         "key": "h",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.h",
         "command": "leaderkey.onkey",
         "args": "h"
       },
       {
         "key": "ctrl+h",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-h",
         "command": "leaderkey.onkey",
         "args": "C-h"
       },
       {
         "key": "shift+h",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-h",
         "command": "leaderkey.onkey",
         "args": "H"
       },
       {
         "key": "i",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.i",
         "command": "leaderkey.onkey",
         "args": "i"
       },
       {
         "key": "ctrl+i",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-i",
         "command": "leaderkey.onkey",
         "args": "C-i"
       },
       {
         "key": "shift+i",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-i",
         "command": "leaderkey.onkey",
         "args": "I"
       },
       {
         "key": "j",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.j",
         "command": "leaderkey.onkey",
         "args": "j"
       },
       {
         "key": "ctrl+j",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-j",
         "command": "leaderkey.onkey",
         "args": "C-j"
       },
       {
         "key": "shift+j",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-j",
         "command": "leaderkey.onkey",
         "args": "J"
       },
       {
         "key": "k",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.k",
         "command": "leaderkey.onkey",
         "args": "k"
       },
       {
         "key": "ctrl+k",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-k",
         "command": "leaderkey.onkey",
         "args": "C-k"
       },
       {
         "key": "shift+k",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-k",
         "command": "leaderkey.onkey",
         "args": "K"
       },
       {
         "key": "l",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.l",
         "command": "leaderkey.onkey",
         "args": "l"
       },
       {
         "key": "ctrl+l",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-l",
         "command": "leaderkey.onkey",
         "args": "C-l"
       },
       {
         "key": "shift+l",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-l",
         "command": "leaderkey.onkey",
         "args": "L"
       },
       {
         "key": "m",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.m",
         "command": "leaderkey.onkey",
         "args": "m"
       },
       {
         "key": "ctrl+m",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-m",
         "command": "leaderkey.onkey",
         "args": "C-m"
       },
       {
         "key": "shift+m",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-m",
         "command": "leaderkey.onkey",
         "args": "M"
       },
       {
         "key": "n",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.n",
         "command": "leaderkey.onkey",
         "args": "n"
       },
       {
         "key": "ctrl+n",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-n",
         "command": "leaderkey.onkey",
         "args": "C-n"
       },
       {
         "key": "shift+n",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-n",
         "command": "leaderkey.onkey",
         "args": "N"
       },
       {
         "key": "o",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.o",
         "command": "leaderkey.onkey",
         "args": "o"
       },
       {
         "key": "ctrl+o",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-o",
         "command": "leaderkey.onkey",
         "args": "C-o"
       },
       {
         "key": "shift+o",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-o",
         "command": "leaderkey.onkey",
         "args": "O"
       },
       {
         "key": "p",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.p",
         "command": "leaderkey.onkey",
         "args": "p"
       },
       {
         "key": "ctrl+p",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-p",
         "command": "leaderkey.onkey",
         "args": "C-p"
       },
       {
         "key": "shift+p",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-p",
         "command": "leaderkey.onkey",
         "args": "P"
       },
       {
         "key": "q",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.q",
         "command": "leaderkey.onkey",
         "args": "q"
       },
       {
         "key": "ctrl+q",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-q",
         "command": "leaderkey.onkey",
         "args": "C-q"
       },
       {
         "key": "shift+q",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-q",
         "command": "leaderkey.onkey",
         "args": "Q"
       },
       {
         "key": "r",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.r",
         "command": "leaderkey.onkey",
         "args": "r"
       },
       {
         "key": "ctrl+r",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-r",
         "command": "leaderkey.onkey",
         "args": "C-r"
       },
       {
         "key": "shift+r",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-r",
         "command": "leaderkey.onkey",
         "args": "R"
       },
       {
         "key": "s",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.s",
         "command": "leaderkey.onkey",
         "args": "s"
       },
       {
         "key": "ctrl+s",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-s",
         "command": "leaderkey.onkey",
         "args": "C-s"
       },
       {
         "key": "shift+s",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-s",
         "command": "leaderkey.onkey",
         "args": "S"
       },
       {
         "key": "t",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.t",
         "command": "leaderkey.onkey",
         "args": "t"
       },
       {
         "key": "ctrl+t",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-t",
         "command": "leaderkey.onkey",
         "args": "C-t"
       },
       {
         "key": "shift+t",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-t",
         "command": "leaderkey.onkey",
         "args": "T"
       },
       {
         "key": "u",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.u",
         "command": "leaderkey.onkey",
         "args": "u"
       },
       {
         "key": "ctrl+u",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-u",
         "command": "leaderkey.onkey",
         "args": "C-u"
       },
       {
         "key": "shift+u",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-u",
         "command": "leaderkey.onkey",
         "args": "U"
       },
       {
         "key": "v",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.v",
         "command": "leaderkey.onkey",
         "args": "v"
       },
       {
         "key": "ctrl+v",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-v",
         "command": "leaderkey.onkey",
         "args": "C-v"
       },
       {
         "key": "shift+v",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-v",
         "command": "leaderkey.onkey",
         "args": "V"
       },
       {
         "key": "w",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.w",
         "command": "leaderkey.onkey",
         "args": "w"
       },
       {
         "key": "ctrl+w",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-w",
         "command": "leaderkey.onkey",
         "args": "C-w"
       },
       {
         "key": "shift+w",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-w",
         "command": "leaderkey.onkey",
         "args": "W"
       },
       {
         "key": "x",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.x",
         "command": "leaderkey.onkey",
         "args": "x"
       },
       {
         "key": "ctrl+x",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-x",
         "command": "leaderkey.onkey",
         "args": "C-x"
       },
       {
         "key": "shift+x",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-x",
         "command": "leaderkey.onkey",
         "args": "X"
       },
       {
         "key": "y",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.y",
         "command": "leaderkey.onkey",
         "args": "y"
       },
       {
         "key": "ctrl+y",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-y",
         "command": "leaderkey.onkey",
         "args": "C-y"
       },
       {
         "key": "shift+y",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-y",
         "command": "leaderkey.onkey",
         "args": "Y"
       },
       {
         "key": "z",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.z",
         "command": "leaderkey.onkey",
         "args": "z"
       },
       {
         "key": "ctrl+z",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-z",
         "command": "leaderkey.onkey",
         "args": "C-z"
       },
       {
         "key": "shift+z",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-z",
         "command": "leaderkey.onkey",
         "args": "Z"
       },
       {
         "key": "tab",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.tab",
         "command": "leaderkey.onkey",
         "args": "TAB"
       },
       {
         "key": "ctrl+tab",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-tab",
         "command": "leaderkey.onkey",
         "args": "C-TAB"
       },
       {
         "key": "shift+tab",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-tab",
         "command": "leaderkey.onkey",
         "args": "S-TAB"
       },
       {
         "key": "escape",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.escape",
         "command": "leaderkey.onkey",
         "args": "ESC"
       },
       {
         "key": "ctrl+escape",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-escape",
         "command": "leaderkey.onkey",
         "args": "C-ESC"
       },
       {
         "key": "shift+escape",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-escape",
         "command": "leaderkey.onkey",
         "args": "S-ESC"
       },
       {
         "key": "enter",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.enter",
         "command": "leaderkey.onkey",
         "args": "RET"
       },
       {
         "key": "ctrl+enter",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-enter",
         "command": "leaderkey.onkey",
         "args": "C-RET"
       },
       {
         "key": "shift+enter",
-        "when": "leaderkeyState",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-enter",
         "command": "leaderkey.onkey",
         "args": "S-RET"
       },
       {
+        "key": "space",
+        "when": "leaderkeyState && !config.leaderkey.disabled.space",
+        "command": "leaderkey.onkey",
+        "args": "SPC"
+      },
+      {
+        "key": "ctrl+space",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-space",
+        "command": "leaderkey.onkey",
+        "args": "C-SPC"
+      },
+      {
+        "key": "shift+space",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-space",
+        "command": "leaderkey.onkey",
+        "args": "S-SPC"
+      },
+      {
         "key": "f",
-        "when": "leaderkeyState && sideBarVisible && explorerViewletVisible",
+        "when": "leaderkeyState == 'SPC' && sideBarVisible && explorerViewletVisible",
         "command": "leaderkey.onkey",
         "args": {
           "key": "f",
-          "when": "sideBarVisible&&explorerViewletVisible"
+          "when": "explorerVisible"
         }
       },
       {

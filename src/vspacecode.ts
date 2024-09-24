@@ -552,7 +552,7 @@ const SpaceRoot: Bindings = {
           name: "Toggle (show) explorer view",
           command: "workbench.view.explorer",
         },
-        "t:sideBarVisible&&explorerViewletVisible": {
+        "t:explorerVisible": {
           name: "Toggle (hide) explorer view",
           command: "workbench.action.toggleSidebarVisibility",
         },

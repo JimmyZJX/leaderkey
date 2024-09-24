@@ -8,25 +8,44 @@ function patch(packageJson: any) {
     "tab",
     "escape",
     "enter",
+    "space",
   ];
+
+  function toDesc(keyChar: string) {
+    return (
+      {
+        ["`"]: "backtick",
+        ["-"]: "dash",
+        ["="]: "equal",
+        [","]: "comma",
+        ["."]: "dot",
+        ["/"]: "slash",
+        ["["]: "openingbracket",
+        ["]"]: "closingbracket",
+        [";"]: "semicolon",
+        ["'"]: "singlequote",
+        ["\\"]: "forwardslash",
+      }[keyChar] ?? keyChar
+    );
+  }
 
   // patch all keys
   const allKeyCharBindings = ALL_KEY_CHARS.flatMap((k) => [
     {
       key: k,
-      when: "leaderkeyState",
+      when: `leaderkeyState && !config.leaderkey.disabled.${toDesc(k)}`,
       command: "leaderkey.onkey",
       args: normalizeKey(k),
     },
     {
       key: "ctrl+" + k,
-      when: "leaderkeyState",
+      when: `leaderkeyState && !config.leaderkey.disabled.C-${toDesc(k)}`,
       command: "leaderkey.onkey",
       args: normalizeKey("C-" + k),
     },
     {
       key: "shift+" + k,
-      when: "leaderkeyState",
+      when: `leaderkeyState && !config.leaderkey.disabled.S-${toDesc(k)}`,
       command: "leaderkey.onkey",
       args: normalizeKey("S-" + k),
     },
@@ -36,9 +55,9 @@ function patch(packageJson: any) {
     {
       // special conditional `f` for `SPC f t`
       key: "f",
-      when: "leaderkeyState && sideBarVisible && explorerViewletVisible",
+      when: "leaderkeyState == 'SPC' && sideBarVisible && explorerViewletVisible",
       command: "leaderkey.onkey",
-      args: { key: "f", when: "sideBarVisible&&explorerViewletVisible" },
+      args: { key: "f", when: "explorerVisible" },
     },
     {
       // `ESC`
