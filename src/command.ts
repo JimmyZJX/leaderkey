@@ -11,8 +11,9 @@ export interface Bindings {
   name: string;
   // [key] might be "key" or "key:when"
   keys: { [key: string]: Bindings | Command };
+  /* `when === ""` on the default null condition */
   orderedKeys?: {
-    [when: string]: /* in fact `when: string | undefined` */ DispEntry[];
+    [when: string]: DispEntry[];
   };
 }
 
