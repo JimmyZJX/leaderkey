@@ -4,9 +4,16 @@
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
   "version": "0.1.0",
-  "repository": "https://github.com/JimmyZJX/leaderkey",
+  "homepage": "https://github.com/JimmyZJX/leaderkey",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JimmyZJX/leaderkey"
+  },
+  "bugs": {
+    "url": "https://github.com/JimmyZJX/leaderkey/issues"
+  },
   "engines": {
-    "vscode": "^1.93.0"
+    "vscode": "^1.89.0"
   },
   "extensionKind": [
     "ui"
@@ -14,8 +21,21 @@
   "categories": [
     "Keymaps"
   ],
+  "keywords": [
+    "spacemacs",
+    "vscode",
+    "vim",
+    "VSCodeVim"
+  ],
+  "extensionPack": [
+    "vscodevim.vim",
+    "kahole.magit",
+    "jacobdufault.fuzzy-search",
+    "bodil.file-browser"
+  ],
   "activationEvents": [],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -25,6 +45,10 @@
       {
         "command": "leaderkey.onkey",
         "title": "Append keys to the leaderkey state"
+      },
+      {
+        "command": "leaderkey.refreshConfigs",
+        "title": "Manually refresh configs under `leaderkey.overrides`. This command should only be called from other extensions."
       }
     ],
     "configuration": {
@@ -1047,7 +1071,8 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run compile-web",
+    "compile-web": "webpack",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
@@ -1061,12 +1086,16 @@
   "devDependencies": {
     "@types/jest": "^29.1.2",
     "@types/node": "20.x",
-    "@types/vscode": "^1.93.0",
+    "@types/vscode": "^1.89.0 <1.90.0",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
     "@vscode/vsce": "^2.23.0",
     "eslint": "^8.26.0",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.3.2 <5.6.0"
+    "typescript": "^5.3.2 <5.6.0",
+    "ts-loader": "^9.2.5",
+    "webpack": "^5.52.1",
+    "webpack-cli": "^4.8.0",
+    "mocha": "^9.2.0"
   }
 }

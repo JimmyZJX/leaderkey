@@ -9,11 +9,11 @@ import {
   overrideExn,
 } from "./command";
 import { renderBinding } from "./decoration";
+import { defaultBindings } from "./defaultBindings";
 import { init, log, setStatusBar, WHICHKEY_STATE } from "./global";
-import { root } from "./vspacecode";
 
 let globalPath = "";
-let globalRoot = structuredClone(root);
+let globalRoot = structuredClone(defaultBindings);
 let globalWhen: string | undefined = undefined;
 
 function pop(path: string): string {
@@ -89,7 +89,8 @@ export async function activate(context: ExtensionContext) {
         }
       }
     ),
-    commands.registerCommand("leaderkey.onkey", onkey)
+    commands.registerCommand("leaderkey.onkey", onkey),
+    commands.registerCommand("leaderkey.refreshConfigs", confOverrideRefresh)
   );
 
   workspace.onDidChangeConfiguration((event) => {
@@ -101,7 +102,7 @@ export async function activate(context: ExtensionContext) {
 }
 
 function confOverrideRefresh() {
-  const newRoot = structuredClone(root);
+  const newRoot = structuredClone(defaultBindings);
   const overrides = workspace.getConfiguration("leaderkey.overrides");
   const overrideEntries = Object.entries(overrides);
   overrideEntries.sort(([k1, _1], [k2, _2]) => k1.localeCompare(k2));

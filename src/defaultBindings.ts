@@ -1675,7 +1675,7 @@ const CommaRoot: Bindings = {
   },
 };
 
-export const root: Bindings = normalize({
+export const defaultBindings: Bindings = normalize({
   name: "root",
   keys: { SPC: SpaceRoot, ",": CommaRoot },
 });
