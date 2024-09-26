@@ -73,6 +73,8 @@ the a menu that looks like this in your active editor
 
 You can keep pressing keys to go to further sub-menus or run commands.
 
+Press `backspace` to erase the last key you typed! (not a standard Spacemacs behavior)
+
 The `,` (comma) menu is also useful to perform some language-level operations like go-to
 definitions.
 
