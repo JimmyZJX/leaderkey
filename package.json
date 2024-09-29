@@ -34,9 +34,9 @@
     "jacobdufault.fuzzy-search",
     "bodil.file-browser"
   ],
-  "activationEvents": [ ],
-  "main": "./dist/extension.js",
-  "browser": "./dist/extension.js",
+  "activationEvents": [ "*" ],
+  "main": "dist/extension.js",
+  "browser": "dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -1073,9 +1073,9 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile-web",
+    "watch": "webpack --mode development --watch",
     "compile-web": "webpack",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "jest",
