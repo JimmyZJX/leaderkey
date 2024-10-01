@@ -34,7 +34,9 @@
     "jacobdufault.fuzzy-search",
     "bodil.file-browser"
   ],
-  "activationEvents": [ "*" ],
+  "activationEvents": [
+    "*"
+  ],
   "main": "dist/extension.js",
   "browser": "dist/extension.js",
   "contributes": {
@@ -50,6 +52,10 @@
       {
         "command": "leaderkey.refreshConfigs",
         "title": "Manually refresh configs under `leaderkey.overrides`. This command should only be called from other extensions."
+      },
+      {
+        "command": "leaderkey.migrateFromVSpaceCode",
+        "title": "Try migrating the config from VSpaceCode to leaderkey"
       }
     ],
     "configuration": {
@@ -57,7 +63,7 @@
       "properties": {
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": { },
+          "default": {},
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         }
       }
@@ -1082,7 +1088,7 @@
     "testw": "jest --watchAll",
     "prettier": "prettier",
     "prettier-check": "prettier \"src/**/*.ts\" --check --log-level warn",
-    "vsce": "vsce package --out dist/leaderkey.vsix"
+    "vsce": "vsce package --allow-star-activation --out dist/leaderkey.vsix"
   },
   "devDependencies": {
     "@types/jest": "^29.1.2",
@@ -1092,11 +1098,14 @@
     "@typescript-eslint/parser": "^8.3.0",
     "@vscode/vsce": "^2.23.0",
     "eslint": "^8.26.0",
+    "mocha": "^9.2.0",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.3.2 <5.6.0",
     "ts-loader": "^9.2.5",
+    "typescript": "^5.3.2 <5.6.0",
     "webpack": "^5.52.1",
-    "webpack-cli": "^4.8.0",
-    "mocha": "^9.2.0"
+    "webpack-cli": "^4.8.0"
+  },
+  "dependencies": {
+    "prettier": "^3.3.3"
   }
 }

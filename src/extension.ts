@@ -11,6 +11,7 @@ import {
 import { renderBinding } from "./decoration";
 import { defaultBindings } from "./defaultBindings";
 import { init, log, setStatusBar, WHICHKEY_STATE } from "./global";
+import { migrateFromVSpaceCode } from "./migrateFromVSpaceCode";
 
 let globalPath = "";
 let globalRoot = structuredClone(defaultBindings);
@@ -44,7 +45,7 @@ function onkey(keyOrObj: string | { key: string; when: string }) {
   const cmd = bOrC;
   if (cmd.commands) {
     const cmds = cmd.commands.map((command) =>
-      typeof command === "string" ? { command } : command
+      typeof command === "string" ? { command } : command,
     );
     commands.executeCommand("runCommands", { commands: cmds });
   } else {
@@ -87,10 +88,11 @@ export async function activate(context: ExtensionContext) {
           globalWhen = pathOrWithWhen.when;
           return setAndRenderPath(pathOrWithWhen.path, undefined);
         }
-      }
+      },
     ),
     commands.registerCommand("leaderkey.onkey", onkey),
-    commands.registerCommand("leaderkey.refreshConfigs", confOverrideRefresh)
+    commands.registerCommand("leaderkey.refreshConfigs", confOverrideRefresh),
+    commands.registerCommand("leaderkey.migrateFromVSpaceCode", migrateFromVSpaceCode),
   );
 
   workspace.onDidChangeConfiguration((event) => {
@@ -118,11 +120,11 @@ function confOverrideRefresh() {
             path,
             typeof cmd === "string"
               ? cmd
-              : (Object.fromEntries(Object.entries(cmd as any)) as any as Command)
+              : (Object.fromEntries(Object.entries(cmd as any)) as any as Command),
           );
         } catch (e) {
           window.showErrorMessage(
-            `Error parsing config leaderkey.overrides.${key}: ${e}`
+            `Error parsing config leaderkey.overrides.${key}: ${e}`,
           );
         }
       }
