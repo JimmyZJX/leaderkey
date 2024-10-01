@@ -1617,6 +1617,10 @@ const CommaRoot: Bindings = {
           name: "Go to definition",
           command: "editor.action.revealDefinition",
         },
+        g: {
+          name: "Go to definition",
+          command: "editor.action.revealDefinition",
+        },
         h: {
           name: "Show call hierarchy",
           command: "references-view.showCallHierarchy",
