@@ -1098,7 +1098,7 @@ const SpaceRoot: Bindings = {
         },
         d: {
           name: "Close window",
-          command: "workbench.action.closeEditorsInGroup",
+          command: "workbench.action.closeGroup",
         },
         h: {
           name: "Focus window left",
