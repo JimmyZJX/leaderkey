@@ -1,9 +1,4 @@
-import {
-  Position,
-  Range,
-  ThemableDecorationAttachmentRenderOptions,
-  window,
-} from "vscode";
+import { Range, ThemableDecorationAttachmentRenderOptions, window } from "vscode";
 import { Bindings, render } from "./command";
 
 function escapeTextForBeforeContentText(text: string) {
@@ -31,7 +26,7 @@ function getBackgroundDeco(height: number) {
   });
 }
 
-function getHeaderDeco(text: string, tableLines: number) {
+function getHeaderDeco(text: string) {
   return window.createTextEditorDecorationType({
     color: "transparent",
     before: {
@@ -39,30 +34,33 @@ function getHeaderDeco(text: string, tableLines: number) {
       backgroundColor: "#5d4d7a",
       height: "100%",
       width: "200ch",
-      margin: `0 -1ch 0 0; position: absolute; z-index: 2; top: ${tableLines}00%;
+      margin: `0 -1ch 0 0; position: absolute; z-index: 2;
                content: '${escapeTextForBeforeContentText(text)}'`,
     },
   });
 }
 
-export function renderBinding(binding: Bindings, path: string, when: string | undefined) {
+export function renderBinding(
+  binding: Bindings,
+  path: string,
+  when: string | undefined,
+  stickyScrollMaxRows: number,
+) {
   const editor = window.activeTextEditor;
   if (editor === undefined) return [];
 
   const rendered = render(binding, 100, when);
-  const totalLines = rendered.nLines + 1;
   const visibleRange = editor.visibleRanges[0];
-  const lineToStart = Math.max(
-    visibleRange.start.line,
-    visibleRange.end.line - totalLines + 1
-  );
+  const lnHeader =
+    visibleRange.start.line +
+    Math.min(stickyScrollMaxRows, (visibleRange.end.line - visibleRange.start.line) / 2);
 
   const headerWhen = when === undefined ? "" : `(${when})`;
   let header = `${path}-   `;
   header +=
     " ".repeat(Math.max(0, rendered.maxLen - header.length - headerWhen.length)) +
     headerWhen;
-  const decoHeader = getHeaderDeco(header, rendered.nLines);
+  const decoHeader = getHeaderDeco(header);
   const decoBg = getBackgroundDeco(rendered.nLines);
 
   const decoTypes = rendered.decos.map(([tt, str]) => {
@@ -90,14 +88,18 @@ export function renderBinding(binding: Bindings, path: string, when: string | un
     });
   });
 
+  const lnTableStart = lnHeader + 1;
   const docLines = editor.document.lineCount;
-  const tableEndLine = editor.document.lineAt(
-    Math.min(docLines - 1, lineToStart + rendered.nLines - 1)
-  );
+  const posTableStart = editor.document.lineAt(Math.min(docLines - 1, lnTableStart)).range
+    .start;
+  const posTableEnd = editor.document.lineAt(
+    Math.min(docLines - 1, lnTableStart + rendered.nLines - 1),
+  ).range.end;
 
-  const tableRange = new Range(new Position(lineToStart, 0), tableEndLine.range.end);
-  editor.setDecorations(decoHeader, [tableRange]);
-  editor.setDecorations(decoBg, [tableRange]);
+  const tableRange = new Range(posTableStart, posTableEnd);
+  const headerRange = editor.document.lineAt(lnHeader).range;
+  editor.setDecorations(decoHeader, [headerRange]);
+  editor.setDecorations(decoBg, [new Range(headerRange.start, tableRange.end)]);
   decoTypes.forEach((dt) => {
     editor.setDecorations(dt, [tableRange]);
   });

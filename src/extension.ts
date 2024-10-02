@@ -17,6 +17,8 @@ let globalPath = "";
 let globalRoot = structuredClone(defaultBindings);
 let globalWhen: string | undefined = undefined;
 
+let stickyScrollMaxRows = 0;
+
 function pop(path: string): string {
   const lastSpaceIndex = path.lastIndexOf(" ");
   return lastSpaceIndex === -1 ? "" : path.slice(0, lastSpaceIndex);
@@ -68,7 +70,7 @@ function setAndRenderPath(path: string, binding: Bindings | undefined) {
     }
     const bOrC = binding ?? go(globalRoot, path, globalWhen);
     if (bOrC === undefined || isCommand(bOrC)) return;
-    disposableDecos = renderBinding(bOrC, path, globalWhen);
+    disposableDecos = renderBinding(bOrC, path, globalWhen, stickyScrollMaxRows);
   } finally {
     for (const dsp of oldDisposables) dsp.dispose();
   }
@@ -98,6 +100,9 @@ export async function activate(context: ExtensionContext) {
       if (event.affectsConfiguration("leaderkey")) {
         confOverrideRefresh();
       }
+      if (event.affectsConfiguration("editor.stickyScroll")) {
+        updateStickyScrollConf();
+      }
     }),
     window.onDidChangeActiveTextEditor((_e) => {
       if (globalPath === "") return;
@@ -106,6 +111,16 @@ export async function activate(context: ExtensionContext) {
   );
 
   confOverrideRefresh();
+  updateStickyScrollConf();
+}
+
+function updateStickyScrollConf() {
+  const ss = workspace.getConfiguration("editor.stickyScroll");
+  if (ss.get("enabled") === true) {
+    stickyScrollMaxRows = ss.get("maxLineCount", 5);
+  } else {
+    stickyScrollMaxRows = 0;
+  }
 }
 
 function confOverrideRefresh() {
