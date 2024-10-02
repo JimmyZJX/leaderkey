@@ -114,6 +114,72 @@ which is passed to the builtin "runCommands" command.
 Menus are totally optional and is only used to show the name on it's parent menu. (e.g. in
 the above screenshot, the `b` sub-menu is named `Buffers` by default)
 
+All the keys are recommended to follow the emacs/spacemacs convention. E.g. use `D` for
+`shift+d` and `!` for `shift+1`. For now we only support `ctrl` and `shift` modifier keys
+(but not both). It should be straightfoward to extend if you set custom ones following the
+default keybindings in `package.json`.
+
+
+### Migrating from VSpaceCode
+
+If you have a complex set of vspacecode keybindings like I do, Leaderkey provides a
+convenient way to help migration. The helper command
+```
+Try migrating the config from VSpaceCode to leaderkey (leaderkey.migrateFromVSpaceCode)
+```
+will read your `vspacecode.bindingOverrides` setting and try to generate a set of
+leaderkey settings for `leaderkey.overrides.user`.
+
+
+### Conditional bindings
+
+Due to a [limitation](https://github.com/microsoft/vscode/issues/10471) of the VSCode API,
+extensions simply cannot read current context and check `when` condition clauses.
+
+The only way to encode any `when` condition is via `keybindings.json`. Therefore, the
+leaderkey way of defining conditional commands is as follows (this is the only built-in
+conditional command of leaderkey):
+
+(Note that our approach is similar to but slightly different from which-key)
+
+- Set the command key chord to contain a *condition description* like
+`SPC f t:explorerVisible` where the `t` key is conditionally executed when the
+"explorerVisible" condition is set.
+- Override the binding of `t` key with a `when` condition
+```json
+{
+    "key": "t",
+    "when": "leaderkeyState == 'SPC' && sideBarVisible && explorerViewletVisible",
+    "command": "leaderkey.onkey",
+    "args": {
+        "key": "t",
+        "when": "explorerVisible"
+    }
+},
+```
+so that the condition is checked by VSCode and the *condition description* of leaderkey is
+passed via the `when` arg.
+
+It's worth mentioning that the condition flags of leaderkey is set globally for the
+current key chord, and the library in fact set the condition on `f` instead (which is the
+key before `t`). The benefit is that the `SPC f` menu would be rendered properly according
+to the condition, i.e. the command name of `SPC f t:explorerVisible` will be shown instead
+of `SPC f t`.
+```json
+{
+    "key": "f",
+    "when": "leaderkeyState == 'SPC' && sideBarVisible && explorerViewletVisible",
+    "command": "leaderkey.onkey",
+    "args": {
+        "key": "f",
+        "when": "explorerVisible"
+    }
+},
+```
+
+Leaderkey also display the condition next to the sequence of keys you typed to make it
+easier to debug.
+
 
 ### For 3rd party libraries
 
