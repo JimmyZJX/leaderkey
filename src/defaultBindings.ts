@@ -1,44 +1,146 @@
 import { Bindings, normalize } from "./command";
 
+const selectWindow0To8: Bindings["keys"] = {
+  "0": {
+    name: "Focus on files explorer",
+    command: "workbench.files.action.focusFilesExplorer",
+  },
+  "1": {
+    name: "Focus 1st window",
+    command: "workbench.action.focusFirstEditorGroup",
+  },
+  "2": {
+    name: "Focus 2nd window",
+    command: "workbench.action.focusSecondEditorGroup",
+  },
+  "3": {
+    name: "Focus 3rd window",
+    command: "workbench.action.focusThirdEditorGroup",
+  },
+  "4": {
+    name: "Focus 4th window",
+    command: "workbench.action.focusFourthEditorGroup",
+  },
+  "5": {
+    name: "Focus 5th window",
+    command: "workbench.action.focusFifthEditorGroup",
+  },
+  "6": {
+    name: "Focus 6th window",
+    command: "workbench.action.focusSixthEditorGroup",
+  },
+  "7": {
+    name: "Focus 7th window",
+    command: "workbench.action.focusSeventhEditorGroup",
+  },
+  "8": {
+    name: "Focus 8th window",
+    command: "workbench.action.focusEighthEditorGroup",
+  },
+};
+
+const SpcWTransientKeysExcluding0To8: Bindings["keys"] = {
+  // Select
+  h: {
+    name: "Focus window left",
+    command: "workbench.action.navigateLeft",
+  },
+  j: {
+    name: "Focus window down",
+    command: "workbench.action.navigateDown",
+  },
+  k: {
+    name: "Focus window up",
+    command: "workbench.action.navigateUp",
+  },
+  l: {
+    name: "Focus window right",
+    command: "workbench.action.navigateRight",
+  },
+  o: {
+    name: "Switch frame",
+    command: "workbench.action.quickSwitchWindow",
+  },
+  w: {
+    name: "Focus next window",
+    command: "workbench.action.focusNextGroup",
+  },
+
+  W: {
+    name: "Focus previous window",
+    command: "workbench.action.focusPreviousGroup",
+  },
+  // Move
+  H: {
+    name: "Move window left",
+    command: "workbench.action.moveActiveEditorGroupLeft",
+  },
+  J: {
+    name: "Move window down",
+    command: "workbench.action.moveActiveEditorGroupDown",
+  },
+  K: {
+    name: "Move window up",
+    command: "workbench.action.moveActiveEditorGroupUp",
+  },
+  L: {
+    name: "Move window right",
+    command: "workbench.action.moveActiveEditorGroupRight",
+  },
+  // Split
+  s: {
+    name: "Split window below",
+    command: "workbench.action.splitEditorDown",
+  },
+  v: {
+    name: "Split window right",
+    command: "workbench.action.splitEditor",
+  },
+  "-": {
+    name: "Split window below",
+    command: "workbench.action.splitEditorDown",
+  },
+  "/": {
+    name: "Split window right",
+    command: "workbench.action.splitEditor",
+  },
+  m: {
+    name: "Maximize window",
+    command: "workbench.action.toggleMaximizeEditorGroup",
+  },
+  M: {
+    name: "Maximize window without hiding others",
+    command: "workbench.action.toggleEditorWidths",
+  },
+  // Resize
+  "[": {
+    name: "Shrink window",
+    command: "workbench.action.decreaseViewSize",
+  },
+  "]": {
+    name: "Enlarge window",
+    command: "workbench.action.increaseViewSize",
+  },
+  // Other
+  d: {
+    name: "Close window",
+    command: "workbench.action.closeGroup",
+  },
+  D: {
+    name: "Close all other windows",
+    command: "workbench.action.closeEditorsInOtherGroups",
+  },
+  q: {
+    name: "Quit",
+    command: "leaderkey.render",
+    args: "",
+  },
+};
+
 const SpaceRoot: Bindings = {
   name: "<SPC>",
   keys: {
-    "0": {
-      name: "Focus on files explorer",
-      command: "workbench.files.action.focusFilesExplorer",
-    },
-    "1": {
-      name: "Focus 1st window",
-      command: "workbench.action.focusFirstEditorGroup",
-    },
-    "2": {
-      name: "Focus 2nd window",
-      command: "workbench.action.focusSecondEditorGroup",
-    },
-    "3": {
-      name: "Focus 3rd window",
-      command: "workbench.action.focusThirdEditorGroup",
-    },
-    "4": {
-      name: "Focus 4th window",
-      command: "workbench.action.focusFourthEditorGroup",
-    },
-    "5": {
-      name: "Focus 5th window",
-      command: "workbench.action.focusFifthEditorGroup",
-    },
-    "6": {
-      name: "Focus 6th window",
-      command: "workbench.action.focusSixthEditorGroup",
-    },
-    "7": {
-      name: "Focus 7th window",
-      command: "workbench.action.focusSeventhEditorGroup",
-    },
-    "8": {
-      name: "Focus 8th window",
-      command: "workbench.action.focusEighthEditorGroup",
-    },
+    ...selectWindow0To8,
     " ": {
       name: "Commands",
       command: "workbench.action.showCommands",
@@ -1040,6 +1142,7 @@ const SpaceRoot: Bindings = {
     w: {
       name: "+Window",
       keys: {
+        ...SpcWTransientKeysExcluding0To8,
         "1": {
           name: "Single column window layout",
           command: "workbench.action.editorLayoutSingle",
@@ -1056,85 +1159,27 @@ const SpaceRoot: Bindings = {
           name: "Grid window layout",
           command: "workbench.action.editorLayoutTwoByTwoGrid",
         },
-        "-": {
-          name: "Split window below",
-          command: "workbench.action.splitEditorDown",
-        },
-        "/": {
-          name: "Split window right",
-          command: "workbench.action.splitEditor",
-        },
         "=": {
           name: "Reset window sizes",
           command: "workbench.action.evenEditorWidths",
         },
+        ".": {
+          name: "Window Transient State",
+          transient: true,
+          keys: {
+            ...selectWindow0To8,
+            ...SpcWTransientKeysExcluding0To8,
+          },
+        },
         "[": {
           name: "Shrink window",
           command: "workbench.action.decreaseViewSize",
-          keys: {
-            "[": {
-              name: "Shrink window",
-              command: "workbench.action.decreaseViewSize",
-            },
-            "]": {
-              name: "Enlarge window",
-              command: "workbench.action.increaseViewSize",
-            },
-          },
+          goto: "SPC w .",
         },
         "]": {
           name: "Enlarge window",
           command: "workbench.action.increaseViewSize",
-          keys: {
-            "[": {
-              name: "Shrink window",
-              command: "workbench.action.decreaseViewSize",
-            },
-            "]": {
-              name: "Enlarge window",
-              command: "workbench.action.increaseViewSize",
-            },
-          },
-        },
-        d: {
-          name: "Close window",
-          command: "workbench.action.closeGroup",
-        },
-        h: {
-          name: "Focus window left",
-          command: "workbench.action.navigateLeft",
-        },
-        j: {
-          name: "Focus window down",
-          command: "workbench.action.navigateDown",
-        },
-        k: {
-          name: "Focus window up",
-          command: "workbench.action.navigateUp",
-        },
-        l: {
-          name: "Focus window right",
-          command: "workbench.action.navigateRight",
-        },
-        m: {
-          name: "Maximize window",
-          command: "workbench.action.toggleMaximizeEditorGroup",
-        },
-        o: {
-          name: "Switch frame",
-          command: "workbench.action.quickSwitchWindow",
-        },
-        s: {
-          name: "Split window below",
-          command: "workbench.action.splitEditorDown",
-        },
-        v: {
-          name: "Split window right",
-          command: "workbench.action.splitEditor",
-        },
-        w: {
-          name: "Focus next window",
-          command: "workbench.action.focusNextGroup",
+          goto: "SPC w .",
         },
         x: {
           name: "Close all windows",
@@ -1144,37 +1189,9 @@ const SpaceRoot: Bindings = {
           name: "Combine all buffers",
           command: "workbench.action.joinAllGroups",
         },
-        D: {
-          name: "Close all other windows",
-          command: "workbench.action.closeEditorsInOtherGroups",
-        },
         F: {
           name: "Open new empty frame",
           command: "workbench.action.newWindow",
-        },
-        H: {
-          name: "Move window left",
-          command: "workbench.action.moveActiveEditorGroupLeft",
-        },
-        J: {
-          name: "Move window down",
-          command: "workbench.action.moveActiveEditorGroupDown",
-        },
-        K: {
-          name: "Move window up",
-          command: "workbench.action.moveActiveEditorGroupUp",
-        },
-        L: {
-          name: "Move window right",
-          command: "workbench.action.moveActiveEditorGroupRight",
-        },
-        M: {
-          name: "Maximize window without hiding others",
-          command: "workbench.action.toggleEditorWidths",
-        },
-        W: {
-          name: "Focus previous window",
-          command: "workbench.action.focusPreviousGroup",
         },
       },
     },

@@ -40,6 +40,12 @@ function getHeaderDeco(text: string) {
   });
 }
 
+function appendStringRightAligned(input: string, toAppend: string, right: number) {
+  return (
+    input + " ".repeat(Math.max(0, right - input.length - toAppend.length)) + toAppend
+  );
+}
+
 export function renderBinding(
   binding: Bindings,
   path: string,
@@ -56,10 +62,10 @@ export function renderBinding(
     Math.min(stickyScrollMaxRows, (visibleRange.end.line - visibleRange.start.line) / 2);
 
   const headerWhen = when === undefined ? "" : `(${when})`;
-  let header = `${path}-   `;
-  header +=
-    " ".repeat(Math.max(0, rendered.maxLen - header.length - headerWhen.length)) +
-    headerWhen;
+  let header = `${path}-    `;
+  let transientMode = binding.transient ? `${binding.name}    ` : "";
+  header = appendStringRightAligned(header, transientMode, rendered.maxLen / 2);
+  header = appendStringRightAligned(header, headerWhen, rendered.maxLen);
   const decoHeader = getHeaderDeco(header);
   const decoBg = getBackgroundDeco(rendered.nLines);
 

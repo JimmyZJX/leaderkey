@@ -9,6 +9,7 @@ interface DispEntry {
 
 export interface Bindings {
   name: string;
+  transient?: boolean;
   // [key] might be "key" or "key:when"
   keys: { [key: string]: Bindings | Command };
   /* `when === ""` on the default null condition */
@@ -19,6 +20,7 @@ export interface Bindings {
 
 export interface Command {
   name: string;
+  goto?: string;
   command?: string;
   commands?: (string | { command: string; args?: any })[];
   args?: any;
@@ -35,7 +37,7 @@ export function isCommand(x: Bindings | Command): x is Command {
 export function overrideExn(
   b: Bindings,
   path: string,
-  commandOrBindingName: Command | string
+  commandOrBindingName: Command | string,
 ) {
   const keys = path.split(" ").filter((s) => s !== "");
   if (keys.length === 0) throw "leaderkey: path is empty";
@@ -45,8 +47,8 @@ export function overrideExn(
       if (next !== undefined) {
         log(
           `Overriding [${keys.slice(0, i + 1).join(" ")}] (${JSON.stringify(
-            b.keys[key]
-          )})`
+            b.keys[key],
+          )})`,
         );
       }
       if (typeof commandOrBindingName === "string") {
@@ -161,7 +163,7 @@ export function normalizeKey(key: string) {
           return match;
         })
         .replaceAll(/S-([a-z])$/g, (_m, ch) => (ch as string).toUpperCase()) + // suffix
-      when
+      when,
   );
 }
 
@@ -206,7 +208,7 @@ export function normalize(b: Bindings): Bindings {
       }
     }
     orderedKeys[when ?? ""] = dispEntries.filter(
-      (de) => (de.when === undefined && !keysWithWhen.has(de.key)) || de.when === when
+      (de) => (de.when === undefined && !keysWithWhen.has(de.key)) || de.when === when,
     );
   }
 
@@ -216,14 +218,19 @@ export function normalize(b: Bindings): Bindings {
 export function go(
   root: Bindings,
   path: string,
-  when: string | undefined
+  when: string | undefined,
 ): Bindings | Command | undefined {
   const keys = path.split(" ").filter((v) => v !== "");
+  const chords = [];
+  let transient: string | undefined;
   for (const k of keys) {
+    chords.push(k);
     const n =
       (when === undefined ? undefined : root.keys[`${k}:${when}`]) ?? root.keys[k];
     // TODO isCommand early quit?
-    if (n === undefined || isCommand(n)) return n;
+    if (n === undefined) return undefined;
+    if (isCommand(n)) return { ...n, goto: n.goto ?? transient };
+    if (n.transient) transient = chords.join(" ");
     root = n;
   }
   return root;
@@ -232,7 +239,7 @@ export function go(
 function renderToTokens(
   binding: Bindings,
   ncol: number,
-  when: string | undefined
+  when: string | undefined,
 ): { tokens: RenderedToken[]; lineLen: number } {
   const dispEntries: DispEntry[] = binding.orderedKeys?.[when ?? ""] ??
     binding.orderedKeys?.[""] ?? [
@@ -286,7 +293,7 @@ function tokensToStrings(tokens: RenderedToken[]): {
 export function render(
   binding: Bindings,
   targetLineLength: number,
-  when: string | undefined
+  when: string | undefined,
 ) {
   for (let nCol = 5; ; nCol--) {
     const { tokens, lineLen } = renderToTokens(binding, nCol, when);

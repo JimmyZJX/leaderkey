@@ -24,7 +24,7 @@ function pop(path: string): string {
   return lastSpaceIndex === -1 ? "" : path.slice(0, lastSpaceIndex);
 }
 
-function onkey(keyOrObj: string | { key: string; when: string }) {
+async function onkey(keyOrObj: string | { key: string; when: string }) {
   const [key, when] =
     typeof keyOrObj === "string" ? [keyOrObj, undefined] : [keyOrObj.key, keyOrObj.when];
   globalWhen = when ?? globalWhen;
@@ -45,6 +45,7 @@ function onkey(keyOrObj: string | { key: string; when: string }) {
   }
   // command
   const cmd = bOrC;
+  await setAndRenderPath(cmd.goto ?? "", undefined);
   if (cmd.commands) {
     const cmds = cmd.commands.map((command) =>
       typeof command === "string" ? { command } : command,
@@ -53,26 +54,28 @@ function onkey(keyOrObj: string | { key: string; when: string }) {
   } else {
     commands.executeCommand(cmd.command!, ...(cmd.args === undefined ? [] : [cmd.args]));
   }
-  setAndRenderPath("", undefined);
 }
 
 let disposableDecos: Disposable[] = [];
 
-function setAndRenderPath(path: string, binding: Bindings | undefined) {
+async function setAndRenderPath(path: string, binding: Bindings | undefined) {
   globalPath = path;
-  const oldDisposables = disposableDecos;
   try {
     setStatusBar(path === "" ? "" : path + "-");
-    commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
-    if (path === "") {
-      globalWhen = undefined;
-      return;
-    }
-    const bOrC = binding ?? go(globalRoot, path, globalWhen);
-    if (bOrC === undefined || isCommand(bOrC)) return;
-    disposableDecos = renderBinding(bOrC, path, globalWhen, stickyScrollMaxRows);
+    await commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
   } finally {
-    for (const dsp of oldDisposables) dsp.dispose();
+    const oldDisposables = disposableDecos;
+    try {
+      if (path === "") {
+        globalWhen = undefined;
+        return;
+      }
+      const bOrC = binding ?? go(globalRoot, path, globalWhen);
+      if (bOrC === undefined || isCommand(bOrC)) return;
+      disposableDecos = renderBinding(bOrC, path, globalWhen, stickyScrollMaxRows);
+    } finally {
+      for (const dsp of oldDisposables) dsp.dispose();
+    }
   }
 }
 
@@ -106,7 +109,8 @@ export async function activate(context: ExtensionContext) {
     }),
     window.onDidChangeActiveTextEditor((_e) => {
       if (globalPath === "") return;
-      setAndRenderPath("", undefined);
+      // try to render the UI on the new editor
+      setAndRenderPath(globalPath, undefined);
     }),
   );
 
