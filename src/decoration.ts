@@ -57,14 +57,14 @@ export function renderBinding(
 
   const rendered = render(binding, 100, when);
   const visibleRange = editor.visibleRanges[0];
-  const lnHeader =
+  let lnHeader =
     visibleRange.start.line +
-    Math.min(stickyScrollMaxRows, (visibleRange.end.line - visibleRange.start.line) / 2);
+    Math.min(stickyScrollMaxRows, (visibleRange.end.line - visibleRange.start.line) >> 1);
 
   const headerWhen = when === undefined ? "" : `(${when})`;
   let header = `${path}-    `;
   let transientMode = binding.transient ? `${binding.name}    ` : "";
-  header = appendStringRightAligned(header, transientMode, rendered.maxLen / 2);
+  header = appendStringRightAligned(header, transientMode, rendered.maxLen >> 1);
   header = appendStringRightAligned(header, headerWhen, rendered.maxLen);
   const decoHeader = getHeaderDeco(header);
   const decoBg = getBackgroundDeco(rendered.nLines);
@@ -94,16 +94,17 @@ export function renderBinding(
     });
   });
 
-  const lnTableStart = lnHeader + 1;
   const docLines = editor.document.lineCount;
-  const posTableStart = editor.document.lineAt(Math.min(docLines - 1, lnTableStart)).range
-    .start;
+  // fix header to be at least on the 2nd last line
+  lnHeader = Math.max(0, Math.min(docLines - 2, lnHeader));
+  const headerRange = editor.document.lineAt(lnHeader).range;
+  const lnTableStart = Math.max(0, Math.min(docLines - 1, lnHeader + 1));
+  const posTableStart = editor.document.lineAt(lnTableStart).range.start;
   const posTableEnd = editor.document.lineAt(
     Math.min(docLines - 1, lnTableStart + rendered.nLines - 1),
   ).range.end;
 
   const tableRange = new Range(posTableStart, posTableEnd);
-  const headerRange = editor.document.lineAt(lnHeader).range;
   editor.setDecorations(decoHeader, [headerRange]);
   editor.setDecorations(decoBg, [new Range(headerRange.start, tableRange.end)]);
   decoTypes.forEach((dt) => {
