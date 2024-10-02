@@ -34,7 +34,7 @@ function onkey(keyOrObj: string | { key: string; when: string }) {
   const bOrC = go(globalRoot, newPath, globalWhen);
   if (bOrC === undefined) {
     setAndRenderPath("", undefined);
-    setStatusBar(`Unknown leaderkey: ${newPath}`, "warning");
+    setStatusBar(`Unknown leaderkey: ${newPath}`, "error");
     return;
   }
   if (isBindings(bOrC)) {
@@ -93,13 +93,18 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand("leaderkey.onkey", onkey),
     commands.registerCommand("leaderkey.refreshConfigs", confOverrideRefresh),
     commands.registerCommand("leaderkey.migrateFromVSpaceCode", migrateFromVSpaceCode),
+
+    workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration("leaderkey")) {
+        confOverrideRefresh();
+      }
+    }),
+    window.onDidChangeActiveTextEditor((_e) => {
+      if (globalPath === "") return;
+      setAndRenderPath("", undefined);
+    }),
   );
 
-  workspace.onDidChangeConfiguration((event) => {
-    if (event.affectsConfiguration("leaderkey")) {
-      confOverrideRefresh();
-    }
-  });
   confOverrideRefresh();
 }
 

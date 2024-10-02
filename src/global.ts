@@ -16,18 +16,20 @@ export function log(msg: string) {
   outputChannel?.appendLine(msg);
 }
 
-const statusBarWarning = new ThemeColor("statusBarItem.warningBackground");
+const statusBarInfo = new ThemeColor("statusBarItem.warningBackground");
 const statusBarError = new ThemeColor("statusBarItem.errorBackground");
-export function setStatusBar(text: string, state?: "warning" | "error") {
+export function setStatusBar(text: string, state?: "error") {
   clearTimeout(statusBarTimeout);
   if (statusBar) {
     statusBar.text = text;
-    if (state === "warning") {
-      statusBar.backgroundColor = statusBarWarning;
-      statusBarTimeout = setTimeout(() => (statusBar!.backgroundColor = undefined), 2000);
-    } else if (state === "error") {
+    if (state === "error") {
       statusBar.backgroundColor = statusBarError;
-      statusBarTimeout = setTimeout(() => (statusBar!.backgroundColor = undefined), 2000);
+      statusBarTimeout = setTimeout(() => {
+        statusBar!.backgroundColor = undefined;
+        statusBar!.text = "";
+      }, 2000);
+    } else if (text !== "") {
+      statusBar.backgroundColor = statusBarInfo;
     } else {
       statusBar.backgroundColor = undefined;
     }
