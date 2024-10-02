@@ -193,9 +193,9 @@ const SpaceRoot: Bindings = {
     //   name: "Search keybindings",
     //   command: "whichkey.searchBindings",
     // },
-    v: {
-      name: "Smart select/expand region",
-      command: "editor.action.smartSelect.grow",
+    "v:transient": {
+      name: "Smart expand transient",
+      transient: true,
       keys: {
         v: {
           name: "Grow selection",
@@ -206,6 +206,16 @@ const SpaceRoot: Bindings = {
           command: "editor.action.smartSelect.shrink",
         },
       },
+    },
+    v: {
+      name: "Smart select/expand region",
+      command: "editor.action.smartSelect.grow",
+      goto: "SPC v:transient",
+    },
+    V: {
+      name: "Smart shrink region",
+      command: "editor.action.smartSelect.shrink",
+      goto: "SPC v:transient",
     },
     ":": {
       name: "+Tasks",
@@ -1339,11 +1349,18 @@ const SpaceRoot: Bindings = {
       name: "+Zoom/Fold",
       keys: {
         f: {
-          name: "+Frame",
+          name: "Frame Zooming Transient",
+          transient: true,
           keys: {
+            q: {
+              name: "Quit",
+              command: "leaderkey.render",
+              args: "",
+            },
             "0": {
               name: "Reset zoom",
               command: "workbench.action.zoomReset",
+              goto: "",
             },
             "+": {
               name: "Zoom in",
@@ -1385,11 +1402,18 @@ const SpaceRoot: Bindings = {
           },
         },
         x: {
-          name: "+Font",
+          name: "Font Zooming Transient",
+          transient: true,
           keys: {
+            q: {
+              name: "Quit",
+              command: "leaderkey.render",
+              args: "",
+            },
             "0": {
               name: "Reset zoom",
               command: "editor.action.fontZoomReset",
+              goto: "",
             },
             "+": {
               name: "Zoom in",
