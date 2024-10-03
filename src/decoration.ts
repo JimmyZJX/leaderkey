@@ -63,7 +63,7 @@ export function renderBinding(
 
   const headerWhen = when === undefined ? "" : `(${when})`;
   let header = `${path}-    `;
-  let transientMode = binding.transient ? `${binding.name}    ` : "";
+  const transientMode = binding.transient ? `${binding.name}    ` : "";
   header = appendStringRightAligned(header, transientMode, rendered.maxLen >> 1);
   header = appendStringRightAligned(header, headerWhen, rendered.maxLen);
   const decoHeader = getHeaderDeco(header);

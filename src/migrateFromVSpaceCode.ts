@@ -33,7 +33,7 @@ function parseWhichKey(conf: unknown) {
         parse(chords, subConf);
       }
     } else if (typeof conf === "object" && conf) {
-      let key =
+      const key =
         (typeof conf.key === "string" ? conf.key : undefined) ??
         (typeof conf.keys === "string" ? conf.keys : undefined);
       let keys = key !== undefined ? splitByDotPreservingConsecutive(key ?? "???") : [];
@@ -64,7 +64,6 @@ export function migrateFromVSpaceCode() {
   const vspacecodeOverrides = workspace
     .getConfiguration("vspacecode")
     .get("bindingOverrides", undefined);
-  const jsonVSpaceCode = JSON.stringify(vspacecodeOverrides);
 
   let leaderkeyOverrides = parseWhichKey(vspacecodeOverrides);
   leaderkeyOverrides = Object.fromEntries(
@@ -72,7 +71,7 @@ export function migrateFromVSpaceCode() {
       k1.localeCompare(k2),
     ),
   );
-  let json = JSON.stringify(leaderkeyOverrides, undefined, 4);
+  const json = JSON.stringify(leaderkeyOverrides, undefined, 4);
 
   workspace
     .openTextDocument({

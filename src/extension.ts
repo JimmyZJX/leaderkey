@@ -68,11 +68,14 @@ async function setAndRenderPath(path: string, binding: Bindings | undefined) {
     try {
       if (path === "") {
         globalWhen = undefined;
-        return;
+      } else {
+        const bOrC = binding ?? go(globalRoot, path, globalWhen);
+        if (bOrC === undefined || isCommand(bOrC)) {
+          // skip rendering
+        } else {
+          disposableDecos = renderBinding(bOrC, path, globalWhen, stickyScrollMaxRows);
+        }
       }
-      const bOrC = binding ?? go(globalRoot, path, globalWhen);
-      if (bOrC === undefined || isCommand(bOrC)) return;
-      disposableDecos = renderBinding(bOrC, path, globalWhen, stickyScrollMaxRows);
     } finally {
       for (const dsp of oldDisposables) dsp.dispose();
     }

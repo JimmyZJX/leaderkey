@@ -84,6 +84,31 @@ function patch(packageJson: any) {
       command: "leaderkey.onkey",
       args: "<back>",
     },
+    // space keys to trigger the leaderkey panel outside of the editor
+    {
+      key: "space",
+      command: "leaderkey.onkey",
+      args: "SPC",
+      when: "activeEditorGroupEmpty && focusedView == '' && !leaderkeyState && !inputFocus",
+    },
+    {
+      key: "space",
+      command: "leaderkey.onkey",
+      args: "SPC",
+      when: "sideBarFocus && !inputFocus && !leaderkeyState",
+    },
+    {
+      key: "space",
+      command: "leaderkey.onkey",
+      args: "SPC",
+      when: "notebookEditorFocused && !inputFocus && !leaderkeyState",
+    },
+    {
+      key: "space",
+      command: "leaderkey.onkey",
+      args: "SPC",
+      when: "activeEditor == 'WebviewEditor' && !leaderkeyState && !inputFocus",
+    },
   ];
 
   packageJson.contributes.keybindings = [...allKeyCharBindings, ...specialKeyBindings];
