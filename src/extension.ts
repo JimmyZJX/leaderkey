@@ -8,7 +8,7 @@ import {
   normalize,
   overrideExn,
 } from "./command";
-import { renderBinding } from "./decoration";
+import { renderBinding, updateGlobalThemeType } from "./decoration";
 import { defaultBindings } from "./defaultBindings";
 import { init, log, setStatusBar, WHICHKEY_STATE } from "./global";
 import { migrateFromVSpaceCode } from "./migrateFromVSpaceCode";
@@ -115,6 +115,7 @@ export async function activate(context: ExtensionContext) {
       // try to render the UI on the new editor
       setAndRenderPath(globalPath, undefined);
     }),
+    window.onDidChangeActiveColorTheme((_ct) => updateGlobalThemeType()),
   );
 
   confOverrideRefresh();

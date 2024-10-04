@@ -1,5 +1,43 @@
-import { Range, ThemableDecorationAttachmentRenderOptions, window } from "vscode";
-import { Bindings, render } from "./command";
+import {
+  ColorThemeKind,
+  Range,
+  ThemableDecorationAttachmentRenderOptions,
+  window,
+} from "vscode";
+import { Bindings, render, TokenType } from "./command";
+
+type ThemeType = "dark" | "light";
+let globalThemeType: ThemeType = "dark";
+
+export function updateGlobalThemeType() {
+  switch (window.activeColorTheme.kind) {
+    case ColorThemeKind.Dark:
+    case ColorThemeKind.HighContrast:
+      globalThemeType = "dark";
+      break;
+    case ColorThemeKind.Light:
+    case ColorThemeKind.HighContrastLight:
+      globalThemeType = "light";
+      break;
+    default:
+      globalThemeType = "dark";
+      break;
+  }
+}
+updateGlobalThemeType();
+
+type DecoType = "background" | "headerBackground";
+
+const decoRenderOpts: { [themeType in ThemeType]: { [decoType in DecoType]: string } } = {
+  dark: {
+    background: "#292b2e",
+    headerBackground: "#5d4d7a",
+  },
+  light: {
+    background: "#FAF7EC",
+    headerBackground: "#E6E6EA",
+  },
+};
 
 function escapeTextForBeforeContentText(text: string) {
   return text.replaceAll("'", "\\'").replaceAll(" ", "\\00a0 ").replaceAll("\n", " \\A ");
@@ -18,7 +56,7 @@ function getBackgroundDeco(height: number) {
     color: "transparent",
     before: {
       contentText: " ",
-      backgroundColor: "#292b2e",
+      backgroundColor: decoRenderOpts[globalThemeType]["background"],
       height: `${100 * height + 200}%`,
       width: "200ch",
       margin: `0 -1ch 0 0; position: absolute; z-index: 1; top: -50%;`,
@@ -31,7 +69,7 @@ function getHeaderDeco(text: string) {
     color: "transparent",
     before: {
       color: "#ccc",
-      backgroundColor: "#5d4d7a",
+      backgroundColor: decoRenderOpts[globalThemeType]["headerBackground"],
       height: "100%",
       width: "200ch",
       margin: `0 -1ch 0 0; position: absolute; z-index: 2;
@@ -45,6 +83,25 @@ function appendStringRightAligned(input: string, toAppend: string, right: number
     input + " ".repeat(Math.max(0, right - input.length - toAppend.length)) + toAppend
   );
 }
+
+const themeRenderOpts: {
+  [themeType in ThemeType]: {
+    [tokenType in TokenType]: ThemableDecorationAttachmentRenderOptions;
+  };
+} = {
+  dark: {
+    key: { color: "#bc6ec5", fontWeight: "bold" },
+    arrow: { color: "#2d9574" },
+    binding: { color: "#4190d8" },
+    command: { color: "#ccc" },
+  },
+  light: {
+    key: { color: "#692F60", fontWeight: "bold" },
+    arrow: { color: "#2A976D" },
+    binding: { color: "#3781C2" },
+    command: { color: "#67537A" },
+  },
+};
 
 export function renderBinding(
   binding: Bindings,
@@ -70,21 +127,7 @@ export function renderBinding(
   const decoBg = getBackgroundDeco(rendered.nLines);
 
   const decoTypes = rendered.decos.map(([tt, str]) => {
-    let tro: ThemableDecorationAttachmentRenderOptions = {};
-    switch (tt) {
-      case "key":
-        tro = { color: "#bc6ec5", fontWeight: "bold" };
-        break;
-      case "arrow":
-        tro = { color: "#2d9574" };
-        break;
-      case "binding":
-        tro = { color: "#4190d8" };
-        break;
-      case "command":
-        tro = { color: "#ccc" };
-        break;
-    }
+    const tro = themeRenderOpts[globalThemeType][tt];
     return window.createTextEditorDecorationType({
       color: "transparent",
       before: {

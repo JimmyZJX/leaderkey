@@ -74,10 +74,10 @@ export function overrideExn(
   });
 }
 
-type tokenType = "key" | "arrow" | "command" | "binding";
+export type TokenType = "key" | "arrow" | "command" | "binding";
 
 export interface RenderedToken {
-  type: tokenType;
+  type: TokenType;
   line: number;
   char: number;
   text: string;
@@ -270,11 +270,11 @@ function renderToTokens(
 function tokensToStrings(tokens: RenderedToken[]): {
   nLines: number;
   maxLen: number;
-  decos: [tokenType, string][];
+  decos: [TokenType, string][];
 } {
   const nLines = Math.max(...tokens.map((tk) => tk.line)) + 1;
   let maxLen = 0;
-  const decos: [tokenType, string][] = [];
+  const decos: [TokenType, string][] = [];
   const tokenTypes = ["key", "arrow", "command", "binding"];
   for (const tt of tokenTypes) {
     const lines: string[] = new Array(nLines).fill("");
@@ -285,7 +285,7 @@ function tokensToStrings(tokens: RenderedToken[]): {
       }
     }
     maxLen = Math.max(maxLen, ...lines.map((l) => l.length));
-    decos.push([tt as tokenType, lines.join("\n")]);
+    decos.push([tt as TokenType, lines.join("\n")]);
   }
   return { nLines, maxLen, decos };
 }
