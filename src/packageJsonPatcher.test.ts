@@ -103,12 +103,6 @@ function patch(packageJson: any) {
       args: "SPC",
       when: "notebookEditorFocused && !inputFocus && !leaderkeyState",
     },
-    {
-      key: "space",
-      command: "leaderkey.onkey",
-      args: "SPC",
-      when: "activeEditor == 'WebviewEditor' && !leaderkeyState && !inputFocus",
-    },
   ];
 
   packageJson.contributes.keybindings = [...allKeyCharBindings, ...specialKeyBindings];
