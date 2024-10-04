@@ -46,8 +46,8 @@ function escapeTextForBeforeContentText(text: string) {
 function renderTextDeco(text: string): ThemableDecorationAttachmentRenderOptions {
   return {
     backgroundColor: "transparent",
-    margin: `0 -1ch 0 0; position: absolute; white-space: pre;
-             z-index: 3; content: '${escapeTextForBeforeContentText(text)}';`,
+    margin: `0 -1ch 0 0; position: absolute; white-space: pre; padding-left: 0.5ch;
+             top: 100%; z-index: 3; content: '${escapeTextForBeforeContentText(text)}';`,
   };
 }
 
@@ -72,7 +72,7 @@ function getHeaderDeco(text: string) {
       backgroundColor: decoRenderOpts[globalThemeType]["headerBackground"],
       height: "100%",
       width: "200ch",
-      margin: `0 -1ch 0 0; position: absolute; z-index: 2;
+      margin: `0 -1ch 0 0; position: absolute; z-index: 2; padding-left: 0.5ch;
                content: '${escapeTextForBeforeContentText(text)}'`,
     },
   });
@@ -141,17 +141,15 @@ export function renderBinding(
   // fix header to be at least on the 2nd last line
   lnHeader = Math.max(0, Math.min(docLines - 2, lnHeader));
   const headerRange = editor.document.lineAt(lnHeader).range;
-  const lnTableStart = Math.max(0, Math.min(docLines - 1, lnHeader + 1));
-  const posTableStart = editor.document.lineAt(lnTableStart).range.start;
   const posTableEnd = editor.document.lineAt(
-    Math.min(docLines - 1, lnTableStart + rendered.nLines - 1),
+    Math.min(docLines - 1, lnHeader + 1 + rendered.nLines - 1),
   ).range.end;
 
-  const tableRange = new Range(posTableStart, posTableEnd);
+  const overallRange = new Range(headerRange.start, posTableEnd);
   editor.setDecorations(decoHeader, [headerRange]);
-  editor.setDecorations(decoBg, [new Range(headerRange.start, tableRange.end)]);
+  editor.setDecorations(decoBg, [overallRange]);
   decoTypes.forEach((dt) => {
-    editor.setDecorations(dt, [tableRange]);
+    editor.setDecorations(dt, [overallRange]);
   });
   return [...decoTypes, decoHeader, decoBg];
 }
