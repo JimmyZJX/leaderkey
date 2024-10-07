@@ -124,7 +124,7 @@ const SpcWTransientKeysExcluding0To8: Bindings["keys"] = {
   // Other
   d: {
     name: "Close window",
-    commands: ["workbench.action.closeEditorsInGroup", "workbench.action.closeGroup"],
+    command: "workbench.action.closeEditorsInGroup",
   },
   D: {
     name: "Close all other windows",
