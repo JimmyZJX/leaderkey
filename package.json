@@ -56,6 +56,14 @@
       {
         "command": "leaderkey.migrateFromVSpaceCode",
         "title": "Try migrating the config from VSpaceCode to leaderkey"
+      },
+      {
+        "command": "leaderkey.pushGotoStack",
+        "title": "push the current cursor position to the \"go-to\" stack; used in a lot of built-in commands like [, g g]"
+      },
+      {
+        "command": "leaderkey.popGotoStack",
+        "title": "pop and set the cursor position from the \"go-to\" stack; bound to [, g b]"
       }
     ],
     "configuration": {
@@ -63,7 +71,7 @@
       "properties": {
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": {},
+          "default": { },
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         }
       }

@@ -12,6 +12,7 @@ import { renderBinding, updateGlobalThemeType } from "./decoration";
 import { defaultBindings } from "./defaultBindings";
 import { init, log, setStatusBar, WHICHKEY_STATE } from "./global";
 import { migrateFromVSpaceCode } from "./migrateFromVSpaceCode";
+import { popGotoStack, pushGotoStack } from "./gotoStack";
 
 let globalPath = "";
 let globalRoot = structuredClone(defaultBindings);
@@ -101,6 +102,8 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand("leaderkey.onkey", onkey),
     commands.registerCommand("leaderkey.refreshConfigs", confOverrideRefresh),
     commands.registerCommand("leaderkey.migrateFromVSpaceCode", migrateFromVSpaceCode),
+    commands.registerCommand("leaderkey.pushGotoStack", pushGotoStack),
+    commands.registerCommand("leaderkey.popGotoStack", popGotoStack),
 
     workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration("leaderkey")) {

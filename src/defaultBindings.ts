@@ -1654,13 +1654,19 @@ const CommaRoot: Bindings = {
     g: {
       name: "+Go to",
       keys: {
+        b: {
+          name: "Jump back from last go-to command",
+          command: "leaderkey.popGotoStack",
+        },
         d: {
           name: "Go to definition",
-          command: "editor.action.revealDefinition",
+          command: "leaderkey.pushGotoStack",
+          args: "editor.action.revealDefinition",
         },
         g: {
           name: "Go to definition",
-          command: "editor.action.revealDefinition",
+          command: "leaderkey.pushGotoStack",
+          args: "editor.action.revealDefinition",
         },
         h: {
           name: "Show call hierarchy",
@@ -1676,7 +1682,8 @@ const CommaRoot: Bindings = {
         },
         t: {
           name: "Go to type definition",
-          command: "editor.action.goToTypeDefinition",
+          command: "leaderkey.pushGotoStack",
+          args: "editor.action.goToTypeDefinition",
         },
         I: {
           name: "Find implementations",

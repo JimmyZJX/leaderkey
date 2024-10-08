@@ -18,12 +18,12 @@ export function log(msg: string) {
 
 const statusBarInfo = new ThemeColor("statusBarItem.warningBackground");
 const statusBarError = new ThemeColor("statusBarItem.errorBackground");
-export function setStatusBar(text: string, state?: "error") {
+export function setStatusBar(text: string, state?: "error" | "info") {
   clearTimeout(statusBarTimeout);
   if (statusBar) {
     statusBar.text = text;
-    if (state === "error") {
-      statusBar.backgroundColor = statusBarError;
+    if (state === "error" || state === "info") {
+      statusBar.backgroundColor = state === "error" ? statusBarError : statusBarInfo;
       statusBarTimeout = setTimeout(() => {
         statusBar!.backgroundColor = undefined;
         statusBar!.text = "";
