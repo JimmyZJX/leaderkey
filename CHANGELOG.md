@@ -2,6 +2,10 @@
 
 All notable changes to the "leaderkey" extension will be documented in this file.
 
+## v0.4.0
+
+- Support `, g b` with the help of a go-to stack. `, g g`, `, g d` and `, g t` pushes files and cursor locations to the stack.
+
 ## v0.3.0
 
 - Light theme adaption (according to spacemacs-light but not vscode)
