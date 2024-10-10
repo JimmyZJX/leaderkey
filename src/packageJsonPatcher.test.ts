@@ -51,6 +51,9 @@ function patch(packageJson: any) {
     },
   ]);
 
+  const COMMON_OUTSIDE_EDITOR_WHEN =
+    "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused) && !leaderkeyState && !inputFocus";
+
   const specialKeyBindings = [
     {
       // special conditional `f` for `SPC f t`
@@ -84,24 +87,40 @@ function patch(packageJson: any) {
       command: "leaderkey.onkey",
       args: "<back>",
     },
-    // space keys to trigger the leaderkey panel outside of the editor
+    // space keys to trigger the leaderkey panel outside the editor
     {
       key: "space",
-      command: "leaderkey.onkey",
-      args: "SPC",
-      when: "activeEditorGroupEmpty && focusedView == '' && !leaderkeyState && !inputFocus",
+      command: "runCommands",
+      args: {
+        commands: [
+          {
+            command: "_setContext",
+            args: ["leaderkeyState", "SPC"],
+          },
+          {
+            command: "leaderkey.render",
+            args: "SPC",
+          },
+        ],
+      },
+      when: COMMON_OUTSIDE_EDITOR_WHEN,
     },
     {
-      key: "space",
-      command: "leaderkey.onkey",
-      args: "SPC",
-      when: "sideBarFocus && !inputFocus && !leaderkeyState",
-    },
-    {
-      key: "space",
-      command: "leaderkey.onkey",
-      args: "SPC",
-      when: "notebookEditorFocused && !inputFocus && !leaderkeyState",
+      key: ",",
+      command: "runCommands",
+      args: {
+        commands: [
+          {
+            command: "_setContext",
+            args: ["leaderkeyState", ","],
+          },
+          {
+            command: "leaderkey.render",
+            args: ",",
+          },
+        ],
+      },
+      when: COMMON_OUTSIDE_EDITOR_WHEN,
     },
   ];
 

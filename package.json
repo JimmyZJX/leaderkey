@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -71,7 +71,7 @@
       "properties": {
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": { },
+          "default": {},
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         }
       }
@@ -1032,21 +1032,43 @@
       },
       {
         "key": "space",
-        "command": "leaderkey.onkey",
-        "args": "SPC",
-        "when": "activeEditorGroupEmpty && focusedView == '' && !leaderkeyState && !inputFocus"
+        "command": "runCommands",
+        "args": {
+          "commands": [
+            {
+              "command": "_setContext",
+              "args": [
+                "leaderkeyState",
+                "SPC"
+              ]
+            },
+            {
+              "command": "leaderkey.render",
+              "args": "SPC"
+            }
+          ]
+        },
+        "when": "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused) && !leaderkeyState && !inputFocus"
       },
       {
-        "key": "space",
-        "command": "leaderkey.onkey",
-        "args": "SPC",
-        "when": "sideBarFocus && !inputFocus && !leaderkeyState"
-      },
-      {
-        "key": "space",
-        "command": "leaderkey.onkey",
-        "args": "SPC",
-        "when": "notebookEditorFocused && !inputFocus && !leaderkeyState"
+        "key": ",",
+        "command": "runCommands",
+        "args": {
+          "commands": [
+            {
+              "command": "_setContext",
+              "args": [
+                "leaderkeyState",
+                ","
+              ]
+            },
+            {
+              "command": "leaderkey.render",
+              "args": ","
+            }
+          ]
+        },
+        "when": "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused) && !leaderkeyState && !inputFocus"
       }
     ]
   },
