@@ -77,6 +77,7 @@ export function migrateFromVSpaceCode() {
     .openTextDocument({
       content:
         "Leaderkey translated `vspacecode.bindingOverrides`. Please review carefully before using!\n\n" +
+        'Put them under this key in your user settings (JSON): "leaderkey.overrides.user": { /* here */ }\n\n' +
         json,
     })
     .then((doc) => window.showTextDocument(doc));
