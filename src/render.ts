@@ -1,16 +1,30 @@
-import { Bindings, RenderedToken, DispEntry, chunks, TokenType } from "./command";
+import { Bindings, RenderedToken, DispEntry, TokenType } from "./command";
 
-function renderToTokens(
-  binding: Bindings,
-  ncol: number,
-  when: string | undefined,
-): { tokens: RenderedToken[]; lineLen: number } {
-  const dispEntries: DispEntry[] = binding.orderedKeys?.[when ?? ""] ??
-    binding.orderedKeys?.[""] ?? [
-      { key: "ERROR", name: "No item found", type: "command" },
-    ];
-  const tokens: RenderedToken[] = [];
+interface TokenAndLineLength {
+  tokens: RenderedToken[];
+  lineLen: number;
+}
+
+const TRY_ROWS = 6;
+
+function* chunks<T>(arr: T[], n: number) {
+  for (let i = 0; i < arr.length; i += n) {
+    yield arr.slice(i, i + n);
+  }
+}
+
+function renderTryRows(dispEntries: DispEntry[]): TokenAndLineLength {
+  const cols = [...chunks(dispEntries, TRY_ROWS)];
+  return renderByLayout(cols);
+}
+
+function renderByNumCol(dispEntries: DispEntry[], ncol: number): TokenAndLineLength {
   const cols = [...chunks(dispEntries, Math.ceil(dispEntries.length / ncol))];
+  return renderByLayout(cols);
+}
+
+function renderByLayout(cols: DispEntry[][]): TokenAndLineLength {
+  const tokens: RenderedToken[] = [];
   let curChar = 0;
   for (const col of cols) {
     const keyLen = Math.max(...col.map(({ key }) => key.length));
@@ -30,6 +44,7 @@ function renderToTokens(
   }
   return { tokens, lineLen: curChar - 1 };
 }
+
 function tokensToStrings(tokens: RenderedToken[]): {
   nLines: number;
   maxLen: number;
@@ -58,8 +73,16 @@ export function render(
   targetLineLength: number,
   when: string | undefined,
 ) {
+  const dispEntries: DispEntry[] = binding.orderedKeys?.[when ?? ""] ??
+    binding.orderedKeys?.[""] ?? [
+      { key: "ERROR", name: "No item found", type: "command" },
+    ];
+  const { tokens, lineLen } = renderTryRows(dispEntries);
+  if (lineLen <= targetLineLength) {
+    return tokensToStrings(tokens);
+  }
   for (let nCol = 5; ; nCol--) {
-    const { tokens, lineLen } = renderToTokens(binding, nCol, when);
+    const { tokens, lineLen } = renderByNumCol(dispEntries, nCol);
     if (lineLen <= targetLineLength || nCol === 1) {
       return tokensToStrings(tokens);
     }

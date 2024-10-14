@@ -83,12 +83,6 @@ export interface RenderedToken {
   text: string;
 }
 
-export function* chunks<T>(arr: T[], n: number) {
-  for (let i = 0; i < arr.length; i += n) {
-    yield arr.slice(i, i + n);
-  }
-}
-
 const shiftChars = '~!@#$%^&*()_+<>?{}:"|';
 export const unshiftChars = "`1234567890-=,./[];'\\";
 
