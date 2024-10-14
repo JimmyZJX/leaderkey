@@ -4,7 +4,8 @@ import {
   ThemableDecorationAttachmentRenderOptions,
   window,
 } from "vscode";
-import { Bindings, render, TokenType } from "./command";
+import { Bindings, TokenType } from "./command";
+import { render } from "./render";
 
 type ThemeType = "dark" | "light";
 let globalThemeType: ThemeType = "dark";
