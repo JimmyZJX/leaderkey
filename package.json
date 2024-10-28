@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -71,7 +71,7 @@
       "properties": {
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": { },
+          "default": {},
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         }
       }
@@ -1048,7 +1048,7 @@
             }
           ]
         },
-        "when": "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused) && !leaderkeyState && !inputFocus"
+        "when": "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused || inWelcome) && !leaderkeyState && !inputFocus"
       },
       {
         "key": ",",
