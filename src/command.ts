@@ -1,3 +1,4 @@
+import { QuickPickItem } from "vscode";
 import { log } from "./global";
 
 export interface DispEntry {
@@ -12,7 +13,7 @@ export interface Bindings {
   transient?: boolean;
   // [key] might be "key" or "key:when"
   keys: { [key: string]: Bindings | Command };
-  /* `when === ""` on the default null condition */
+  /* For display only; `when === ""` on the default null condition */
   orderedKeys?: {
     [when: string]: DispEntry[];
   };
@@ -221,4 +222,33 @@ export function go(
     root = n;
   }
   return root;
+}
+
+export function showAsQuickPickItems(bindings: Bindings): QuickPickItem[] {
+  const items: QuickPickItem[] = [];
+  function loop(bindings: Bindings, keyChord: string[], whens: string[]) {
+    if (bindings.orderedKeys === undefined) return;
+    for (const [keyWhen, entry] of Object.entries(bindings.keys)) {
+      const [key, when] =
+        keyWhen.includes(":") && keyWhen.length >= 3
+          ? keyWhen.split(":", 2)
+          : [keyWhen, undefined];
+      const curWhens = [...whens, ...(when ? [when] : [])];
+      const curKeyChord = [...keyChord, key];
+      if (isBindings(entry)) {
+        loop(entry, curKeyChord, curWhens);
+      } else {
+        const detail =
+          curWhens.length === 0 ? undefined : "when: " + curWhens.join(" && ");
+        items.push({
+          label: entry.name,
+          description: curKeyChord.join(" "),
+          detail,
+        });
+      }
+    }
+  }
+  loop(bindings, [], []);
+  items.sort((x, y) => x.description!.localeCompare(y.description!));
+  return items;
 }

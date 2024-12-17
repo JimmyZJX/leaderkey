@@ -189,10 +189,10 @@ const SpaceRoot: Bindings = {
       name: "Toggle comment",
       command: "editor.action.commentLine",
     },
-    // "?": {
-    //   name: "Search keybindings",
-    //   command: "whichkey.searchBindings",
-    // },
+    "?": {
+      name: "Search keybindings",
+      command: "leaderkey.searchBindings",
+    },
     "v:transient": {
       name: "Smart expand transient",
       transient: true,

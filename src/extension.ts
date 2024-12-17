@@ -7,12 +7,13 @@ import {
   isCommand,
   normalize,
   overrideExn,
+  showAsQuickPickItems,
 } from "./command";
 import { renderBinding, updateGlobalThemeType } from "./decoration";
 import { defaultBindings } from "./defaultBindings";
 import { init, log, setStatusBar, WHICHKEY_STATE } from "./global";
-import { migrateFromVSpaceCode } from "./migrateFromVSpaceCode";
 import { popGotoStack, pushGotoStack } from "./gotoStack";
+import { migrateFromVSpaceCode } from "./migrateFromVSpaceCode";
 import { registerCommands } from "./pathCommands";
 
 let globalPath = "";
@@ -105,6 +106,7 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand("leaderkey.migrateFromVSpaceCode", migrateFromVSpaceCode),
     commands.registerCommand("leaderkey.pushGotoStack", pushGotoStack),
     commands.registerCommand("leaderkey.popGotoStack", popGotoStack),
+    commands.registerCommand("leaderkey.searchBindings", searchBindings),
 
     workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration("leaderkey")) {
@@ -168,6 +170,14 @@ function confOverrideRefresh() {
   globalRoot = normalize(newRoot);
   log("Normalized root:\n" + JSON.stringify(globalRoot, undefined, 2));
   if (global.gc) global.gc();
+}
+
+async function searchBindings() {
+  const items = showAsQuickPickItems(globalRoot);
+  window.showQuickPick(items, {
+    title: "All bindings of leaderkey",
+    matchOnDescription: true,
+  });
 }
 
 export function deactivate() {}

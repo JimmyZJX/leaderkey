@@ -64,6 +64,10 @@
       {
         "command": "leaderkey.popGotoStack",
         "title": "pop and set the cursor position from the \"go-to\" stack; bound to [, g b]"
+      },
+      {
+        "title": "Search keybindings",
+        "command": "leaderkey.searchBindings"
       }
     ],
     "configuration": {
@@ -76,7 +80,7 @@
         },
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": { },
+          "default": {},
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         }
       }
@@ -1145,7 +1149,6 @@
   },
   "devDependencies": {
     "@types/jest": "^29.1.2",
-    "@types/node": "20.x",
     "@types/path-browserify": "^1.0.3",
     "@types/vscode": "^1.89.0 <1.90.0",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
@@ -1160,6 +1163,7 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
+    "assert": "^2.1.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10"
   }
