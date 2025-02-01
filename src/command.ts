@@ -76,13 +76,6 @@ export function overrideExn(
 
 export type TokenType = "key" | "arrow" | "command" | "binding";
 
-export interface RenderedToken {
-  type: TokenType;
-  line: number;
-  char: number;
-  text: string;
-}
-
 const shiftChars = '~!@#$%^&*()_+<>?{}:"|';
 export const unshiftChars = "`1234567890-=,./[];'\\";
 
