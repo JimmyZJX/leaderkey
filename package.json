@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -69,9 +69,14 @@
     "configuration": {
       "title": "leaderkey",
       "properties": {
+        "leaderkey.arrowIsTwoCharWide": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fixes appearence issue for fonts that renders \"→\" as 2-char wide"
+        },
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": {},
+          "default": { },
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         }
       }

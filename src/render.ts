@@ -1,4 +1,13 @@
-import { Bindings, RenderedToken, DispEntry, TokenType } from "./command";
+import { workspace } from "vscode";
+import { Bindings, DispEntry, TokenType } from "./command";
+
+export interface RenderedToken {
+  type: TokenType;
+  line: number;
+  char: number;
+  text: string;
+  textLen?: number;
+}
 
 interface TokenAndLineLength {
   tokens: RenderedToken[];
@@ -24,6 +33,9 @@ function renderByNumCol(dispEntries: DispEntry[], ncol: number): TokenAndLineLen
 }
 
 function renderByLayout(cols: DispEntry[][]): TokenAndLineLength {
+  const arrowCharWidth = workspace.getConfiguration("leaderkey").get("arrowIsTwoCharWide")
+    ? 2
+    : 1;
   const tokens: RenderedToken[] = [];
   let curChar = 0;
   for (const col of cols) {
@@ -37,9 +49,15 @@ function renderByLayout(cols: DispEntry[][]): TokenAndLineLength {
         text: key,
         type: "key",
       });
-      tokens.push({ line, char: charAfterKey + 1, text: "→", type: "arrow" });
-      tokens.push({ line, char: charAfterKey + 3, text: name, type });
-      curChar = charAfterKey + 4 + nameLen;
+      tokens.push({
+        line,
+        char: charAfterKey + 1,
+        text: "→",
+        textLen: arrowCharWidth,
+        type: "arrow",
+      });
+      tokens.push({ line, char: charAfterKey + 2 + arrowCharWidth, text: name, type });
+      curChar = charAfterKey + 3 + arrowCharWidth + nameLen;
     });
   }
   return { tokens, lineLen: curChar - 1 };
@@ -56,13 +74,15 @@ function tokensToStrings(tokens: RenderedToken[]): {
   const tokenTypes = ["key", "arrow", "command", "binding"];
   for (const tt of tokenTypes) {
     const lines: string[] = new Array(nLines).fill("");
-    for (const { line, char, text, type } of tokens) {
+    const lineLens: number[] = new Array(nLines).fill(0);
+    for (const { line, char, text, type, textLen } of tokens) {
       if (type === tt) {
-        const len = lines[line].length;
-        lines[line] = lines[line] + " ".repeat(char - len) + text;
+        const spacesToInsert = char - lineLens[line];
+        lines[line] = lines[line] + " ".repeat(spacesToInsert) + text;
+        lineLens[line] += spacesToInsert + (textLen ?? text.length);
       }
     }
-    maxLen = Math.max(maxLen, ...lines.map((l) => l.length));
+    maxLen = Math.max(maxLen, ...lineLens);
     decos.push([tt as TokenType, lines.join("\n")]);
   }
   return { nLines, maxLen, decos };
