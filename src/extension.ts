@@ -13,6 +13,7 @@ import { defaultBindings } from "./defaultBindings";
 import { init, log, setStatusBar, WHICHKEY_STATE } from "./global";
 import { migrateFromVSpaceCode } from "./migrateFromVSpaceCode";
 import { popGotoStack, pushGotoStack } from "./gotoStack";
+import { registerCommands } from "./pathCommands";
 
 let globalPath = "";
 let globalRoot = structuredClone(defaultBindings);
@@ -123,6 +124,7 @@ export async function activate(context: ExtensionContext) {
 
   confOverrideRefresh();
   updateStickyScrollConf();
+  registerCommands(context);
 }
 
 function updateStickyScrollConf() {
