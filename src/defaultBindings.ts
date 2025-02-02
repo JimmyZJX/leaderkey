@@ -381,10 +381,10 @@ const SpaceRoot: Bindings = {
           name: "Unpin buffer",
           command: "workbench.action.unpinEditor",
         },
-        Y: {
-          name: "Copy buffer to clipboard",
-          command: "vspacecode.copyWholeBuffer",
-        },
+        // Y: {
+        //   name: "Copy buffer to clipboard",
+        //   command: "vspacecode.copyWholeBuffer",
+        // },
         N: {
           name: "+New Buffer",
           keys: {
@@ -771,43 +771,43 @@ const SpaceRoot: Bindings = {
           keys: {
             c: {
               name: "Copy path of active file with line and column",
-              command: "vspacecode.copyPathWithLineColumn",
+              command: "leaderkey.copyPathWithLineColumn",
             },
             d: {
               name: "Copy directory path of the active file",
-              command: "vspacecode.copyDirectoryPath",
+              command: "leaderkey.copyDirectoryPath",
             },
             l: {
               name: "Copy path of active file with line",
-              command: "vspacecode.copyPathWithLine",
+              command: "leaderkey.copyPathWithLine",
             },
             n: {
               name: "Copy filename of active file",
-              command: "vspacecode.copyFilename",
+              command: "leaderkey.copyFilename",
             },
             y: {
               name: "Copy path of active file",
-              command: "vspacecode.copyPath",
+              command: "leaderkey.copyPath",
             },
             C: {
               name: "Copy relative path of active file with line and column",
-              command: "vspacecode.copyRelativePathWithLineColumn",
+              command: "leaderkey.copyRelativePathWithLineColumn",
             },
             D: {
               name: "Copy relative directory path of the active file",
-              command: "vspacecode.copyRelativeDirectoryPath",
+              command: "leaderkey.copyRelativeDirectoryPath",
             },
             L: {
               name: "Copy relative path of active file with line",
-              command: "vspacecode.copyRelativePathWithLine",
+              command: "leaderkey.copyRelativePathWithLine",
             },
             N: {
               name: "Copy filename without extension of active file",
-              command: "vspacecode.copyFilenameBase",
+              command: "leaderkey.copyFilenameBase",
             },
             Y: {
               name: "Copy relative path of active file",
-              command: "vspacecode.copyRelativePath",
+              command: "leaderkey.copyRelativePath",
             },
           },
         },
@@ -870,10 +870,10 @@ const SpaceRoot: Bindings = {
           name: "Open global key bindings",
           command: "workbench.action.openGlobalKeybindings",
         },
-        D: {
-          name: "Open VSpaceCode Documentation",
-          command: "vspacecode.openDocumentationUrl",
-        },
+        // D: {
+        //   name: "Open VSpaceCode Documentation",
+        //   command: "vspacecode.openDocumentationUrl",
+        // },
         I: {
           name: "Report VSCode Issue",
           command: "workbench.action.openIssueReporter",

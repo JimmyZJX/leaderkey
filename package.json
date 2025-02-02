@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -1146,6 +1146,7 @@
   "devDependencies": {
     "@types/jest": "^29.1.2",
     "@types/node": "20.x",
+    "@types/path-browserify": "^1.0.3",
     "@types/vscode": "^1.89.0 <1.90.0",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
@@ -1157,5 +1158,9 @@
     "typescript": "^5.3.2 <5.6.0",
     "webpack": "^5.52.1",
     "webpack-cli": "^4.8.0"
+  },
+  "dependencies": {
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10"
   }
 }
