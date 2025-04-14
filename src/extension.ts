@@ -1,4 +1,11 @@
-import { commands, Disposable, ExtensionContext, window, workspace } from "vscode";
+import {
+  commands,
+  Disposable,
+  ExtensionContext,
+  TextEditorSelectionChangeKind,
+  window,
+  workspace,
+} from "vscode";
 import {
   Bindings,
   Command,
@@ -64,8 +71,8 @@ let disposableDecos: Disposable[] = [];
 async function setAndRenderPath(path: string, binding: Bindings | undefined) {
   globalPath = path;
   try {
+    commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
     setStatusBar(path === "" ? "" : path + "-");
-    await commands.executeCommand("_setContext", WHICHKEY_STATE, globalPath);
   } finally {
     const oldDisposables = disposableDecos;
     try {
@@ -117,11 +124,16 @@ export async function activate(context: ExtensionContext) {
       }
     }),
     window.onDidChangeActiveTextEditor((_e) => {
-      if (globalPath === "") return;
-      // try to render the UI on the new editor
-      setAndRenderPath(globalPath, undefined);
+      if (globalPath) {
+        setAndRenderPath("", undefined);
+      }
     }),
     window.onDidChangeActiveColorTheme((_ct) => updateGlobalThemeType()),
+    window.onDidChangeTextEditorSelection((event) => {
+      if (globalPath && event.kind === TextEditorSelectionChangeKind.Mouse) {
+        setAndRenderPath("", undefined);
+      }
+    }),
   );
 
   confOverrideRefresh();
