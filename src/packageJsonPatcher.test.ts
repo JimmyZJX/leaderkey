@@ -1,5 +1,5 @@
 import { readFileSync, unlinkSync, writeFileSync } from "fs";
-import { normalizeKey, unshiftChars } from "./command";
+import { normalizeKey, unshiftChars } from "./leaderkey/command";
 
 function patch(packageJson: any) {
   const ALL_KEY_CHARS = [

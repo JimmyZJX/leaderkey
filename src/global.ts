@@ -35,3 +35,9 @@ export function setStatusBar(text: string, state?: "error" | "info") {
     }
   }
 }
+
+export function assert(condition: any, msg?: string): asserts condition {
+  if (!condition) {
+    throw new Error("Assertion error: " + msg);
+  }
+}

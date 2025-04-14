@@ -8,7 +8,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { setStatusBar } from "./global";
+import { setStatusBar } from "../global";
 
 interface gotoStackElement {
   uri: Uri;
