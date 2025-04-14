@@ -14,6 +14,7 @@ import { LeaderkeyPanel } from "./leaderkey/leaderKeyPanel";
 export async function activate(context: ExtensionContext) {
   init();
   const leaderKeyPanel = new LeaderkeyPanel();
+  await leaderKeyPanel.activate(context);
   context.subscriptions.push(
     commands.registerCommand(
       "leaderkey.render",
