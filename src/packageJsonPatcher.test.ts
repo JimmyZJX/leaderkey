@@ -52,7 +52,7 @@ function patch(packageJson: any) {
   ]);
 
   const COMMON_OUTSIDE_EDITOR_WHEN =
-    "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused) && !leaderkeyState && !inputFocus";
+    "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused || inWelcome) && !leaderkeyState && !inputFocus";
 
   const specialKeyBindings = [
     {

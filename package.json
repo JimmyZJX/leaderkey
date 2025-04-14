@@ -1077,7 +1077,7 @@
             }
           ]
         },
-        "when": "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused) && !leaderkeyState && !inputFocus"
+        "when": "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused || inWelcome) && !leaderkeyState && !inputFocus"
       }
     ]
   },

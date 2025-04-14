@@ -104,7 +104,7 @@ function getFilenameBase(activeEditor: TextEditor) {
 
 function _getPath(activeEditor: TextEditor, relative: boolean) {
   const uri = activeEditor.document.uri;
-  let path = relative ? relativePathToWorkspace(uri) : uriToFsPath(uri);
+  const path = relative ? relativePathToWorkspace(uri) : uriToFsPath(uri);
 
   const isWinPath = checkWinPath(uri);
 
