@@ -1,0 +1,345 @@
+import { Link } from "react-router-dom";
+import pkg from "../../../package.json";
+
+# FZF for JavaScript
+
+{/* prettier-ignore */}
+<div className="flex justify-between flex-wrap">
+  <div><Link to="basic">Demo</Link> · [GitHub](https://github.com/ajitid/fzf-for-js) · [NPM](https://www.npmjs.com/package/fzf)</div>
+  <div>Docs for v{pkg.version} (<Link to="/docs">Change</Link>) · <Link to="/migrate">Migration Guide</Link></div>
+</div>
+
+[FZF (stylised as fzf)](https://github.com/junegunn/fzf) is a command line based fuzzy finder built using Golang. A fuzzy finder allows you to type few characters that appear in a string that you are looking for and get that string from a list of strings quickly. FZF for JavaScript ports FZF's algorithm to JavaScript so that it can be used in the browser. However it doesn't tries [to be as performant](https://blog.claude.nl/tech/performance-of-a-go-library-fzf-in-the-browser) as its Golang's counterpart, so while this package can work in Node.JS, you are still better off with Golang version for CLI usage.
+
+_"FZF for JavaScript" will be referred as "FZF" from here on._
+
+## Installation
+
+### Node.js
+
+Install FZF by typing the following command in your shell:
+
+```sh
+npm i fzf
+```
+
+### Deno
+
+Grab FZF from a web source:
+
+```ts
+// use the latest
+import { Fzf } from "https://esm.sh/fzf";
+// or pin it to a version
+import { Fzf } from "https://esm.sh/fzf@0.5.1";
+// or opt for an alternative source
+import { Fzf } from "https://cdn.skypack.dev/fzf?dts";
+```
+
+`deno.land/x` is not available as a source [for now](https://github.com/ajitid/fzf-for-js/issues/100#issuecomment-1045992897).
+
+## Usage
+
+### Basic usage
+
+{/* prettier-ignore */}
+```js
+import { Fzf } from "fzf";
+
+const list = ["go", "javascript", "python", "rust", 
+              "swift", "kotlin", "elixir", "java", 
+              "lisp", "v", "zig", "nim", "rescript", 
+              "d", "haskell"];
+
+const fzf = new Fzf(list);
+
+const entries = fzf.find("li");
+const ranking = entries.map(entry => entry.item).join(", ");
+console.log(ranking); // Output: lisp, kotlin, elixir
+```
+
+### Non-string list
+
+When life is not simple and items in list aren't just plain strings:
+
+```js
+const list = [
+  { id: "1", displayName: "abcd" },
+  { id: "2", displayName: "bcde" },
+  { id: "3", displayName: "cdef" },
+  { id: "4", displayName: "defg" },
+  { id: "5", displayName: "efgh" },
+];
+
+const fzf = new Fzf(list, {
+  // With selector you tell FZF where it can find
+  // the string that you want to query on
+  selector: (item) => item.displayName,
+});
+const entries = fzf.find("cd");
+const ranking = entries.map((entry) => entry.item.displayName).join(", ");
+console.log(ranking); // Output: cdef, abcd, bcde
+```
+
+You can also use a combination of fields to search upon:
+
+```js
+const fzf = new Fzf(list, {
+  selector: (item) => `${item.displayName} (${item.id})`, // bcde (2)
+});
+```
+
+### Case sensitivity
+
+FZF does smart case searching by default. This means that if the list is
+
+```js
+const list = ["Vulpix", "Pikachu", "Bulbasaur", "Typholsion"];
+```
+
+and you query for "pi" you will get Pikachu, Vulpix and Typholsion but if you query for "Pi" you will only get Pikachu back. This can be customized in options.
+
+### Highlighting matched characters
+
+Let's take the list above with query "pi". The result will be:
+
+{/* prettier-ignore */}
+<div><b>Pi</b>kachu</div>
+<div>Vul<b>pi</b>x</div>
+<div>Ty<b>p</b>hols<b>i</b>on</div>
+
+To highlight characters "p" and "i" using React for example, it would be:
+
+{/* prettier-ignore */}
+```js
+const HighlightChars = (props) => {
+  const chars = props.str.split("");
+
+  const nodes = chars.map((char, i) => {
+    if (props.indices.has(i)) {
+      return <b key={i}>{char}</b>;
+    } else {
+      return char;
+    }
+  });
+
+  return <>{nodes}</>;
+};
+
+// and can be used like so:
+const reactElement = <HighlightChars
+  str={entry.item.normalize()}
+  indices={entry.positions}
+/>;
+```
+
+In the last line, `entry` is an item from the result list which is returned from `fzf.find()`.  
+`normalize()` is a built-in function present on strings. This helps you to receive correct highlight indices. If you are passing a selector function, you would write `str={selector(entry.item).normalize()}`.
+
+Find a <Link to="basic">working example</Link> for this and its [sourcecode](https://github.com/ajitid/fzf-for-js/blob/df0a1dc25400c510f20b5efe773f3410063a740e/src/docs/views/basic.tsx#L98).
+
+### Tiebreakers
+
+When we try to match "an" with Thane, Anandnagar, Tripura, Anandpur, Bangalore and Sangam we'll get:
+
+{/* prettier-ignore */}
+<div><b>An</b>andnagar</div>
+<div><b>An</b>andpur</div>
+<div>Th<b>an</b>e</div>
+<div>B<b>an</b>galore</div>
+<div>S<b>an</b>gam</div>
+
+Anandnagar and Anandpur are ranked above the others as their "an" got matched at the very start of those strings. Rest of the three contains "an" somewhere between so they bear the same rank. This ranking is decided by a `score` that FZF calculates for each string.
+
+But what if we prefer to have shorter strings appear first? Well here is when a tiebreaker comes in:
+
+```js
+import { Fzf, byLengthAsc } from "fzf";
+
+// ...
+
+const fzf = new Fzf(list, {
+  tiebreakers: [byLengthAsc],
+});
+```
+
+Now the result will be:
+
+| Default (only score) | Score with `byLengthAsc` tiebreaker |
+| -------------------- | ----------------------------------- |
+| Anandnagar           | Anandpur                            |
+| Anandpur             | Anandnagar                          |
+| Thane                | Thane                               |
+| Bangalore            | Sangam                              |
+| Sangam               | Bangalore                           |
+
+Note that a tiebreaker is applied only if two items have the same score. That is why Thane, while being the shortest string among the bunch, didn't move to the top.
+
+#### Implementation detail
+
+A tiebreaker is a function, and just like a [sort function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) it acts on two result entries at a time.
+
+If multiple tiebreakers are given, the first one is applied first. If it is able to rank one entry higher than the other, then this rank is chosen and the next pair of result entries are processed. If not, the next tiebreaker in the list is applied, and so on.
+
+To get an idea on how a custom tiebreaker can be implemented, you can look into the [code for built-in ones](https://github.com/ajitid/fzf-for-js/blob/8f83d205432f7f4b4fe6f7de08bb98d441da04e7/src/lib/tiebreakers.ts).
+
+#### Disabling sorter
+
+FZF doesn't uses a tiebreaker by default. But sometimes you don't want the results to get sorted (by score) either. Thankfully we can turn off the sorting mechanism as well:
+
+```js
+const fzf = new Fzf(list, {
+  sort: false,
+});
+```
+
+When sorting is turned off, tiebreakers won't affect the sorting order either. And so the result items would be returned in the same order as they were in the original input list.
+
+### Matching backwards
+
+While matching file paths or links you might prefer for characters that appear the end to be highlighted first. Turning `forward=false` just lets you do that.
+
+For example, if you query "comp" you would get:
+
+| `forward=true` (default)                 | `forward=false`                          |
+| ---------------------------------------- | ---------------------------------------- |
+| src/<b>comp</b>onents/composite-input.ts | src/components/<b>comp</b>osite-input.ts |
+| src/<b>comp</b>onents/portal.ts          | src/<b>comp</b>onents/portal.ts          |
+
+### Async finder
+
+#### Considering other options first
+
+If the list items are many and/or are lengthy, FZF would take more time to process and give you the result back. Usually this time decreases when you type in more letters in the query. However, if you are noticing a minimal lag while typing first few letters, you can employ a faster version for it:
+
+```js
+const fzf = new Fzf(list);
+const fzfFast = new Fzf(list, { fuzzy: "v1" });
+
+// ...
+
+if (query.length <= 3) {
+  return fzfFast.find(query);
+} else {
+  return fzf.find(query);
+}
+```
+
+By default, FZF uses v2 algo which gives better matched positions for items. However, this is something that is not quite noticeable if you have typed very few letters in the query. So v1 can easily replace v2 algo in this case.
+
+#### Opting for async
+
+If the queries are taking around 100ms to resolve, then you could opt for an async finder as input lags are noticeable if they cross 100ms mark<sup>[1]</sup>. You can [read more about it here](https://www.nngroup.com/articles/response-times-3-important-limits).
+
+To use an async finder, we would need to change our code from:
+
+```js
+import { Fzf } from "fzf";
+
+const fzf = new Fzf(list);
+
+const result = fzf.find(query);
+// process `result`
+```
+
+To:
+
+```js
+import { AsyncFzf } from "fzf";
+
+const fzf = new AsyncFzf(list);
+
+fzf
+  .find(query)
+  .then((result) => {
+    // process `result`
+  })
+  .catch(() => {});
+```
+
+For async, FZF cancels previous search before making a new one. This is why we need to put at least an empty function in `catch` so that these cancellation errors are handled.
+
+[1] People have [different conclusions](https://stackoverflow.com/questions/536300/what-is-the-shortest-perceivable-application-response-delay) about this perceivability threshold
+
+### Usage with TypeScript
+
+The following code shows a descriptive usage with types. TypeScript can infer these types most of the time for you, so you wouldn't ever need to write them by hand. But for the cases when you do, these are the types you would use:
+
+```ts
+import { Fzf, FzfResultItem, FzfOptions } from "fzf";
+
+interface Fruit {
+  id: string;
+  name: string;
+}
+
+const fruits: Fruit[] = [
+  /* ... */
+];
+
+const options: FzfOptions<Fruit> = {
+  selector: (v) => v.name,
+};
+
+const fzf = new Fzf<Fruit[]>(fruits, options);
+
+const results: FzfResultItem<Fruit>[] = fzf.find("ppya"); // gives you back a papaya!
+```
+
+### Making it behave like FZF CLI
+
+This library has different defaults compared to FZF CLI. Get a behaviour similar to CLI with these options:
+
+```js
+function byTrimmedLengthAsc(a, b, selector) {
+  return selector(a.item).trim().length - selector(b.item).trim().length;
+}
+
+const fzf = new Fzf(list, {
+  match: extendedMatch,
+  tiebreakers: [byTrimmedLengthAsc],
+});
+```
+
+`extendedMatch` is present in the library for you to import and use.
+
+### Notes
+
+- If the list is modified after you've initialized FZF using `const fzf = new Fzf(list)` and you want to query using `fzf.find()` after this modification, we strongly suggest you to re-initialize FZF before you make any query. This is suggested because FZF makes some calculations when it is initialized, and these calculations could become outdated because of the modification made.
+
+## API
+
+### `new Fzf(list, options?)`
+
+`list` can be a list of strings or can have items where in any property of item can resolve to a string.
+
+`options`:
+
+- `limit?` - number, defaults to `Infinity` - If `limit` is 32, top 32 items that matches your query will be returned. By default all matched items are returned.
+- `selector?` - function, defaults to `v => v` - For each item in the list, target a specific property of the item to search for. This becomes a required option to pass when `list` is composed of items other than strings.
+- `casing?` - string, defaults to `"smart-case"`, accepts `"smart-case" | "case-sensitive" | "case-insensitive"` - Defines what type of case sensitive search you want.
+- `normalize?` - boolean, defaults to `true` - If true, FZF will try to remove diacritics from list items. This is useful if the list contains items with diacritics but you want to query with plain A-Z letters. For example, Zoë will be converted to Zoe.
+- `tiebreakers?` - array, defaults to `[]` - A list of functions that decide sort order when the score is tied between two result entries. A tiebreaker is nothing but a compare function like the one you find in [JS Array sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) with an added third argument which is `options.selector`. First and second arguments are result entries that you receive from `fzf.find`. Note that tiebreakers can't be used if `sort=false`. This library ships with two tiebreakers - `byLengthAsc` and `byStartAsc`.
+- `sort?` - boolean, defaults to `true` - If true, result items will be sorted in descending order by their score. Otherwise, the items won't be sorted and tiebreakers won't be applied either; they will be returned in the same order that they were in the input list.
+- `fuzzy?` - string, defaults to `"v2"`, accepts `"v1" | "v2" | false` - Select which version of fuzzy algo you want to use. Refer to [this explanation](https://github.com/junegunn/fzf/blob/4c9cab3f8ae7b55f7124d7c3cf7ac6b4cc3db210/src/algo/algo.go#L5) to see the differences. If asssigned `false`, an exact match will be made instead of a fuzzy one.
+- `match?` - function, defaults to `basicMatch` - We provide two built-in functions, namely `basicMatch` and `extendedMatch`. If `extendedMatch` is used, you can add special patterns to narrow down your search. To read more about how it can be used, see [this section](https://github.com/junegunn/fzf/tree/7191ebb615f5d6ebbf51d598d8ec853a65e2274d#search-syntax). For a quick glance, see [this piece](https://github.com/junegunn/fzf/blob/764316a53d0eb60b315f0bbcd513de58ed57a876/src/pattern.go#L12-L19).
+- `forward?` - boolean, defaults to `true` - If false, items will be matched from backwards. So if we query "/breeds/pyrenees" with "re" it will result in "/b<b>re</b>eds/pyrenees" but with forward=false it will result in "/breeds/py<b>re</b>nees".
+
+### `fzf.find(query)`
+
+For the code below
+
+```js
+const entries = new Fzf(list).find(query);
+const entry = entries[0];
+```
+
+`entries` is a list of all the items that were able to match with `query` string.
+
+Each `entry` contains:
+
+- `item` - Original item that you send in the `list`.
+- `start` - number - Start index where the item is matched.
+- `end` - number - End index + 1 where the item is matched.
+- `score` - number - Higher the score, closest the item is matched to the query.
+- `positions` - A set containing indices of the characters that were matched in the item.

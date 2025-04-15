@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.heading-link img {
+  visibility: hidden;
+}
+
+.heading-link:hover img {
+  visibility: visible;
+}
+
+.docs-hidden {
+  display: none;
+}
