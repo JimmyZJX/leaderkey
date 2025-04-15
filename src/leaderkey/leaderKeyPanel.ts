@@ -38,7 +38,9 @@ export class LeaderkeyPanel {
     this.confOverrideRefresh();
 
     context.subscriptions.push(
-      commands.registerCommand("leaderkey.refreshConfigs", this.confOverrideRefresh),
+      commands.registerCommand("leaderkey.refreshConfigs", () =>
+        this.confOverrideRefresh(),
+      ),
       workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration("leaderkey")) {
           this.confOverrideRefresh();
