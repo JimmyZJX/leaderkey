@@ -1,30 +1,77 @@
+import { dirname } from "path-browserify";
 import {
   commands,
   ExtensionContext,
   TextEditorSelectionChangeKind,
   window,
+  workspace,
 } from "vscode";
+import { FindFilePanel } from "./findFile/findFilePanel";
 import { init } from "./global";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
-import { updateGlobalThemeType } from "./leaderkey/decoration";
+import { updateGlobalThemeType, updateStickyScrollConf } from "./leaderkey/decoration";
 import { LeaderkeyPanel } from "./leaderkey/leaderKeyPanel";
+
+let currentPanel: "leaderkey" | "findfile" | undefined = undefined;
+function resetCurrentPanel() {
+  currentPanel = undefined;
+}
 
 export async function activate(context: ExtensionContext) {
   init();
-  const leaderKeyPanel = new LeaderkeyPanel();
+
+  const leaderKeyPanel = new LeaderkeyPanel(() => resetCurrentPanel());
   await leaderKeyPanel.activate(context);
+
+  const findFilePanel = new FindFilePanel(
+    workspace.workspaceFolders?.at(0)?.uri?.path ?? "/",
+    () => resetCurrentPanel(),
+  );
+
+  function resetPanel() {
+    if (currentPanel === "findfile") {
+      findFilePanel.reset();
+    } else {
+      leaderKeyPanel.reset();
+    }
+  }
+
+  // check if remote-commons is registered
+  try {
+    await commands.executeCommand("remote-commons.ping");
+  } catch {
+    window.showErrorMessage("Remote Commons extension not registered :(");
+  }
+
   context.subscriptions.push(
+    commands.registerCommand("leaderkey.findFile", async () => {
+      const editor = window.activeTextEditor;
+      if (!editor) return;
+      const filename = editor.document.uri.path;
+      findFilePanel.setDir(dirname(filename));
+      findFilePanel.render();
+      currentPanel = "findfile";
+    }),
     commands.registerCommand(
       "leaderkey.render",
-      (pathOrWithWhen: string | { path: string; when: string }) =>
-        leaderKeyPanel.render(pathOrWithWhen),
+      (pathOrWithWhen: string | { path: string; when: string }) => {
+        if (currentPanel === "findfile") {
+          findFilePanel.reset();
+        }
+        leaderKeyPanel.render(pathOrWithWhen);
+      },
     ),
     commands.registerCommand(
       "leaderkey.onkey",
-      (keyOrObj: string | { key: string; when: string }) =>
-        leaderKeyPanel.onkey(keyOrObj),
+      (keyOrObj: string | { key: string; when: string }) => {
+        if (currentPanel === "findfile") {
+          findFilePanel.onkey(typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key);
+        } else {
+          leaderKeyPanel.onkey(keyOrObj);
+        }
+      },
     ),
     commands.registerCommand("leaderkey.migrateFromVSpaceCode", migrateFromVSpaceCode),
     commands.registerCommand("leaderkey.pushGotoStack", pushGotoStack),
@@ -34,11 +81,17 @@ export async function activate(context: ExtensionContext) {
       async () => await leaderKeyPanel.searchBindings(),
     ),
 
+    workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration("editor.stickyScroll")) {
+        updateStickyScrollConf();
+      }
+    }),
+
     window.onDidChangeActiveColorTheme((_ct) => updateGlobalThemeType()),
-    window.onDidChangeActiveTextEditor((_e) => leaderKeyPanel.reset()),
+    window.onDidChangeActiveTextEditor((_e) => resetPanel()),
     window.onDidChangeTextEditorSelection((event) => {
       if (event.kind === TextEditorSelectionChangeKind.Mouse) {
-        leaderKeyPanel.reset();
+        resetPanel();
       }
     }),
   );

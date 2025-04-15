@@ -1,8 +1,10 @@
 import {
   ColorThemeKind,
   Range,
+  TextEditor,
   ThemableDecorationAttachmentRenderOptions,
   window,
+  workspace,
 } from "vscode";
 import { Bindings, TokenType } from "./command";
 import { render } from "./render";
@@ -27,56 +29,121 @@ export function updateGlobalThemeType() {
 }
 updateGlobalThemeType();
 
-type DecoType = "background" | "headerBackground";
+export let stickyScrollMaxRows: number = 0;
+export function updateStickyScrollConf() {
+  const ss = workspace.getConfiguration("editor.stickyScroll");
+  if (ss.get("enabled") === true) {
+    stickyScrollMaxRows = ss.get("maxLineCount", 5);
+  } else {
+    stickyScrollMaxRows = 0;
+  }
+}
+updateStickyScrollConf();
 
-const decoRenderOpts: { [themeType in ThemeType]: { [decoType in DecoType]: string } } = {
+type BackgroundType = "default" | "header" | "border";
+
+const decoRenderOpts: {
+  [themeType in ThemeType]: { [decoType in BackgroundType]: string };
+} = {
   dark: {
-    background: "#292b2e",
-    headerBackground: "#5d4d7a",
+    default: "#292b2e",
+    header: "#5d4d7a",
+    border: "#68217A",
   },
   light: {
-    background: "#FAF7EC",
-    headerBackground: "#E6E6EA",
+    default: "#FAF7EC",
+    header: "#E6E6EA",
+    border: "#E7E5EB",
   },
 };
+
+type TextType = TokenType | "dir" | "highlight";
+
+const themeRenderOpts: {
+  [themeType in ThemeType]: {
+    [tokenType in TextType]: ThemableDecorationAttachmentRenderOptions;
+  };
+} = {
+  dark: {
+    dir: { color: "#bc6ec5" },
+    key: { color: "#bc6ec5", fontWeight: "bold" },
+    arrow: { color: "#2d9574" },
+    binding: { color: "#4190d8" },
+    highlight: { color: "#4190d8", fontWeight: "bold" },
+    command: { color: "#ccc" },
+  },
+  light: {
+    key: { color: "#692F60", fontWeight: "bold" },
+    dir: { color: "#692F60" },
+    arrow: { color: "#2A976D" },
+    binding: { color: "#3781C2" },
+    highlight: { color: "#3781C2", fontWeight: "bold" },
+    command: { color: "#67537A" },
+  },
+};
+
+export type Decoration =
+  | {
+      type: "background";
+      background?: BackgroundType;
+      lines: number;
+      lineOffset?: number;
+    }
+  | {
+      type: "text";
+      background?: BackgroundType;
+      foreground: TextType;
+      lineOffset?: number;
+      text: string;
+    };
 
 function escapeTextForBeforeContentText(text: string) {
   return text.replaceAll("'", "\\'").replaceAll(" ", "\\00a0 ").replaceAll("\n", " \\A ");
 }
 
-function renderTextDeco(text: string): ThemableDecorationAttachmentRenderOptions {
-  return {
-    backgroundColor: "transparent",
-    margin: `0 -1ch 0 0; position: absolute; white-space: pre; padding-left: 0.5ch;
-             top: 100%; z-index: 3; content: '${escapeTextForBeforeContentText(text)}';`,
-  };
+export function renderDecorations(
+  decorations: Decoration[],
+  editor: TextEditor,
+  range: Range,
+) {
+  const dts = decorations.map((deco) => {
+    switch (deco.type) {
+      case "background":
+        return window.createTextEditorDecorationType({
+          color: "transparent",
+          before: {
+            contentText: "",
+            backgroundColor:
+              decoRenderOpts[globalThemeType][deco.background ?? "default"],
+            height: `${100 * deco.lines}%`,
+            width: "200ch",
+            margin: `0 -1ch 0 0; position: absolute; z-index: 100;
+               ${deco.lineOffset === undefined ? "" : `top: ${deco.lineOffset * 100}%;`}`,
+          },
+        });
+      case "text":
+        return window.createTextEditorDecorationType({
+          color: "transparent",
+          before: {
+            ...themeRenderOpts[globalThemeType][deco.foreground],
+            ...(deco.background === undefined
+              ? {}
+              : { backgroundColor: decoRenderOpts[globalThemeType][deco.background] }),
+            height: "100%",
+            width: "200ch",
+            margin: `0 -1ch 0 0; position: absolute; z-index: 110; padding-left: 0.5ch; white-space: pre;
+               ${deco.lineOffset === undefined ? "" : `top: ${deco.lineOffset * 100}%;`}
+               content: '${escapeTextForBeforeContentText(deco.text)}'`,
+          },
+        });
+    }
+  });
+  dts.forEach((dt) => editor.setDecorations(dt, [range]));
+  return dts;
 }
 
-function getBackgroundDeco(height: number) {
-  return window.createTextEditorDecorationType({
-    color: "transparent",
-    before: {
-      contentText: " ",
-      backgroundColor: decoRenderOpts[globalThemeType]["background"],
-      height: `${100 * height + 200}%`,
-      width: "200ch",
-      margin: `0 -1ch 0 0; position: absolute; z-index: 1; top: -50%;`,
-    },
-  });
-}
-
-function getHeaderDeco(text: string) {
-  return window.createTextEditorDecorationType({
-    color: "transparent",
-    before: {
-      color: "#ccc",
-      backgroundColor: decoRenderOpts[globalThemeType]["headerBackground"],
-      height: "100%",
-      width: "200ch",
-      margin: `0 -1ch 0 0; position: absolute; z-index: 2; padding-left: 0.5ch;
-               content: '${escapeTextForBeforeContentText(text)}'`,
-    },
-  });
+export function getThemeRenderOpts(tokenType: TextType) {
+  return themeRenderOpts[globalThemeType][tokenType];
 }
 
 function appendStringRightAligned(input: string, toAppend: string, right: number) {
@@ -84,25 +151,6 @@ function appendStringRightAligned(input: string, toAppend: string, right: number
     input + " ".repeat(Math.max(0, right - input.length - toAppend.length)) + toAppend
   );
 }
-
-const themeRenderOpts: {
-  [themeType in ThemeType]: {
-    [tokenType in TokenType]: ThemableDecorationAttachmentRenderOptions;
-  };
-} = {
-  dark: {
-    key: { color: "#bc6ec5", fontWeight: "bold" },
-    arrow: { color: "#2d9574" },
-    binding: { color: "#4190d8" },
-    command: { color: "#ccc" },
-  },
-  light: {
-    key: { color: "#692F60", fontWeight: "bold" },
-    arrow: { color: "#2A976D" },
-    binding: { color: "#3781C2" },
-    command: { color: "#67537A" },
-  },
-};
 
 export function renderBinding(
   binding: Bindings,
@@ -120,37 +168,41 @@ export function renderBinding(
     Math.min(stickyScrollMaxRows, (visibleRange.end.line - visibleRange.start.line) >> 1);
 
   const headerWhen = when === undefined ? "" : `(${when})`;
-  let header = `${path}-    `;
+  let strHeader = `${path}-    `;
   const transientMode = binding.transient ? `${binding.name}    ` : "";
-  header = appendStringRightAligned(header, transientMode, rendered.maxLen >> 1);
-  header = appendStringRightAligned(header, headerWhen, rendered.maxLen);
-  const decoHeader = getHeaderDeco(header);
-  const decoBg = getBackgroundDeco(rendered.nLines);
+  strHeader = appendStringRightAligned(strHeader, transientMode, rendered.maxLen >> 1);
+  strHeader = appendStringRightAligned(strHeader, headerWhen, rendered.maxLen);
+  const header: Decoration = {
+    type: "text",
+    text: strHeader,
+    foreground: "command",
+    background: "header",
+  };
+  const background: Decoration = {
+    type: "background",
+    background: "default",
+    lines: rendered.nLines + 2,
+    lineOffset: -0.5,
+  };
 
-  const decoTypes = rendered.decos.map(([tt, str]) => {
-    const tro = themeRenderOpts[globalThemeType][tt];
-    return window.createTextEditorDecorationType({
-      color: "transparent",
-      before: {
-        ...tro,
-        ...renderTextDeco(str),
-      },
-    });
-  });
+  const decos = [
+    header,
+    background,
+    ...rendered.decos.map<Decoration>(([tt, str]) => ({
+      type: "text",
+      text: str,
+      lineOffset: 1,
+      foreground: tt,
+    })),
+  ];
 
-  const docLines = editor.document.lineCount;
+  const doc = editor.document;
   // fix header to be at least on the 2nd last line
-  lnHeader = Math.max(0, Math.min(docLines - 2, lnHeader));
-  const headerRange = editor.document.lineAt(lnHeader).range;
-  const posTableEnd = editor.document.lineAt(
-    Math.min(docLines - 1, lnHeader + 1 + rendered.nLines - 1),
-  ).range.end;
-
-  const overallRange = new Range(headerRange.start, posTableEnd);
-  editor.setDecorations(decoHeader, [headerRange]);
-  editor.setDecorations(decoBg, [overallRange]);
-  decoTypes.forEach((dt) => {
-    editor.setDecorations(dt, [overallRange]);
-  });
-  return [...decoTypes, decoHeader, decoBg];
+  lnHeader = Math.max(0, Math.min(doc.lineCount - 2, lnHeader));
+  const lnEnd = Math.min(doc.lineCount - 1, lnHeader + 1 + rendered.nLines - 1);
+  const overallRange = new Range(
+    doc.lineAt(lnHeader).range.start,
+    doc.lineAt(lnEnd).range.end,
+  );
+  return renderDecorations(decos, editor, overallRange);
 }

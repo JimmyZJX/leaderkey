@@ -16,24 +16,25 @@ import {
   overrideExn,
   showAsQuickPickItems,
 } from "./command";
-import { renderBinding } from "./decoration";
+import { renderBinding, stickyScrollMaxRows } from "./decoration";
 import { defaultBindings } from "./defaultBindings";
 
 export class LeaderkeyPanel {
   root: Bindings;
   path: string;
   when: string | undefined;
-  stickyScrollMaxRows: number = 0;
   disposableDecos: TextEditorDecorationType[] = [];
 
-  constructor() {
+  onReset: () => void;
+
+  constructor(onReset: () => void) {
+    this.onReset = onReset;
     this.root = structuredClone(defaultBindings);
     this.path = "";
     this.when = undefined;
   }
 
   public async activate(context: ExtensionContext) {
-    this.updateStickyScrollConf();
     this.confOverrideRefresh();
 
     context.subscriptions.push(
@@ -42,21 +43,9 @@ export class LeaderkeyPanel {
         if (event.affectsConfiguration("leaderkey")) {
           this.confOverrideRefresh();
         }
-        if (event.affectsConfiguration("editor.stickyScroll")) {
-          this.updateStickyScrollConf();
-        }
       }),
     );
     await commands.executeCommand("_setContext", WHICHKEY_STATE, this.path);
-  }
-
-  private updateStickyScrollConf() {
-    const ss = workspace.getConfiguration("editor.stickyScroll");
-    if (ss.get("enabled") === true) {
-      this.stickyScrollMaxRows = ss.get("maxLineCount", 5);
-    } else {
-      this.stickyScrollMaxRows = 0;
-    }
   }
 
   private confOverrideRefresh() {
@@ -112,7 +101,7 @@ export class LeaderkeyPanel {
               bOrC,
               path,
               this.when,
-              this.stickyScrollMaxRows,
+              stickyScrollMaxRows,
             );
           }
         }
@@ -177,6 +166,7 @@ export class LeaderkeyPanel {
     if (this.path) {
       this.setAndRenderPath("", undefined);
     }
+    this.onReset();
   }
 
   public async searchBindings() {
