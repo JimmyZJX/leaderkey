@@ -1,0 +1,3 @@
+[submodule "src/fzf-for-js"]
+	path = src/fzf-for-js
+	url = https://github.com/ajitid/fzf-for-js.git
