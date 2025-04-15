@@ -1,5 +1,13 @@
 import { readFileSync, unlinkSync, writeFileSync } from "fs";
+import { keys as diredKeys, scheme as diredScheme } from "./findFile/dired";
 import { normalizeKey, unshiftChars } from "./leaderkey/command";
+
+const IN_DIRED_EDITOR_WHEN = `editorTextFocus && resourceScheme == '${diredScheme}' && !leaderkeyState && (!vim.active || vim.mode == 'Normal')`;
+const diredKeyBindings = Object.entries(diredKeys).map(([key, { name, f: _ }]) => ({
+  key,
+  when: IN_DIRED_EDITOR_WHEN,
+  command: `leaderkey.dired.${name}`,
+}));
 
 function patch(packageJson: any) {
   const ALL_KEY_CHARS = [
@@ -124,7 +132,11 @@ function patch(packageJson: any) {
     },
   ];
 
-  packageJson.contributes.keybindings = [...allKeyCharBindings, ...specialKeyBindings];
+  packageJson.contributes.keybindings = [
+    ...allKeyCharBindings,
+    ...specialKeyBindings,
+    ...diredKeyBindings,
+  ];
 }
 
 test("package.json", () => {

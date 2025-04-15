@@ -1,6 +1,5 @@
 // init: check if remote extension is available
 
-import { ExecException } from "child_process";
 import { dirname, normalize } from "path-browserify";
 import { commands, Range, TextEditorDecorationType, Uri, window } from "vscode";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
@@ -10,12 +9,8 @@ import {
   renderDecorations,
   stickyScrollMaxRows,
 } from "../leaderkey/decoration";
-
-type ProcessRunResult = {
-  error: ExecException | null;
-  stdout: string;
-  stderr: string;
-};
+import { ProcessRunResult, runProcess } from "../remote";
+import { showDir } from "./dired";
 
 const RE_TRAILING_SLASH = /\/$/;
 function stripSlash(basename: string) {
@@ -23,11 +18,7 @@ function stripSlash(basename: string) {
 }
 
 async function ls(dir: string) {
-  const result: ProcessRunResult = await commands.executeCommand(
-    "remote-commons.process.run",
-    "/bin/ls -a -p",
-    [dir],
-  );
+  const result = await runProcess("/bin/ls", ["-a", "-p", dir]);
   if (result.error) {
     window.showErrorMessage(`Failed to ls: ${JSON.stringify(result)}`);
     // TODO consider quit?
@@ -43,6 +34,21 @@ async function ls(dir: string) {
     ];
   }
 }
+
+let ENV_HOME = "/";
+(async () => {
+  const result: ProcessRunResult = await commands.executeCommand(
+    "remote-commons.process.run",
+    "/bin/bash",
+    ["-c", "echo ~"],
+  );
+  if (result.error) {
+    window.showErrorMessage(`Failed to run bash? ${JSON.stringify(result)}`);
+  } else {
+    ENV_HOME = result.stdout.trim();
+    log(`Got ENV_HOME=${ENV_HOME}`);
+  }
+})();
 
 const NUM_ABOVE_OR_BELOW = 10;
 const NUM_TOTAL = NUM_ABOVE_OR_BELOW * 2 + 1;
@@ -85,17 +91,17 @@ export class FindFilePanel {
 
   lastKey: string | undefined;
 
-  private async goto(basename: string, ret?: "ret" | "ret-selection") {
+  private async open(basename: string, ret?: "ret" | "ret-selection") {
     if (ret === undefined && basename.endsWith("/")) {
       this.setDir(this.dir + basename);
     } else {
       // TODO return value to promise
-      if (basename.endsWith("/")) {
-        // TODO go to dir
-        window.showInformationMessage(this.dir + basename);
+      const path = normalize(this.dir + basename);
+      if (path.endsWith("/")) {
+        showDir(path);
         await this.reset();
       } else {
-        const file = Uri.file(this.dir + basename);
+        const file = Uri.file(path);
         await this.reset();
         await window.showTextDocument(file, { preview: false });
       }
@@ -108,13 +114,15 @@ export class FindFilePanel {
     log(`findFile: onKey [${key}]`);
     if (key === "ESC") {
       await this.reset();
+    } else if (key === "~" && this.basename === "") {
+      this.setDir(ENV_HOME + "/");
     } else if (key === "/") {
       if (
         this.lastSelection &&
         this.lastSelection !== "./" &&
         this.lastSelection.endsWith("/")
       ) {
-        this.goto(this.lastSelection);
+        this.open(this.lastSelection);
       } else {
         if (this.basename.startsWith("/")) {
           this.setDir(this.basename);
@@ -128,15 +136,15 @@ export class FindFilePanel {
       this.basename += " ";
     } else if (key === "RET") {
       if (this.lastSelection) {
-        this.goto(this.lastSelection, "ret-selection");
+        this.open(this.lastSelection, "ret-selection");
       } else {
-        this.goto(this.basename, "ret");
+        this.open(this.basename, "ret");
       }
     } else if (key === "TAB") {
       if (this.lastSelection) {
         if (this.lastSelections.length === 1 || last === "TAB") {
           // TODO goto directly only if the last char matches??
-          this.goto(this.lastSelection);
+          this.open(this.lastSelection);
         } else if (this.lastSelections.length > 1) {
           // TODO extend text to the common prefix starting from end of last match
         }
@@ -149,8 +157,10 @@ export class FindFilePanel {
       this.moveSelection(8);
     } else if (key === "C-u") {
       this.moveSelection(-8);
+      // TODO <PGUP> <PGDN>
     } else if (key === "<back>") {
       // TODO add `C-BACK` to clear text
+      // TODO this is called "DEL"
       if (this.basename.length > 0) {
         this.basename = this.basename.slice(0, this.basename.length - 1);
       } else {
@@ -256,9 +266,9 @@ export class FindFilePanel {
         const toRender = fzfResults.slice(renderFrom, renderTo);
         numRenderedSelections = toRender.length;
         selectedLineOffset = selectedIdx - renderFrom;
-        function mapEntries(f: (r: FzfResultItem<string>) => string) {
-          return toRender.map(f).join("\n");
-        }
+
+        const mapEntries = (f: (r: FzfResultItem<string>) => string) =>
+          toRender.map(f).join("\n");
 
         fileListFiles = mapEntries((r) =>
           r.item.endsWith("/")

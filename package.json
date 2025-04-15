@@ -1078,6 +1078,21 @@
           ]
         },
         "when": "(((activeEditorGroupEmpty || activeEditor == 'workbench.editors.errorEditor') && focusedView == '') || sideBarFocus || notebookEditorFocused || inWelcome) && !leaderkeyState && !inputFocus"
+      },
+      {
+        "key": "q",
+        "when": "editorTextFocus && resourceScheme == 'leaderkey.dired' && !leaderkeyState && (!vim.active || vim.mode == 'Normal')",
+        "command": "leaderkey.dired.quit"
+      },
+      {
+        "key": "shift+6",
+        "when": "editorTextFocus && resourceScheme == 'leaderkey.dired' && !leaderkeyState && (!vim.active || vim.mode == 'Normal')",
+        "command": "leaderkey.dired.up"
+      },
+      {
+        "key": "enter",
+        "when": "editorTextFocus && resourceScheme == 'leaderkey.dired' && !leaderkeyState && (!vim.active || vim.mode == 'Normal')",
+        "command": "leaderkey.dired.enter"
       }
     ]
   },
@@ -1086,6 +1101,9 @@
   },
   "eslintConfig": {
     "root": true,
+    "ignorePatterns": [
+      "src/fzf-for-js/**/*"
+    ],
     "parser": "@typescript-eslint/parser",
     "plugins": [
       "@typescript-eslint"
@@ -1131,7 +1149,8 @@
       "^.+\\.(ts|tsx)?$": "ts-jest"
     },
     "modulePathIgnorePatterns": [
-      "./out/"
+      "./out/",
+      "./src/fzf-for-js/"
     ]
   },
   "scripts": {
