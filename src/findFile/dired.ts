@@ -30,7 +30,7 @@ async function loadContent(uri: Uri) {
 export async function showDir(path: string) {
   const uri = Uri.from({ scheme, path });
   const loadedContent = loadContent(uri);
-  await window.showTextDocument(uri, { preview: true });
+  await window.showTextDocument(uri, { preview: false });
   contentCache[uri.toString()] = await loadedContent;
   onDidChangeEmitter.fire(uri);
 }

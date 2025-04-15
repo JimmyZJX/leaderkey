@@ -3,7 +3,7 @@
 import { dirname, normalize } from "path-browserify";
 import { commands, Range, TextEditorDecorationType, Uri, window } from "vscode";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
-import { log, WHICHKEY_STATE } from "../global";
+import { assert, log, WHICHKEY_STATE } from "../global";
 import {
   Decoration,
   renderDecorations,
@@ -61,6 +61,8 @@ export class FindFilePanel {
   filesPromise!: Promise<any>;
   files!: string[] | undefined;
   lastSelections: string[] = [];
+  lastFzfResults: FzfResultItem<string>[] = [];
+  // TODO remove [lastSelection]?
   lastSelection: string | undefined;
 
   isShowing: boolean;
@@ -108,6 +110,13 @@ export class FindFilePanel {
     }
   }
 
+  private static commonPrefix(strs: string[]) {
+    if (!strs[0] || strs.length == 1) return strs[0] || "";
+    let i = 0;
+    while (strs[0][i] && strs.every((w) => w[i] === strs[0][i])) i++;
+    return strs[0].slice(0, i);
+  }
+
   public async onkey(key: string) {
     const last = this.lastKey;
     this.lastKey = key;
@@ -122,7 +131,7 @@ export class FindFilePanel {
         this.lastSelection !== "./" &&
         this.lastSelection.endsWith("/")
       ) {
-        this.open(this.lastSelection);
+        await this.open(this.lastSelection);
       } else {
         if (this.basename.startsWith("/")) {
           this.setDir(this.basename);
@@ -136,17 +145,26 @@ export class FindFilePanel {
       this.basename += " ";
     } else if (key === "RET") {
       if (this.lastSelection) {
-        this.open(this.lastSelection, "ret-selection");
+        await this.open(this.lastSelection, "ret-selection");
       } else {
-        this.open(this.basename, "ret");
+        await this.open(this.basename, "ret");
       }
     } else if (key === "TAB") {
       if (this.lastSelection) {
-        if (this.lastSelections.length === 1 || last === "TAB") {
-          // TODO goto directly only if the last char matches??
-          this.open(this.lastSelection);
+        if (
+          (this.lastSelections.length === 1 && this.lastSelection.endsWith("/")) ||
+          last === "TAB"
+        ) {
+          await this.open(this.lastSelection);
         } else if (this.lastSelections.length > 1) {
-          // TODO extend text to the common prefix starting from end of last match
+          // extend text to the common prefix starting from end of last match
+          assert(this.lastFzfResults.length > 1);
+          const subStrs = this.lastFzfResults.map((r) => ({
+            item: r.item,
+            subStr: r.item.slice(Math.max(...r.positions) + 1),
+          }));
+          const common = FindFilePanel.commonPrefix(subStrs.map(({ subStr }) => subStr));
+          this.basename += stripSlash(common);
         }
       }
     } else if (key === "C-j") {
@@ -212,6 +230,9 @@ export class FindFilePanel {
       fileListFiles = "<loading...>";
       fileListDirs = "";
       fileListHighlight = "";
+      this.lastSelection = undefined;
+      this.lastFzfResults = [];
+      this.lastFzfResults = [];
     } else {
       let fzfResults: FzfResultItem<string>[];
       if (this.basename === "") {
@@ -221,7 +242,7 @@ export class FindFilePanel {
           "\n" + this.files.map((f) => (f.endsWith("/") ? f : "")).join("\n");
         fileListHighlight = "";
         this.lastSelections = [...this.files];
-        fzfResults = this.files.map<FzfResultItem<string>>((f) => ({
+        this.lastFzfResults = this.files.map<FzfResultItem<string>>((f) => ({
           item: f,
           positions: new Set(),
           start: 0,
@@ -230,12 +251,18 @@ export class FindFilePanel {
         }));
       } else {
         const dirs = new Set(this.files.filter((f) => f.endsWith("/")).map(stripSlash));
-        fzfResults = new Fzf(this.files.map(stripSlash), {
+        this.lastFzfResults = new Fzf(this.files.map(stripSlash), {
           tiebreakers: [byStartAsc, byLengthAsc],
         })
           .find(this.basename)
           .map((r) => (dirs.has(r.item) ? { ...r, item: r.item + "/" } : r));
-        this.lastSelections = fzfResults.map((r) => r.item);
+        this.lastSelections = this.lastFzfResults.map((r) => r.item);
+
+        // change selection if user input is an exact match
+        const exactMatch = this.files.filter(
+          (f) => f === this.basename || f === this.basename + "/",
+        );
+        if (exactMatch.length > 0) this.lastSelection = exactMatch[0];
       }
 
       if (this.lastSelections.length > 0) {
@@ -263,7 +290,7 @@ export class FindFilePanel {
           renderTo = Math.min(this.lastSelections.length, renderFrom + NUM_TOTAL);
         }
 
-        const toRender = fzfResults.slice(renderFrom, renderTo);
+        const toRender = this.lastFzfResults.slice(renderFrom, renderTo);
         numRenderedSelections = toRender.length;
         selectedLineOffset = selectedIdx - renderFrom;
 
