@@ -24,10 +24,7 @@ async function ls(dir: string) {
     // TODO consider quit?
     return [];
   } else {
-    const filesAndDirs = result.stdout
-      .trim()
-      .split("\n")
-      .sort((a, b) => stripSlash(a).localeCompare(stripSlash(b)));
+    const filesAndDirs = result.stdout.trim().split("\n");
     return [
       ...filesAndDirs.filter((f) => f.endsWith("/")),
       ...filesAndDirs.filter((f) => !f.endsWith("/")),
@@ -158,20 +155,22 @@ export class FindFilePanel {
     "C-l": async () => this.keyActionRET(),
     TAB: async (last) => {
       if (this.lastSelection) {
-        if (
-          (this.lastSelections.length === 1 && this.lastSelection.endsWith("/")) ||
-          last === "TAB"
-        ) {
+        if (last === "TAB") {
           await this.open(this.lastSelection);
-        } else if (this.lastSelections.length > 1) {
+        } else if (this.lastSelections.length > 0) {
           // extend text to the common prefix starting from end of last match
-          assert(this.lastFzfResults.length > 1);
+          assert(this.lastFzfResults.length > 0);
           const subStrs = this.lastFzfResults.map((r) => ({
             item: r.item,
             subStr: r.item.slice(Math.max(...r.positions) + 1),
           }));
           const common = FindFilePanel.commonPrefix(subStrs.map(({ subStr }) => subStr));
-          this.basename += stripSlash(common);
+          if ((common === "" || common === "/") && this.lastSelections.length === 1) {
+            // only one candidate and text matches to the end
+            await this.open(this.lastSelection);
+          } else {
+            this.basename += stripSlash(common);
+          }
         }
       }
     },

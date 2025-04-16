@@ -18,19 +18,42 @@ import {
   workspace,
 } from "vscode";
 import { runAndParseAnsi } from "../common/ansi";
-import { log } from "../common/global";
+import { assert } from "../common/global";
 
 export const scheme = "leaderkey.dired";
 export const language = "leaderkey.dired";
 
+const RE_DIRED_FOOTER = /\/\/DIRED\/\/(?<dired>[0-9 ]+)\n\/\/DIRED-OPTIONS\/\/.+\n$/;
+
 async function loadContent(uri: Uri) {
-  return await runAndParseAnsi("/bin/ls", ["-lA", "--color", uri.path], {
-    textHook: (stdout: string) =>
-      stdout.replace(/^[^\n]+(\n|$)/, `\x1b[1;38;5;39m${uri.path}\x1b[0m:\n`),
-  });
+  return await runAndParseAnsi(
+    "/bin/ls",
+    ["-lAh", "--dired", "--color=always", "--quoting-style=literal", uri.path],
+    {
+      textHook: (stdout: string) => {
+        // ignore this specific ANSI code
+        stdout = stdout.replace(/\x1B\[K/g, "");
+        const diredFooter = RE_DIRED_FOOTER.exec(stdout);
+        const diredIndices = diredFooter?.groups?.dired;
+        assert(diredFooter && diredIndices, "Dired footer not matched!");
+        const indices = diredIndices
+          .trim()
+          .split(" ")
+          .map((n) => parseInt(n));
+        stdout = stdout.slice(0, stdout.length - diredFooter[0].length);
+        const firstNewLine = stdout.indexOf("\n");
+        assert(firstNewLine >= 0, "ls did not print any line?");
+        const text = `  \x1b[1;38;5;39m${uri.path}\x1b[0m:` + stdout.slice(firstNewLine);
+        const newHeaderLength = 2 + uri.path.length + 1; /* ':' */
+        const indexOffset = newHeaderLength - firstNewLine;
+        return { text, metadata: indices.map((i) => i + indexOffset) };
+      },
+    },
+  );
 }
 
 export async function showDir(path: string) {
+  if (!path.endsWith("/")) path += "/";
   const uri = Uri.from({ scheme, path });
   const pagePromise = loadContent(uri);
   const doc = await workspace.openTextDocument(uri);
@@ -39,6 +62,7 @@ export async function showDir(path: string) {
   const page = await pagePromise;
   const strUri = uri.toString();
   contentCache[strUri] = page.text;
+  metadataCache[strUri] = page.metadata;
   decorationCache[strUri] = page.decorations;
   onDidChangeEmitter.fire(uri);
 }
@@ -46,6 +70,7 @@ export async function showDir(path: string) {
 // TODO init here and mock for jest
 let onDidChangeEmitter: EventEmitter<Uri>;
 const contentCache: { [uri: string]: string } = {};
+const metadataCache: { [uri: string]: number[] } = {};
 const decorationCache: { [uri: string]: [TextEditorDecorationType, Range[]][] } = {};
 const oldDecorations: { [uri: string]: TextEditorDecorationType[] } = {};
 
@@ -93,7 +118,7 @@ function registerProviders() {
       new (class implements DocumentSymbolProvider {
         provideDocumentSymbols(document: TextDocument): DocumentSymbol[] {
           const line0 = document.lineAt(0);
-          const dir = line0.text.replace(/:$/, "");
+          const dir = line0.text.replace(/:$/, "").trim();
           const fullRange = new Range(
             line0.range.start,
             document.lineAt(document.lineCount - 1).range.end,
@@ -120,8 +145,6 @@ function withEditor(f: (editor: TextEditor) => Promise<void>) {
   };
 }
 
-const RE_FILE_OR_DIR = /^(?<type>d|-|l).+ (?<basename>\S+)(\*| -> \S+)?$/;
-
 export const keys: { [key: string]: Command } = {
   q: {
     name: "quit",
@@ -135,32 +158,34 @@ export const keys: { [key: string]: Command } = {
     name: "enter",
     f: withEditor(async (editor) => {
       const doc = editor.document;
+      const indices = metadataCache[doc.uri.toString()];
       const activeLineNo = editor.selection.active.line;
-      const activeLineText = doc.lineAt(activeLineNo).text;
-      log(`activeLineText ${activeLineText}`);
-      const match = RE_FILE_OR_DIR.exec(activeLineText);
-      if (match === null) {
+      const activeLine = doc.lineAt(activeLineNo);
+      if (activeLineNo <= 0 || activeLine.range.isEmpty || !indices) {
         window.showErrorMessage("No file/dir on this line");
-      } else {
-        const type_ = match.groups!.type;
-        switch (type_) {
-          case "-":
-            {
-              // file
-              const file = Uri.file(join(doc.uri.path, match.groups!.basename!));
-              await window.showTextDocument(file, { preview: false });
-            }
-            break;
-          case "l":
-          case "d": // dir
-            {
-              const dir = normalize(join(doc.uri.path, match.groups!.basename!));
-              await showDir(dir);
-            }
-            break;
-          default:
-            window.showErrorMessage(`Unexpected header [${type_}]`);
-        }
+        return;
+      }
+      const i = activeLineNo - 1;
+      assert(
+        i * 2 + 1 < indices.length,
+        `index out of bound (i=${i}, len=${indices.length})`,
+      );
+      const from = doc.positionAt(indices[i * 2]),
+        to = doc.positionAt(indices[i * 2 + 1]);
+      const basename = doc.getText(new Range(from, to));
+      const fullPath = join(doc.uri.path, basename);
+      const type_ = activeLine.text[2];
+      switch (type_) {
+        case "-":
+          // file
+          await window.showTextDocument(Uri.file(fullPath), { preview: false });
+          break;
+        case "l":
+        case "d": // dir
+          await showDir(normalize(fullPath));
+          break;
+        default:
+          window.showErrorMessage(`Unknown header [${type_}]`);
       }
     }),
   },

@@ -14,15 +14,15 @@ import {
   createColorPalette,
   namedColors,
 } from "../ansi-sequence-parser/src";
-import { log } from "./global";
+import { assert, log } from "./global";
 import { runProcess } from "./remote";
-import assert = require("assert");
 
 /** This module manages the terminal ANSI color rendering in VSCode via DecorationType. */
 
-export type DecoratedPage = {
+export type DecoratedPage<T> = {
   text: string;
   decorations: [TextEditorDecorationType, Range[]][];
+  metadata: T;
 };
 
 function updateLineChar(pos: Position, text: string) {
@@ -124,7 +124,7 @@ export function ansiToRaw(ansi: string): string {
     .join("");
 }
 
-function parseAnsi(text: string): DecoratedPage {
+function parseAnsi(text: string): DecoratedPage<undefined> {
   const tokens = createAnsiSequenceParser().parse(text);
   const keyedDecorations: { [key: string]: Range[] } = {};
   // [Range, TextEditorDecorationType][] = [];
@@ -143,7 +143,7 @@ function parseAnsi(text: string): DecoratedPage {
   const decorations = Object.entries(keyedDecorations).map<
     [TextEditorDecorationType, Range[]]
   >(([key, value]) => [decorationCache[key], value]);
-  return { text: rawText, decorations };
+  return { text: rawText, decorations, metadata: undefined };
 }
 
 export function execErrorToPage(error: ExecException, stdout: string, stderr: string) {
@@ -159,19 +159,45 @@ export function execErrorToPage(error: ExecException, stdout: string, stderr: st
   }
 }
 
+type MaybePromise<T> = T | Promise<T>;
+
+export async function runAndParseAnsi<T>(
+  prog: string,
+  args: string[],
+  opts?: ExecOptions & {
+    textHook?: (text: string) => MaybePromise<{ text: string; metadata: T }>;
+  },
+): Promise<DecoratedPage<T>>;
 export async function runAndParseAnsi(
   prog: string,
   args: string[],
-  opts?: ExecOptions & { textHook?: (text: string) => string | Promise<string> },
-): Promise<DecoratedPage> {
+  opts?: ExecOptions & {
+    textHook?: (text: string) => MaybePromise<string>;
+  },
+): Promise<DecoratedPage<undefined>>;
+export async function runAndParseAnsi(
+  prog: string,
+  args: string[],
+  opts?: ExecOptions & { textHook?: (text: string) => MaybePromise<any> },
+): Promise<DecoratedPage<any>> {
   // TODO think about exception
   const { textHook, ...execOpts } = opts ?? {};
   const r = await runProcess(prog, args, execOpts);
   if (r.error) {
     return execErrorToPage(r.error, r.stdout, r.stderr);
   } else {
-    const stdout = textHook ? await textHook(r.stdout) : r.stdout;
-    return parseAnsi(stdout);
+    const afterHook = textHook ? await textHook(r.stdout) : r.stdout;
+    let text: string;
+    let metadata: any = undefined;
+    if (typeof afterHook === "string") {
+      text = afterHook;
+    } else if (typeof afterHook === "object" && afterHook.text && afterHook.metadata) {
+      text = afterHook.text;
+      metadata = afterHook.metadata;
+    } else {
+      assert(false, `Failed to consume result of textHook: ${JSON.stringify(afterHook)}`);
+    }
+    return { ...parseAnsi(text), metadata };
   }
 }
 
