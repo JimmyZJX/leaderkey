@@ -137,6 +137,8 @@ function patch(packageJson: any) {
     ...specialKeyBindings,
     ...diredKeyBindings,
   ];
+
+  packageJson.contributes.languages = [{ id: "leaderkey.dired" }];
 }
 
 test("package.json", () => {

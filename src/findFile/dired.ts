@@ -1,56 +1,110 @@
 import { dirname, join, normalize } from "path-browserify";
 import {
   commands,
+  DocumentSymbol,
+  DocumentSymbolProvider,
   EventEmitter,
   ExtensionContext,
+  languages,
+  Range,
+  SymbolKind,
+  TextDocument,
+  TextDocumentChangeEvent,
   TextDocumentContentProvider,
   TextEditor,
+  TextEditorDecorationType,
   Uri,
   window,
   workspace,
 } from "vscode";
+import { runAndParseAnsi } from "../common/ansi";
 import { log } from "../common/global";
-import { runProcess } from "../common/remote";
 
 export const scheme = "leaderkey.dired";
+export const language = "leaderkey.dired";
 
 async function loadContent(uri: Uri) {
-  const result = await runProcess("/bin/ls", ["-lA", uri.path]);
-  if (result.error) {
-    return (
-      `ERROR [${uri.toString()}]\n${JSON.stringify(result.error)}\n\n` +
-      `STDOUT\n======\n${result.stdout}\n\n` +
-      `STDERR\n======\n${result.stderr}`
-    );
-  } else {
-    return result.stdout.replace(/^[^\n]+(\n|$)/, `${uri.path}:\n`);
-  }
+  return await runAndParseAnsi("/bin/ls", ["-lA", "--color", uri.path], {
+    textHook: (stdout: string) =>
+      stdout.replace(/^[^\n]+(\n|$)/, `\x1b[1;38;5;39m${uri.path}\x1b[0m:\n`),
+  });
 }
 
 export async function showDir(path: string) {
   const uri = Uri.from({ scheme, path });
-  const loadedContent = loadContent(uri);
-  await window.showTextDocument(uri, { preview: false });
-  contentCache[uri.toString()] = await loadedContent;
+  const pagePromise = loadContent(uri);
+  const doc = await workspace.openTextDocument(uri);
+  await languages.setTextDocumentLanguage(doc, language);
+  await window.showTextDocument(doc, { preview: false });
+  const page = await pagePromise;
+  const strUri = uri.toString();
+  contentCache[strUri] = page.text;
+  decorationCache[strUri] = page.decorations;
   onDidChangeEmitter.fire(uri);
 }
 
 // TODO init here and mock for jest
 let onDidChangeEmitter: EventEmitter<Uri>;
 const contentCache: { [uri: string]: string } = {};
+const decorationCache: { [uri: string]: [TextEditorDecorationType, Range[]][] } = {};
+const oldDecorations: { [uri: string]: TextEditorDecorationType[] } = {};
 
-function registerProvider() {
+function updateDecoration(editor: TextEditor) {
+  const uri = editor.document.uri;
+  if (uri.scheme !== scheme) return;
+  const strUri = uri.toString();
+  for (const dt of oldDecorations[strUri] ?? []) {
+    editor.setDecorations(dt, []);
+  }
+  const decorations = decorationCache[strUri] ?? [];
+  oldDecorations[strUri] = decorations.map(([dt, _ranges]) => dt);
+  for (const [dt, ranges] of decorations) {
+    editor.setDecorations(dt, ranges);
+  }
+}
+
+function registerProviders() {
   onDidChangeEmitter = new EventEmitter<Uri>();
-  return workspace.registerTextDocumentContentProvider(
-    scheme,
-    new (class implements TextDocumentContentProvider {
-      onDidChange = onDidChangeEmitter.event;
+  return [
+    workspace.registerTextDocumentContentProvider(
+      scheme,
+      new (class implements TextDocumentContentProvider {
+        onDidChange = onDidChangeEmitter.event;
 
-      provideTextDocumentContent(uri: Uri): string {
-        return contentCache[uri.toString()] ?? "<loading...>";
+        provideTextDocumentContent(uri: Uri): string {
+          return contentCache[uri.toString()] ?? "<loading...>";
+        }
+      })(),
+    ),
+    workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
+      for (const editor of window.visibleTextEditors) {
+        if (editor.document.uri.toString() === e.document.uri.toString()) {
+          updateDecoration(editor);
+        }
       }
-    })(),
-  );
+    }),
+    window.onDidChangeVisibleTextEditors((editors: readonly TextEditor[]) => {
+      for (const editor of editors) {
+        updateDecoration(editor);
+      }
+    }),
+    languages.registerDocumentSymbolProvider(
+      [{ language: language }],
+      new (class implements DocumentSymbolProvider {
+        provideDocumentSymbols(document: TextDocument): DocumentSymbol[] {
+          const line0 = document.lineAt(0);
+          const dir = line0.text.replace(/:$/, "");
+          const fullRange = new Range(
+            line0.range.start,
+            document.lineAt(document.lineCount - 1).range.end,
+          );
+          return [
+            new DocumentSymbol(dir, "dir", SymbolKind.File, fullRange, line0.range),
+          ];
+        }
+      })(),
+    ),
+  ];
 }
 
 type Command = {
@@ -113,7 +167,7 @@ export const keys: { [key: string]: Command } = {
 };
 
 export function register(context: ExtensionContext) {
-  context.subscriptions.push(registerProvider());
+  context.subscriptions.push(...registerProviders());
 
   for (const { name, f } of Object.values(keys)) {
     commands.registerCommand(`leaderkey.dired.${name}`, f);

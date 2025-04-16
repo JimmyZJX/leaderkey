@@ -1214,6 +1214,11 @@
         "when": "editorTextFocus && resourceScheme == 'leaderkey.dired' && !leaderkeyState && (!vim.active || vim.mode == 'Normal')",
         "command": "leaderkey.dired.enter"
       }
+    ],
+    "languages": [
+      {
+        "id": "leaderkey.dired"
+      }
     ]
   },
   "prettier": {
@@ -1270,7 +1275,8 @@
     },
     "modulePathIgnorePatterns": [
       "./out/",
-      "./src/fzf-for-js/"
+      "./src/fzf-for-js/",
+      "./src/ansi-sequence-parser/"
     ]
   },
   "scripts": {

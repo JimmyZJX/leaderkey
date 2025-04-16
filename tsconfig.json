@@ -17,5 +17,6 @@
 	},
 	"exclude": [
 		"src/fzf-for-js/**/*",
+		"src/ansi-sequence-parser/**/*",
 	]
 }
