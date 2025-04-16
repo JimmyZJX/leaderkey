@@ -126,7 +126,7 @@ export class LeaderkeyPanel {
     this.when = when ?? this.when;
 
     const newPath =
-      key === "<back>"
+      key === "<backspace>"
         ? this.pop(this.path)
         : (this.path === "" ? "" : this.path + " ") + key;
     const bOrC = go(this.root, newPath, this.when);

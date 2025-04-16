@@ -94,11 +94,11 @@ export function toVSCodeKey(key: string) {
   }
 
   return key
+    .replace(/<(\w+)>/g, (_match, inner) => inner)
     .replaceAll("SPC", "space")
     .replaceAll("TAB", "tab")
     .replaceAll("RET", "enter")
     .replaceAll("ESC", "escape")
-    .replaceAll("Backspace", "backspace")
     .replaceAll("C-", "ctrl+")
     .replaceAll("M-", "alt+")
     .replaceAll("S-", "shift+")
@@ -134,14 +134,21 @@ export function normalizeKey(key: string) {
     RE_KEY_WHEN,
     (_all, k: string, _2, when: string) =>
       k
-        .replaceAll("space", "SPC")
+        .replaceAll("backspace", "<backspace>")
+        .replaceAll("delete", "<delete>")
+        .replaceAll("pageup", "<pageup>")
+        .replaceAll("pagedown", "<pagedown>")
+        .replaceAll("uparrow", "<uparrow>")
+        .replaceAll("downarrow", "<downarrow>")
+        .replaceAll("leftarrow", "<leftarrow>")
+        .replaceAll("rightarrow", "<rightarrow>")
+        .replace(/\bspace\b/g, "SPC")
         .replaceAll(" ", "SPC")
         .replaceAll("\t", "TAB")
         .replaceAll("tab", "TAB")
         .replaceAll("\n", "RET")
         .replaceAll("enter", "RET")
         .replaceAll("escape", "ESC")
-        .replaceAll("backspace", "Backspace")
         .replaceAll("ctrl+", "C-")
         .replaceAll("alt+", "M-")
         .replaceAll("shift+", "S-")

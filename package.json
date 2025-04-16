@@ -951,24 +951,6 @@
         "args": "S-TAB"
       },
       {
-        "key": "escape",
-        "when": "leaderkeyState && !config.leaderkey.disabled.escape",
-        "command": "leaderkey.onkey",
-        "args": "ESC"
-      },
-      {
-        "key": "ctrl+escape",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-escape",
-        "command": "leaderkey.onkey",
-        "args": "C-ESC"
-      },
-      {
-        "key": "shift+escape",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-escape",
-        "command": "leaderkey.onkey",
-        "args": "S-ESC"
-      },
-      {
         "key": "enter",
         "when": "leaderkeyState && !config.leaderkey.disabled.enter",
         "command": "leaderkey.onkey",
@@ -1005,6 +987,150 @@
         "args": "S-SPC"
       },
       {
+        "key": "backspace",
+        "when": "leaderkeyState && !config.leaderkey.disabled.backspace",
+        "command": "leaderkey.onkey",
+        "args": "<backspace>"
+      },
+      {
+        "key": "ctrl+backspace",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-backspace",
+        "command": "leaderkey.onkey",
+        "args": "C-<backspace>"
+      },
+      {
+        "key": "shift+backspace",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-backspace",
+        "command": "leaderkey.onkey",
+        "args": "S-<backspace>"
+      },
+      {
+        "key": "delete",
+        "when": "leaderkeyState && !config.leaderkey.disabled.delete",
+        "command": "leaderkey.onkey",
+        "args": "<delete>"
+      },
+      {
+        "key": "ctrl+delete",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-delete",
+        "command": "leaderkey.onkey",
+        "args": "C-<delete>"
+      },
+      {
+        "key": "shift+delete",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-delete",
+        "command": "leaderkey.onkey",
+        "args": "S-<delete>"
+      },
+      {
+        "key": "pageup",
+        "when": "leaderkeyState && !config.leaderkey.disabled.pageup",
+        "command": "leaderkey.onkey",
+        "args": "<pageup>"
+      },
+      {
+        "key": "ctrl+pageup",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-pageup",
+        "command": "leaderkey.onkey",
+        "args": "C-<pageup>"
+      },
+      {
+        "key": "shift+pageup",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-pageup",
+        "command": "leaderkey.onkey",
+        "args": "S-<pageup>"
+      },
+      {
+        "key": "pagedown",
+        "when": "leaderkeyState && !config.leaderkey.disabled.pagedown",
+        "command": "leaderkey.onkey",
+        "args": "<pagedown>"
+      },
+      {
+        "key": "ctrl+pagedown",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-pagedown",
+        "command": "leaderkey.onkey",
+        "args": "C-<pagedown>"
+      },
+      {
+        "key": "shift+pagedown",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-pagedown",
+        "command": "leaderkey.onkey",
+        "args": "S-<pagedown>"
+      },
+      {
+        "key": "uparrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.uparrow",
+        "command": "leaderkey.onkey",
+        "args": "<uparrow>"
+      },
+      {
+        "key": "ctrl+uparrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-uparrow",
+        "command": "leaderkey.onkey",
+        "args": "C-<uparrow>"
+      },
+      {
+        "key": "shift+uparrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-uparrow",
+        "command": "leaderkey.onkey",
+        "args": "S-<uparrow>"
+      },
+      {
+        "key": "downarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.downarrow",
+        "command": "leaderkey.onkey",
+        "args": "<downarrow>"
+      },
+      {
+        "key": "ctrl+downarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-downarrow",
+        "command": "leaderkey.onkey",
+        "args": "C-<downarrow>"
+      },
+      {
+        "key": "shift+downarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-downarrow",
+        "command": "leaderkey.onkey",
+        "args": "S-<downarrow>"
+      },
+      {
+        "key": "leftarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.leftarrow",
+        "command": "leaderkey.onkey",
+        "args": "<leftarrow>"
+      },
+      {
+        "key": "ctrl+leftarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-leftarrow",
+        "command": "leaderkey.onkey",
+        "args": "C-<leftarrow>"
+      },
+      {
+        "key": "shift+leftarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-leftarrow",
+        "command": "leaderkey.onkey",
+        "args": "S-<leftarrow>"
+      },
+      {
+        "key": "rightarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.rightarrow",
+        "command": "leaderkey.onkey",
+        "args": "<rightarrow>"
+      },
+      {
+        "key": "ctrl+rightarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-rightarrow",
+        "command": "leaderkey.onkey",
+        "args": "C-<rightarrow>"
+      },
+      {
+        "key": "shift+rightarrow",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-rightarrow",
+        "command": "leaderkey.onkey",
+        "args": "S-<rightarrow>"
+      },
+      {
         "key": "f",
         "when": "leaderkeyState == 'SPC' && sideBarVisible && explorerViewletVisible",
         "command": "leaderkey.onkey",
@@ -1032,12 +1158,6 @@
             }
           ]
         }
-      },
-      {
-        "key": "backspace",
-        "when": "leaderkeyState",
-        "command": "leaderkey.onkey",
-        "args": "<back>"
       },
       {
         "key": "space",

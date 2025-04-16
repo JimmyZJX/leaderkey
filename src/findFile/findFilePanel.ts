@@ -117,15 +117,22 @@ export class FindFilePanel {
     return strs[0].slice(0, i);
   }
 
-  public async onkey(key: string) {
-    const last = this.lastKey;
-    this.lastKey = key;
-    log(`findFile: onKey [${key}]`);
-    if (key === "ESC") {
-      await this.reset();
-    } else if (key === "~" && this.basename === "") {
-      this.setDir(ENV_HOME + "/");
-    } else if (key === "/") {
+  // TODO left/right arrow
+  // TODO C-v C-y
+
+  private async keyActionRET() {
+    if (this.lastSelection) {
+      await this.open(this.lastSelection, "ret-selection");
+    } else {
+      await this.open(this.basename, "ret");
+    }
+  }
+
+  private keyActions: {
+    [key: string]: (last: string | undefined) => void | Promise<void>;
+  } = {
+    ESC: async () => await this.reset(),
+    "/": async () => {
       if (
         this.lastSelection &&
         this.lastSelection !== "./" &&
@@ -136,20 +143,20 @@ export class FindFilePanel {
         if (this.basename.startsWith("/")) {
           this.setDir(this.basename);
         } else {
-          this.basename += key;
+          this.basename += "/";
         }
       }
-    } else if (key.length === 1) {
-      this.basename += key;
-    } else if (key === "SPC") {
+    },
+    "~": () => {
+      if (this.basename === "") this.setDir(ENV_HOME + "/");
+      else this.basename += "~";
+    },
+    SPC: () => {
       this.basename += " ";
-    } else if (key === "RET") {
-      if (this.lastSelection) {
-        await this.open(this.lastSelection, "ret-selection");
-      } else {
-        await this.open(this.basename, "ret");
-      }
-    } else if (key === "TAB") {
+    },
+    RET: async () => this.keyActionRET(),
+    "C-l": async () => this.keyActionRET(),
+    TAB: async (last) => {
       if (this.lastSelection) {
         if (
           (this.lastSelections.length === 1 && this.lastSelection.endsWith("/")) ||
@@ -167,23 +174,41 @@ export class FindFilePanel {
           this.basename += stripSlash(common);
         }
       }
-    } else if (key === "C-j") {
-      this.moveSelection(1);
-    } else if (key === "C-k") {
-      this.moveSelection(-1);
-    } else if (key === "C-d") {
-      this.moveSelection(8);
-    } else if (key === "C-u") {
-      this.moveSelection(-8);
-      // TODO <PGUP> <PGDN>
-    } else if (key === "<back>") {
-      // TODO add `C-BACK` to clear text
-      // TODO this is called "DEL"
+    },
+    "C-j": () => this.moveSelection(1),
+    "C-k": () => this.moveSelection(-1),
+    "C-d": () => this.moveSelection(8),
+    "C-u": () => this.moveSelection(-8),
+    "<pagedown>": () => this.moveSelection(15),
+    "<pageup>": () => this.moveSelection(-15),
+    "C-h": () => this.setDir(dirname(this.dir)),
+    "C-<backspace>": () => {
+      if (this.basename.length > 0) {
+        this.basename = "";
+      } else {
+        this.setDir(dirname(this.dir));
+      }
+    },
+    "<backspace>": () => {
       if (this.basename.length > 0) {
         this.basename = this.basename.slice(0, this.basename.length - 1);
       } else {
         this.setDir(dirname(this.dir));
       }
+    },
+  };
+
+  public async onkey(key: string) {
+    const last = this.lastKey;
+    this.lastKey = key;
+
+    const keyAction = this.keyActions[key];
+    if (keyAction) {
+      await keyAction(last);
+    } else if (key.length === 1) {
+      this.basename += key;
+    } else {
+      log(`find-file: unknown key ${key} (last=${last})`);
     }
     if (this.isShowing) this.render();
   }
@@ -329,7 +354,7 @@ export class FindFilePanel {
       {
         type: "text",
         foreground: "command",
-        text: " ".repeat(this.dir.length) + this.basename,
+        text: " ".repeat(this.dir.length) + this.basename + "█",
       },
       { type: "text", foreground: "dir", text: fileListDirs, lineOffset: 1 },
       { type: "text", foreground: "command", text: fileListFiles, lineOffset: 1 },

@@ -14,9 +14,16 @@ function patch(packageJson: any) {
     ...unshiftChars,
     ..."abcdefghijklmnopqrstuvwxyz",
     "tab",
-    "escape",
     "enter",
     "space",
+    "backspace",
+    "delete",
+    "pageup",
+    "pagedown",
+    "uparrow",
+    "downarrow",
+    "leftarrow",
+    "rightarrow",
   ];
 
   function toDesc(keyChar: string) {
@@ -87,13 +94,6 @@ function patch(packageJson: any) {
           },
         ],
       },
-    },
-    {
-      // `backspace`
-      key: "backspace",
-      when: "leaderkeyState",
-      command: "leaderkey.onkey",
-      args: "<back>",
     },
     // space keys to trigger the leaderkey panel outside the editor
     {
