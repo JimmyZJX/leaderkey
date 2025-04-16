@@ -101,7 +101,13 @@ export class FindFilePanel {
         await this.reset();
       } else {
         const file = Uri.file(path);
-        await this.reset();
+        await Promise.allSettled([
+          (async () => {
+            await runProcess("/bin/mkdir", ["-p", dirname(path)]);
+            await runProcess("/bin/touch", ["-a", path]);
+          })(),
+          this.reset(),
+        ]);
         await window.showTextDocument(file, { preview: false });
       }
     }
@@ -258,7 +264,6 @@ export class FindFilePanel {
       this.lastFzfResults = [];
       this.lastFzfResults = [];
     } else {
-      let fzfResults: FzfResultItem<string>[];
       if (this.basename === "") {
         fileListFiles =
           "\n" + this.files.map((f) => (f.endsWith("/") ? "" : f)).join("\n");
@@ -289,7 +294,12 @@ export class FindFilePanel {
         if (exactMatch.length > 0) this.lastSelection = exactMatch[0];
       }
 
-      if (this.lastSelections.length > 0) {
+      if (this.lastSelections.length === 0) {
+        fileListFiles = fileListDirs = fileListHighlight = "";
+        numRenderedSelections = 0;
+        this.lastSelection = undefined;
+        this.lastFzfResults = [];
+      } else {
         let selectedIdx: number;
         if (this.lastSelection) {
           selectedIdx = this.lastSelections.indexOf(this.lastSelection);
@@ -334,9 +344,6 @@ export class FindFilePanel {
         fileListHighlight = mapEntries((r) =>
           [...r.item].map((c, i) => (r.positions.has(i) ? c : " ")).join(""),
         );
-      } else {
-        fileListFiles = fileListDirs = fileListHighlight = "";
-        numRenderedSelections = 0;
       }
     }
 
