@@ -1,0 +1,12 @@
+{
+	"include": [
+		"src/ansi-sequence-parser/",
+	],
+	"compilerOptions": {
+		"sourceMap": true,
+		"strict": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedParameters": true,
+	},
+}

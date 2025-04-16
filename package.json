@@ -1282,7 +1282,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile-web",
     "watch": "webpack --mode development --watch",
-    "compile-web": "webpack",
+    "compile-web": "npm run compile && webpack",
     "compile": "tsc -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
