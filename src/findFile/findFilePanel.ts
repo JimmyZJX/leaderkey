@@ -135,6 +135,9 @@ export class FindFilePanel {
     [key: string]: (last: string | undefined) => void | Promise<void>;
   } = {
     ESC: async () => await this.reset(),
+    "C-/": () => {
+      this.basename += "/";
+    },
     "/": async () => {
       if (
         this.lastSelection &&
@@ -157,6 +160,8 @@ export class FindFilePanel {
     SPC: () => {
       this.basename += " ";
     },
+    "S-RET": async () => await this.open(this.basename, "ret"),
+    "C-RET": async () => await this.open(this.basename, "ret"),
     RET: async () => this.keyActionRET(),
     "C-l": async () => this.keyActionRET(),
     TAB: async (last) => {
