@@ -9,8 +9,8 @@ import {
   window,
   workspace,
 } from "vscode";
-import { log } from "../global";
-import { runProcess } from "../remote";
+import { log } from "../common/global";
+import { runProcess } from "../common/remote";
 
 export const scheme = "leaderkey.dired";
 

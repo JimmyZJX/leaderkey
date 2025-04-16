@@ -6,9 +6,9 @@ import {
   window,
   workspace,
 } from "vscode";
+import { init } from "./common/global";
 import { register as registerDired } from "./findFile/dired";
 import { FindFilePanel } from "./findFile/findFilePanel";
-import { init } from "./global";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";

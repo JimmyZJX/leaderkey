@@ -1,5 +1,5 @@
 import { QuickPickItem } from "vscode";
-import { log } from "../global";
+import { log } from "../common/global";
 
 export interface DispEntry {
   key: string;

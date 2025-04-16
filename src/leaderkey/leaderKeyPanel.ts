@@ -5,7 +5,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { log, setStatusBar, WHICHKEY_STATE } from "../global";
+import { log, setStatusBar, WHICHKEY_STATE } from "../common/global";
 import {
   Bindings,
   Command,

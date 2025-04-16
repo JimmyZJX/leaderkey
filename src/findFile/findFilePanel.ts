@@ -2,14 +2,14 @@
 
 import { dirname, normalize } from "path-browserify";
 import { commands, Range, TextEditorDecorationType, Uri, window } from "vscode";
+import { assert, log, WHICHKEY_STATE } from "../common/global";
+import { ProcessRunResult, runProcess } from "../common/remote";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
-import { assert, log, WHICHKEY_STATE } from "../global";
 import {
   Decoration,
   renderDecorations,
   stickyScrollMaxRows,
 } from "../leaderkey/decoration";
-import { ProcessRunResult, runProcess } from "../remote";
 import { showDir } from "./dired";
 
 const RE_TRAILING_SLASH = /\/$/;
