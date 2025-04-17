@@ -49,7 +49,6 @@ export class FindFilePanel {
   disposableDecos: TextEditorDecorationType[] = [];
 
   dir!: string;
-  // TODO rename to input
   input: string;
   filesPromise!: Promise<any>;
   files!: string[] | undefined;
@@ -58,6 +57,7 @@ export class FindFilePanel {
     type: "none",
   };
 
+  isSelectionManuallyChanged: boolean;
   isShowing: boolean;
 
   onReset: () => void;
@@ -67,12 +67,14 @@ export class FindFilePanel {
     this.isShowing = false;
     this.setDir(dir);
     this.input = "";
+    this.isSelectionManuallyChanged = false;
   }
 
   setDir(dir: string) {
     this.dir = normalize(dir.endsWith("/") ? dir : dir + "/");
     this.input = "";
     this.lastSelection = { type: "none" };
+    this.isSelectionManuallyChanged = false;
     const promise = ls(dir);
     this.files = undefined;
     this.filesPromise = promise;
@@ -160,14 +162,15 @@ export class FindFilePanel {
     "C-RET": async () => await this.open(this.input, "forceCreate"),
     RET: async () => this.keyActionRET(),
     "C-l": async () => this.keyActionRET(),
-    // TODO TAB should be skipped if selection is "./"
     TAB: async (last) => {
       if (this.lastSelection.type === "file") {
         const file = this.lastSelection.file;
         if (last === "TAB") {
-          await this.open(file);
+          if (file !== "./") {
+            await this.open(file);
+          }
         } else if (this.lastFzfResults.length === 1 && file.endsWith("/")) {
-          // if the only result is a directory, go to it
+          // the only result is a directory
           await this.open(file);
         } else if (this.lastFzfResults.length > 0) {
           // extend text to the common prefix starting from end of last match
@@ -231,6 +234,7 @@ export class FindFilePanel {
   }
 
   private moveSelection(delta: number) {
+    this.isSelectionManuallyChanged = true;
     const { type } = this.lastSelection;
     if (
       delta === -1 &&
@@ -308,21 +312,6 @@ export class FindFilePanel {
         })
           .find(this.input)
           .map((r) => (dirs.has(r.item) ? { ...r, item: r.item + "/" } : r));
-        // TODO this hack may not be necessary if we don't auto-focus on the last selected
-        // item if the user have NOT changed selection before
-
-        // HACK: change selection if user input is an exact match
-        if (this.lastSelection.type !== "input") {
-          const exactMatch = this.files.filter(
-            (f) => f === this.input || f === this.input + "/",
-          );
-          if (exactMatch.length > 0) {
-            const file = exactMatch[0];
-            const idx = this.lastFzfResults.findIndex((r) => r.item === file);
-            assert(idx >= 0, `Exact match [${file}] does not show up in fzf list`);
-            this.lastSelection = { type: "file", file, idx };
-          }
-        }
       }
 
       if (this.lastFzfResults.length === 0) {
@@ -340,11 +329,17 @@ export class FindFilePanel {
           };
           focusIdx = 0;
         } else if (this.lastSelection.type === "file") {
-          const file = this.lastSelection.file;
-          focusIdx = Math.max(
-            0,
-            this.lastFzfResults.findIndex((r) => r.item === file),
-          );
+          if (this.isSelectionManuallyChanged) {
+            // follow user selection
+            const file = this.lastSelection.file;
+            focusIdx = Math.max(
+              0,
+              this.lastFzfResults.findIndex((r) => r.item === file),
+            );
+          } else {
+            // use the best fzf match if selection is never manually changed
+            focusIdx = 0;
+          }
           newSelection = {
             type: "file",
             file: this.lastFzfResults[focusIdx].item,
@@ -420,7 +415,6 @@ export class FindFilePanel {
       { type: "text", foreground: "highlight", text: fileListHighlight, lineOffset: 1 },
       { type: "text", foreground: "binding", text: this.dir },
     ];
-    // TODO render when type === "input"
     switch (newSelection.type) {
       case "none":
         break;
