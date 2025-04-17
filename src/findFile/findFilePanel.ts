@@ -1,7 +1,7 @@
 // init: check if remote extension is available
 
 import { dirname, normalize } from "path-browserify";
-import { commands, Range, TextEditorDecorationType, Uri, window } from "vscode";
+import { commands, env, Range, TextEditorDecorationType, Uri, window } from "vscode";
 import { assert, log, WHICHKEY_STATE } from "../common/global";
 import { ProcessRunResult, runProcess } from "../common/remote";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
@@ -121,7 +121,6 @@ export class FindFilePanel {
   }
 
   // TODO left/right arrow
-  // TODO C-v C-y
 
   private async keyActionRET() {
     if (this.lastSelection) {
@@ -129,6 +128,9 @@ export class FindFilePanel {
     } else {
       await this.open(this.basename, "ret");
     }
+  }
+  private async pasteAction() {
+    this.basename += (await env.clipboard.readText()).replaceAll("\n", "");
   }
 
   private keyActions: {
@@ -206,6 +208,8 @@ export class FindFilePanel {
         this.setDir(dirname(this.dir));
       }
     },
+    "C-y": () => this.pasteAction(),
+    "C-v": () => this.pasteAction(),
   };
 
   public async onkey(key: string) {
