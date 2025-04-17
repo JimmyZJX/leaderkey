@@ -42,6 +42,7 @@ export async function pickPathFromUri(uri: Uri, mode?: "dirname") {
   function modeOf(path: string) {
     switch (mode) {
       case "dirname":
+        if (path.endsWith("/")) return path.slice(0, -1);
         return dirname(path);
       case undefined:
         return path;
