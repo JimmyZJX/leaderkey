@@ -1,9 +1,9 @@
 // init: check if remote extension is available
 
 import { dirname, normalize } from "path-browserify";
-import { commands, env, Range, TextEditorDecorationType, Uri, window } from "vscode";
+import { commands, env, Range, TextEditorDecorationType, window } from "vscode";
 import { assert, log, WHICHKEY_STATE } from "../common/global";
-import { ProcessRunResult, runProcess } from "../common/remote";
+import { openFile, ProcessRunResult, runProcess } from "../common/remote";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
 import {
   Decoration,
@@ -91,25 +91,27 @@ export class FindFilePanel {
 
   lastKey: string | undefined;
 
-  private async open(basename: string, ret?: "ret" | "ret-selection") {
-    if (ret === undefined && basename.endsWith("/")) {
+  private async open(basename: string, mode?: "forceCreate" | "ret") {
+    if (mode === undefined && basename.endsWith("/")) {
       this.setDir(this.dir + basename);
     } else {
       // TODO return value to promise
       const path = normalize(this.dir + basename);
       if (path.endsWith("/")) {
-        showDir(path);
         await this.reset();
+        await showDir(path);
       } else {
-        const file = Uri.file(path);
-        await Promise.allSettled([
-          (async () => {
-            await runProcess("/bin/mkdir", ["-p", dirname(path)]);
-            await runProcess("/bin/touch", ["-a", path]);
-          })(),
-          this.reset(),
-        ]);
-        await window.showTextDocument(file, { preview: false });
+        if (mode === "forceCreate") {
+          await Promise.allSettled([
+            (async () => {
+              await runProcess("/bin/mkdir", ["-p", dirname(path)]);
+              await runProcess("/bin/touch", ["-a", path]);
+            })(),
+            this.reset(),
+          ]);
+        }
+        await openFile(path, { preview: false });
+        await this.reset();
       }
     }
   }
@@ -125,9 +127,9 @@ export class FindFilePanel {
 
   private async keyActionRET() {
     if (this.lastSelection) {
-      await this.open(this.lastSelection, "ret-selection");
+      await this.open(this.lastSelection, "ret");
     } else {
-      await this.open(this.basename, "ret");
+      await this.open(this.basename, "forceCreate");
     }
   }
   private async pasteAction() {
@@ -163,8 +165,8 @@ export class FindFilePanel {
     SPC: () => {
       this.basename += " ";
     },
-    "S-RET": async () => await this.open(this.basename, "ret"),
-    "C-RET": async () => await this.open(this.basename, "ret"),
+    "S-RET": async () => await this.open(this.basename, "forceCreate"),
+    "C-RET": async () => await this.open(this.basename, "forceCreate"),
     RET: async () => this.keyActionRET(),
     "C-l": async () => this.keyActionRET(),
     TAB: async (last) => {

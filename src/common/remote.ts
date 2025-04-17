@@ -1,5 +1,5 @@
 import { ExecException, ExecOptions } from "child_process";
-import { commands } from "vscode";
+import { commands, TextDocumentShowOptions } from "vscode";
 import { log } from "./global";
 
 export type ProcessRunResult = {
@@ -17,4 +17,8 @@ export async function runProcess(prog: string, args: string[], execOpts?: ExecOp
     execOpts,
   );
   return result;
+}
+
+export async function openFile(file: string, options?: TextDocumentShowOptions) {
+  await commands.executeCommand("remote-commons.openFile", file, options);
 }

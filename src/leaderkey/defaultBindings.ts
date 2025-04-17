@@ -637,8 +637,8 @@ const SpaceRoot: Bindings = {
       name: "+File",
       keys: {
         f: {
-          name: "Open file/folder",
-          command: "file-browser.open",
+          name: "Open file/folder (find-file)",
+          command: "leaderkey.findFile",
         },
         l: {
           name: "Change file language",

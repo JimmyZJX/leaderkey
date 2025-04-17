@@ -51,8 +51,7 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand("leaderkey.findFile", async () => {
       const editor = window.activeTextEditor;
       if (!editor) return;
-      const filename = editor.document.uri.path;
-      findFilePanel.setDir(dirname(filename));
+      findFilePanel.setDir(dirname(editor.document.uri.path));
       findFilePanel.render();
       currentPanel = "findfile";
     }),

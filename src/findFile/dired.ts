@@ -19,6 +19,7 @@ import {
 } from "vscode";
 import { runAndParseAnsi } from "../common/ansi";
 import { assert } from "../common/global";
+import { openFile } from "../common/remote";
 
 export const scheme = "leaderkey.dired";
 export const language = "leaderkey.dired";
@@ -189,7 +190,7 @@ export const keys: { [key: string]: Command } = {
       switch (type_) {
         case "-":
           // file
-          await window.showTextDocument(Uri.file(fullPath), { preview: false });
+          await openFile(fullPath, { preview: false });
           break;
         case "l":
         case "d": // dir
