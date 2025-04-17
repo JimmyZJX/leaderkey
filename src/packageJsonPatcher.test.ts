@@ -20,10 +20,10 @@ function patch(packageJson: any) {
     "delete",
     "pageup",
     "pagedown",
-    "uparrow",
-    "downarrow",
-    "leftarrow",
-    "rightarrow",
+    "up",
+    "down",
+    "left",
+    "right",
   ];
 
   function toDesc(keyChar: string) {

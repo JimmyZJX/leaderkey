@@ -18,8 +18,12 @@ function stripSlash(basename: string) {
 }
 
 async function ls(dir: string) {
-  // a: all, p: append slash, H: follow link for input, L deference link for output
-  const result = await runProcess("/bin/ls", ["-apHL", dir]);
+  // a: all, p: append slash, H: follow link for input
+  const result = await runProcess("/bin/ls", [
+    "-apH",
+    "--dereference-command-line-symlink-to-dir",
+    dir,
+  ]);
   if (result.error) {
     window.showErrorMessage(`Failed to ls: ${JSON.stringify(result)}`);
     // TODO consider quit?
@@ -191,7 +195,9 @@ export class FindFilePanel {
       }
     },
     "C-j": () => this.moveSelection(1),
+    "<down>": () => this.moveSelection(1),
     "C-k": () => this.moveSelection(-1),
+    "<up>": () => this.moveSelection(-1),
     "C-d": () => this.moveSelection(8),
     "C-u": () => this.moveSelection(-8),
     "<pagedown>": () => this.moveSelection(15),
@@ -405,6 +411,7 @@ export class FindFilePanel {
     const oldDisposables = this.disposableDecos;
     try {
       commands.executeCommand("_setContext", WHICHKEY_STATE, ":findFile");
+      commands.executeCommand("_setContext", "inDebugRepl", true);
       this.disposableDecos = this.doRender();
     } finally {
       for (const dsp of oldDisposables) dsp.dispose();
@@ -418,5 +425,6 @@ export class FindFilePanel {
     this.isShowing = false;
     this.onReset();
     await commands.executeCommand("_setContext", WHICHKEY_STATE, "");
+    await commands.executeCommand("_setContext", "inDebugRepl", false);
   }
 }

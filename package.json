@@ -1071,76 +1071,76 @@
         "args": "S-<pagedown>"
       },
       {
-        "key": "uparrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.uparrow",
+        "key": "up",
+        "when": "leaderkeyState && !config.leaderkey.disabled.up",
         "command": "leaderkey.onkey",
-        "args": "<uparrow>"
+        "args": "<up>"
       },
       {
-        "key": "ctrl+uparrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-uparrow",
+        "key": "ctrl+up",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-up",
         "command": "leaderkey.onkey",
-        "args": "C-<uparrow>"
+        "args": "C-<up>"
       },
       {
-        "key": "shift+uparrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-uparrow",
+        "key": "shift+up",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-up",
         "command": "leaderkey.onkey",
-        "args": "S-<uparrow>"
+        "args": "S-<up>"
       },
       {
-        "key": "downarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.downarrow",
+        "key": "down",
+        "when": "leaderkeyState && !config.leaderkey.disabled.down",
         "command": "leaderkey.onkey",
-        "args": "<downarrow>"
+        "args": "<down>"
       },
       {
-        "key": "ctrl+downarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-downarrow",
+        "key": "ctrl+down",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-down",
         "command": "leaderkey.onkey",
-        "args": "C-<downarrow>"
+        "args": "C-<down>"
       },
       {
-        "key": "shift+downarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-downarrow",
+        "key": "shift+down",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-down",
         "command": "leaderkey.onkey",
-        "args": "S-<downarrow>"
+        "args": "S-<down>"
       },
       {
-        "key": "leftarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.leftarrow",
+        "key": "left",
+        "when": "leaderkeyState && !config.leaderkey.disabled.left",
         "command": "leaderkey.onkey",
-        "args": "<leftarrow>"
+        "args": "<left>"
       },
       {
-        "key": "ctrl+leftarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-leftarrow",
+        "key": "ctrl+left",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-left",
         "command": "leaderkey.onkey",
-        "args": "C-<leftarrow>"
+        "args": "C-<left>"
       },
       {
-        "key": "shift+leftarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-leftarrow",
+        "key": "shift+left",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-left",
         "command": "leaderkey.onkey",
-        "args": "S-<leftarrow>"
+        "args": "S-<left>"
       },
       {
-        "key": "rightarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.rightarrow",
+        "key": "right",
+        "when": "leaderkeyState && !config.leaderkey.disabled.right",
         "command": "leaderkey.onkey",
-        "args": "<rightarrow>"
+        "args": "<right>"
       },
       {
-        "key": "ctrl+rightarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-rightarrow",
+        "key": "ctrl+right",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-right",
         "command": "leaderkey.onkey",
-        "args": "C-<rightarrow>"
+        "args": "C-<right>"
       },
       {
-        "key": "shift+rightarrow",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-rightarrow",
+        "key": "shift+right",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-right",
         "command": "leaderkey.onkey",
-        "args": "S-<rightarrow>"
+        "args": "S-<right>"
       },
       {
         "key": "f",
