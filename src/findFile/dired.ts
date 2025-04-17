@@ -28,7 +28,15 @@ const RE_DIRED_FOOTER = /\/\/DIRED\/\/(?<dired>[0-9 ]+)\n\/\/DIRED-OPTIONS\/\/.+
 async function loadContent(uri: Uri) {
   return await runAndParseAnsi(
     "/bin/ls",
-    ["-lAh", "--dired", "--color=always", "--quoting-style=literal", uri.path],
+    // l: long details, A: all but . and .., h: human readable, H: follow link for input
+    [
+      "-lAhH",
+      "--dired",
+      "--color=always",
+      "--quoting-style=literal",
+      "--show-control-chars",
+      uri.path,
+    ],
     {
       textHook: (stdout: string) => {
         // ignore this specific ANSI code
@@ -43,9 +51,12 @@ async function loadContent(uri: Uri) {
         stdout = stdout.slice(0, stdout.length - diredFooter[0].length);
         const firstNewLine = stdout.indexOf("\n");
         assert(firstNewLine >= 0, "ls did not print any line?");
-        const text = `  \x1b[1;38;5;39m${uri.path}\x1b[0m:` + stdout.slice(firstNewLine);
+        let text = `  \x1b[1;38;5;39m${uri.path}\x1b[0m:` + stdout.slice(firstNewLine);
         const newHeaderLength = 2 + uri.path.length + 1; /* ':' */
         const indexOffset = newHeaderLength - firstNewLine;
+
+        // tweak color: remove background on public dir (and change foreground to normal dir)
+        text = text.replaceAll("\x1b[48;5;10;38;5;21m", "\x1b[0m\x1b[38;5;45m");
         return { text, metadata: indices.map((i) => i + indexOffset) };
       },
     },

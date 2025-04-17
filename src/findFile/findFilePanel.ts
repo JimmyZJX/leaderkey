@@ -18,7 +18,8 @@ function stripSlash(basename: string) {
 }
 
 async function ls(dir: string) {
-  const result = await runProcess("/bin/ls", ["-a", "-p", dir]);
+  // a: all, p: append slash, H: follow link for input, L deference link for output
+  const result = await runProcess("/bin/ls", ["-apHL", dir]);
   if (result.error) {
     window.showErrorMessage(`Failed to ls: ${JSON.stringify(result)}`);
     // TODO consider quit?

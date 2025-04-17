@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "0.6.1-2",
+  "version": "0.7.0",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -43,31 +43,43 @@
     "commands": [
       {
         "command": "leaderkey.render",
-        "title": "Render leaderkey menu"
+        "title": "Render leaderkey menu",
+        "category": "Leaderkey"
       },
       {
         "command": "leaderkey.onkey",
-        "title": "Append keys to the leaderkey state"
+        "title": "Append keys to the leaderkey state",
+        "category": "Leaderkey"
       },
       {
         "command": "leaderkey.refreshConfigs",
-        "title": "Manually refresh configs under `leaderkey.overrides`. This command should only be called from other extensions."
+        "title": "Manually refresh configs under `leaderkey.overrides`. This command should only be called from other extensions.",
+        "category": "Leaderkey"
       },
       {
         "command": "leaderkey.migrateFromVSpaceCode",
-        "title": "Try migrating the config from VSpaceCode to leaderkey"
+        "title": "Try migrating the config from VSpaceCode to leaderkey",
+        "category": "Leaderkey"
       },
       {
         "command": "leaderkey.pushGotoStack",
-        "title": "push the current cursor position to the \"go-to\" stack; used in a lot of built-in commands like [, g g]"
+        "title": "push the current cursor position to the \"go-to\" stack; used in a lot of built-in commands like [, g g]",
+        "category": "Leaderkey"
       },
       {
         "command": "leaderkey.popGotoStack",
-        "title": "pop and set the cursor position from the \"go-to\" stack; bound to [, g b]"
+        "title": "pop and set the cursor position from the \"go-to\" stack; bound to [, g b]",
+        "category": "Leaderkey"
       },
       {
+        "command": "leaderkey.searchBindings",
         "title": "Search keybindings",
-        "command": "leaderkey.searchBindings"
+        "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.findFile",
+        "title": "Show find-file panel",
+        "category": "Leaderkey"
       }
     ],
     "configuration": {
