@@ -155,6 +155,9 @@ export class FindFilePanel {
       if (this.lastSelection) {
         if (last === "TAB") {
           await this.open(this.lastSelection);
+        } else if (this.lastSelections.length === 1 && this.lastSelection.endsWith("/")) {
+          // if the only result is a directory, go to it
+          await this.open(this.lastSelection);
         } else if (this.lastSelections.length > 0) {
           // extend text to the common prefix starting from end of last match
           assert(this.lastFzfResults.length > 0);
