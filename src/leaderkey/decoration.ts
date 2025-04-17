@@ -88,6 +88,7 @@ export type Decoration =
       background?: BackgroundType;
       lines: number;
       lineOffset?: number;
+      zOffset?: number;
     }
   | {
       type: "text";
@@ -117,7 +118,7 @@ export function renderDecorations(
               decoRenderOpts[globalThemeType][deco.background ?? "default"],
             height: `${100 * deco.lines}%`,
             width: "200ch",
-            margin: `0 -1ch 0 0; position: absolute; z-index: 100;
+            margin: `0 -1ch 0 0; position: absolute; z-index: ${100 + (deco.zOffset ?? 0)};
                ${deco.lineOffset === undefined ? "" : `top: ${deco.lineOffset * 100}%;`}`,
           },
         });

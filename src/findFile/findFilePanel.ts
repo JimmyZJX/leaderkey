@@ -40,17 +40,23 @@ async function ls(dir: string) {
 const NUM_ABOVE_OR_BELOW = 10;
 const NUM_TOTAL = NUM_ABOVE_OR_BELOW * 2 + 1;
 
+type CurrentSelection =
+  | { type: "none" }
+  | { type: "file"; file: string; idx: number }
+  | { type: "input" };
+
 export class FindFilePanel {
   disposableDecos: TextEditorDecorationType[] = [];
 
   dir!: string;
-  basename: string;
+  // TODO rename to input
+  input: string;
   filesPromise!: Promise<any>;
   files!: string[] | undefined;
-  lastSelections: string[] = [];
   lastFzfResults: FzfResultItem<string>[] = [];
-  // TODO remove [lastSelection]?
-  lastSelection: string | undefined;
+  lastSelection: CurrentSelection = {
+    type: "none",
+  };
 
   isShowing: boolean;
 
@@ -60,13 +66,13 @@ export class FindFilePanel {
     this.onReset = onReset;
     this.isShowing = false;
     this.setDir(dir);
-    this.basename = "";
+    this.input = "";
   }
 
   setDir(dir: string) {
     this.dir = normalize(dir.endsWith("/") ? dir : dir + "/");
-    this.basename = "";
-    this.lastSelection = undefined;
+    this.input = "";
+    this.lastSelection = { type: "none" };
     const promise = ls(dir);
     this.files = undefined;
     this.filesPromise = promise;
@@ -108,14 +114,17 @@ export class FindFilePanel {
   // TODO left/right arrow
 
   private async keyActionRET() {
-    if (this.lastSelection) {
-      await this.open(this.lastSelection, "ret");
-    } else {
-      await this.open(this.basename, "forceCreate");
+    switch (this.lastSelection.type) {
+      case "file":
+        await this.open(this.lastSelection.file, "ret");
+        break;
+      case "input":
+      case "none":
+        await this.open(this.input, "forceCreate");
     }
   }
   private async pasteAction() {
-    this.basename += (await env.clipboard.readText()).replaceAll("\n", "");
+    this.input += (await env.clipboard.readText()).replaceAll("\n", "");
   }
 
   private keyActions: {
@@ -123,42 +132,44 @@ export class FindFilePanel {
   } = {
     ESC: async () => await this.reset(),
     "C-/": () => {
-      this.basename += "/";
+      this.input += "/";
     },
     "/": async () => {
       if (
-        this.lastSelection &&
-        this.lastSelection !== "./" &&
-        this.lastSelection.endsWith("/")
+        this.lastSelection.type === "file" &&
+        this.lastSelection.file !== "./" &&
+        this.lastSelection.file.endsWith("/")
       ) {
-        await this.open(this.lastSelection);
+        await this.open(this.lastSelection.file);
       } else {
-        if (this.basename.startsWith("/")) {
-          this.setDir(this.basename);
+        if (this.input.startsWith("/") && this.lastSelection.type !== "input") {
+          this.setDir(this.input);
         } else {
-          this.basename += "/";
+          this.input += "/";
         }
       }
     },
     "~": () => {
-      if (this.basename === "") this.setDir(ENV_HOME + "/");
-      else this.basename += "~";
+      if (this.input === "") this.setDir(ENV_HOME + "/");
+      else this.input += "~";
     },
     SPC: () => {
-      this.basename += " ";
+      this.input += " ";
     },
-    "S-RET": async () => await this.open(this.basename, "forceCreate"),
-    "C-RET": async () => await this.open(this.basename, "forceCreate"),
+    "S-RET": async () => await this.open(this.input, "forceCreate"),
+    "C-RET": async () => await this.open(this.input, "forceCreate"),
     RET: async () => this.keyActionRET(),
     "C-l": async () => this.keyActionRET(),
+    // TODO TAB should be skipped if selection is "./"
     TAB: async (last) => {
-      if (this.lastSelection) {
+      if (this.lastSelection.type === "file") {
+        const file = this.lastSelection.file;
         if (last === "TAB") {
-          await this.open(this.lastSelection);
-        } else if (this.lastSelections.length === 1 && this.lastSelection.endsWith("/")) {
+          await this.open(file);
+        } else if (this.lastFzfResults.length === 1 && file.endsWith("/")) {
           // if the only result is a directory, go to it
-          await this.open(this.lastSelection);
-        } else if (this.lastSelections.length > 0) {
+          await this.open(file);
+        } else if (this.lastFzfResults.length > 0) {
           // extend text to the common prefix starting from end of last match
           assert(this.lastFzfResults.length > 0);
           const subStrs = this.lastFzfResults.map((r) => ({
@@ -166,13 +177,15 @@ export class FindFilePanel {
             subStr: r.item.slice(Math.max(...r.positions) + 1),
           }));
           const common = commonPrefix(subStrs.map(({ subStr }) => subStr));
-          if ((common === "" || common === "/") && this.lastSelections.length === 1) {
+          if ((common === "" || common === "/") && this.lastFzfResults.length === 1) {
             // only one candidate and text matches to the end
-            await this.open(this.lastSelection);
+            await this.open(file);
           } else {
-            this.basename += stripSlash(common);
+            this.input += stripSlash(common);
           }
         }
+      } else if (this.lastSelection.type === "input") {
+        await this.open(this.input);
       }
     },
     "C-j": () => this.moveSelection(1),
@@ -185,15 +198,15 @@ export class FindFilePanel {
     "<pageup>": () => this.moveSelection(-15),
     "C-h": () => this.setDir(dirname(this.dir)),
     "C-<backspace>": () => {
-      if (this.basename.length > 0) {
-        this.basename = "";
+      if (this.input.length > 0) {
+        this.input = "";
       } else {
         this.setDir(dirname(this.dir));
       }
     },
     "<backspace>": () => {
-      if (this.basename.length > 0) {
-        this.basename = this.basename.slice(0, this.basename.length - 1);
+      if (this.input.length > 0) {
+        this.input = this.input.slice(0, this.input.length - 1);
       } else {
         this.setDir(dirname(this.dir));
       }
@@ -210,7 +223,7 @@ export class FindFilePanel {
     if (keyAction) {
       await keyAction(last);
     } else if (key.length === 1) {
-      this.basename += key;
+      this.input += key;
     } else {
       log(`find-file: unknown key ${key} (last=${last})`);
     }
@@ -218,19 +231,31 @@ export class FindFilePanel {
   }
 
   private moveSelection(delta: number) {
-    if (this.lastSelection === undefined) {
-      this.lastSelection = this.lastSelections.at(0);
-    } else {
-      const idx = this.lastSelections.indexOf(this.lastSelection);
-      if (idx < 0) {
-        this.lastSelection = this.lastSelections[0];
+    const { type } = this.lastSelection;
+    if (
+      delta === -1 &&
+      (type === "none" || (type === "file" && this.lastSelection.idx === 0))
+    ) {
+      // move upward to select input
+      this.lastSelection = { type: "input" };
+    } else if ((delta === 1 && type === "input") || type === "none") {
+      // move downward from input; same when no selections was selected before somehow
+      if (this.lastFzfResults.length > 0) {
+        this.lastSelection = { type: "file", file: this.lastFzfResults[0].item, idx: 0 };
       } else {
-        const newIdx =
-          delta > 0
-            ? Math.min(this.lastSelections.length - 1, idx + delta)
-            : Math.max(0, idx + delta);
-        this.lastSelection = this.lastSelections[newIdx];
+        this.lastSelection = { type: "none" };
       }
+    } else if (type === "file") {
+      const { idx, file } = this.lastSelection;
+      const newIdx =
+        delta > 0
+          ? Math.min(this.lastFzfResults.length - 1, idx + delta)
+          : Math.max(0, idx + delta);
+      this.lastSelection = {
+        type: "file",
+        file: this.lastFzfResults[newIdx].item,
+        idx: newIdx,
+      };
     }
     if (this.lastSelection) {
       this.render();
@@ -252,24 +277,23 @@ export class FindFilePanel {
     let fileListFiles: string;
     let fileListDirs: string;
     let fileListHighlight: string;
-    let numRenderedSelections: number;
-    let selectedLineOffset: number | undefined;
+    let renderedLines: { start: number; len: number };
+    let newSelection: CurrentSelection;
+
     if (this.files === undefined) {
-      numRenderedSelections = 1;
+      renderedLines = { start: 0, len: 1 };
       fileListFiles = "<loading...>";
       fileListDirs = "";
       fileListHighlight = "";
-      this.lastSelection = undefined;
       this.lastFzfResults = [];
-      this.lastFzfResults = [];
+      newSelection = { type: "none" };
     } else {
-      if (this.basename === "") {
+      if (this.input === "") {
         fileListFiles =
           "\n" + this.files.map((f) => (f.endsWith("/") ? "" : f)).join("\n");
         fileListDirs =
           "\n" + this.files.map((f) => (f.endsWith("/") ? f : "")).join("\n");
         fileListHighlight = "";
-        this.lastSelections = [...this.files];
         this.lastFzfResults = this.files.map<FzfResultItem<string>>((f) => ({
           item: f,
           positions: new Set(),
@@ -282,50 +306,71 @@ export class FindFilePanel {
         this.lastFzfResults = new Fzf(this.files.map(stripSlash), {
           tiebreakers: [byStartAsc, byLengthAsc],
         })
-          .find(this.basename)
+          .find(this.input)
           .map((r) => (dirs.has(r.item) ? { ...r, item: r.item + "/" } : r));
-        this.lastSelections = this.lastFzfResults.map((r) => r.item);
+        // TODO this hack may not be necessary if we don't auto-focus on the last selected
+        // item if the user have NOT changed selection before
 
-        // change selection if user input is an exact match
-        const exactMatch = this.files.filter(
-          (f) => f === this.basename || f === this.basename + "/",
-        );
-        if (exactMatch.length > 0) this.lastSelection = exactMatch[0];
+        // HACK: change selection if user input is an exact match
+        if (this.lastSelection.type !== "input") {
+          const exactMatch = this.files.filter(
+            (f) => f === this.input || f === this.input + "/",
+          );
+          if (exactMatch.length > 0) {
+            const file = exactMatch[0];
+            const idx = this.lastFzfResults.findIndex((r) => r.item === file);
+            assert(idx >= 0, `Exact match [${file}] does not show up in fzf list`);
+            this.lastSelection = { type: "file", file, idx };
+          }
+        }
       }
 
-      if (this.lastSelections.length === 0) {
+      if (this.lastFzfResults.length === 0) {
         fileListFiles = fileListDirs = fileListHighlight = "";
-        numRenderedSelections = 0;
-        this.lastSelection = undefined;
-        this.lastFzfResults = [];
+        renderedLines = { start: 0, len: 0 };
+        newSelection =
+          this.lastSelection.type === "input" ? this.lastSelection : { type: "none" };
       } else {
-        let selectedIdx: number;
-        if (this.lastSelection) {
-          selectedIdx = this.lastSelections.indexOf(this.lastSelection);
-          if (selectedIdx < 0) selectedIdx = 0;
-        } else {
-          selectedIdx = 0;
-        }
-        this.lastSelection = this.lastSelections[selectedIdx];
-
-        let renderFrom = Math.max(0, selectedIdx - NUM_ABOVE_OR_BELOW),
-          renderTo = Math.min(
-            this.lastSelections.length,
-            selectedIdx + NUM_ABOVE_OR_BELOW + 1,
+        let focusIdx: number;
+        if (this.lastSelection.type === "none") {
+          newSelection = {
+            type: "file",
+            file: this.lastFzfResults[0].item,
+            idx: 0,
+          };
+          focusIdx = 0;
+        } else if (this.lastSelection.type === "file") {
+          const file = this.lastSelection.file;
+          focusIdx = Math.max(
+            0,
+            this.lastFzfResults.findIndex((r) => r.item === file),
           );
+          newSelection = {
+            type: "file",
+            file: this.lastFzfResults[focusIdx].item,
+            idx: focusIdx,
+          };
+        } else {
+          assert(this.lastSelection.type === "input");
+          newSelection = this.lastSelection;
+          focusIdx = 0;
+        }
+
+        const numResults = this.lastFzfResults.length;
+        let renderFrom = Math.max(0, focusIdx - NUM_ABOVE_OR_BELOW),
+          renderTo = Math.min(numResults, focusIdx + NUM_ABOVE_OR_BELOW + 1);
 
         // try extend upward
         if (renderTo - renderFrom < NUM_TOTAL && renderFrom > 0) {
           renderFrom = Math.max(0, renderTo - NUM_TOTAL);
         }
         // try extend downward
-        if (renderTo - renderFrom < NUM_TOTAL && renderTo < this.lastSelections.length) {
-          renderTo = Math.min(this.lastSelections.length, renderFrom + NUM_TOTAL);
+        if (renderTo - renderFrom < NUM_TOTAL && renderTo < numResults) {
+          renderTo = Math.min(numResults, renderFrom + NUM_TOTAL);
         }
 
         const toRender = this.lastFzfResults.slice(renderFrom, renderTo);
-        numRenderedSelections = toRender.length;
-        selectedLineOffset = selectedIdx - renderFrom;
+        renderedLines = { start: renderFrom, len: toRender.length };
 
         const mapEntries = (f: (r: FzfResultItem<string>) => string) =>
           toRender.map(f).join("\n");
@@ -345,41 +390,64 @@ export class FindFilePanel {
         );
       }
     }
+    this.lastSelection = newSelection;
 
     const decos: Decoration[] = [
       { type: "background", background: "border", lines: 0.5, lineOffset: -1 },
-      { type: "background", lines: numRenderedSelections + 2, lineOffset: -0.5 },
+      { type: "background", lines: renderedLines.len + 2, lineOffset: -0.5 },
       {
         type: "background",
         background: "border",
         lines: 0.5,
-        lineOffset: numRenderedSelections + 1.5,
+        lineOffset: renderedLines.len + 1.5,
       },
       { type: "text", foreground: "binding", text: this.dir },
       {
         type: "text",
         foreground: "command",
-        text: " ".repeat(this.dir.length) + this.basename + "█",
+        text:
+          " ".repeat(this.dir.length) +
+          this.input +
+          "█" +
+          (newSelection.type === "input" ||
+          (this.files !== undefined &&
+            (this.files.length === 0 || this.lastFzfResults.length === 0))
+            ? "   (RET to create file)"
+            : ""),
       },
       { type: "text", foreground: "dir", text: fileListDirs, lineOffset: 1 },
       { type: "text", foreground: "command", text: fileListFiles, lineOffset: 1 },
       { type: "text", foreground: "highlight", text: fileListHighlight, lineOffset: 1 },
       { type: "text", foreground: "binding", text: this.dir },
     ];
-    if (selectedLineOffset !== undefined) {
-      decos.push({
-        type: "background",
-        background: "header",
-        lines: 1,
-        lineOffset: selectedLineOffset + 1,
-      });
+    // TODO render when type === "input"
+    switch (newSelection.type) {
+      case "none":
+        break;
+      case "file":
+        decos.push({
+          type: "background",
+          background: "header",
+          lines: 1,
+          lineOffset: newSelection.idx - renderedLines.start + 1,
+          zOffset: 1,
+        });
+        break;
+      case "input":
+        decos.push({
+          type: "background",
+          background: "header",
+          lines: 1,
+          lineOffset: 0,
+          zOffset: 1,
+        });
     }
 
     const doc = editor.document;
     const docLines = doc.lineCount;
     // fix header to be at least on the 2nd last line
     lnHeader = Math.max(0, Math.min(docLines - 2, lnHeader));
-    const lnEnd = Math.min(docLines - 1, lnHeader + numRenderedSelections);
+    const lnEnd = Math.min(docLines - 1, lnHeader + renderedLines.len);
     const overallRange = new Range(
       doc.lineAt(lnHeader).range.start,
       doc.lineAt(lnEnd).range.end,
