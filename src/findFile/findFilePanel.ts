@@ -387,33 +387,66 @@ export class FindFilePanel {
     }
     this.lastSelection = newSelection;
 
+    const counterInfo =
+      this.files === undefined
+        ? "0/0"
+        : `${this.lastFzfResults.length}/${this.files.length}`;
+
+    const inputText =
+      " ".repeat(this.dir.length) +
+      this.input +
+      "█" +
+      (newSelection.type === "input" ||
+      (this.files !== undefined &&
+        (this.files.length === 0 || this.lastFzfResults.length === 0))
+        ? "   (RET to create " +
+          (this.input.slice(1, -1).includes("/") ? "dir and " : "") +
+          "file)"
+        : "");
+
+    // top border
+    // header
+    // dir + input
+    // selections
+    // ... (highlighted selection)
+    // bottom border
+
     const decos: Decoration[] = [
-      { type: "background", background: "border", lines: 0.5, lineOffset: -1 },
-      { type: "background", lines: renderedLines.len + 2, lineOffset: -0.5 },
+      // overall background
+      { type: "background", lines: renderedLines.len + 2 },
+      // header
+      {
+        type: "text",
+        text: `${counterInfo.padEnd(7)} Find file`,
+        foreground: "binding",
+      },
+      // top border
       {
         type: "background",
         background: "border",
         lines: 0.5,
-        lineOffset: renderedLines.len + 1.5,
+        lineOffset: -0.5,
       },
-      { type: "text", foreground: "binding", text: this.dir },
+      // bottom border
+      {
+        type: "background",
+        background: "border",
+        lines: 0.5,
+        lineOffset: renderedLines.len + 2,
+      },
+      // dir
+      { type: "text", foreground: "binding", text: this.dir, lineOffset: 1 },
+      // input
       {
         type: "text",
         foreground: "command",
-        text:
-          " ".repeat(this.dir.length) +
-          this.input +
-          "█" +
-          (newSelection.type === "input" ||
-          (this.files !== undefined &&
-            (this.files.length === 0 || this.lastFzfResults.length === 0))
-            ? "   (RET to create file)"
-            : ""),
+        text: inputText,
+        lineOffset: 1,
       },
-      { type: "text", foreground: "dir", text: fileListDirs, lineOffset: 1 },
-      { type: "text", foreground: "command", text: fileListFiles, lineOffset: 1 },
-      { type: "text", foreground: "highlight", text: fileListHighlight, lineOffset: 1 },
-      { type: "text", foreground: "binding", text: this.dir },
+      // selections
+      { type: "text", foreground: "dir", text: fileListDirs, lineOffset: 2 },
+      { type: "text", foreground: "command", text: fileListFiles, lineOffset: 2 },
+      { type: "text", foreground: "highlight", text: fileListHighlight, lineOffset: 2 },
     ];
     switch (newSelection.type) {
       case "none":
@@ -423,7 +456,7 @@ export class FindFilePanel {
           type: "background",
           background: "header",
           lines: 1,
-          lineOffset: newSelection.idx - renderedLines.start + 1,
+          lineOffset: newSelection.idx - renderedLines.start + 2,
           zOffset: 1,
         });
         break;
@@ -432,7 +465,7 @@ export class FindFilePanel {
           type: "background",
           background: "header",
           lines: 1,
-          lineOffset: 0,
+          lineOffset: 1,
           zOffset: 1,
         });
     }
