@@ -2,8 +2,8 @@
 
 import { dirname, normalize } from "path-browserify";
 import { commands, env, Range, TextEditorDecorationType, window } from "vscode";
-import { assert, log, WHICHKEY_STATE } from "../common/global";
-import { openFile, ProcessRunResult, runProcess } from "../common/remote";
+import { assert, commonPrefix, log, WHICHKEY_STATE } from "../common/global";
+import { ENV_HOME, openFile, runProcess } from "../common/remote";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
 import {
   Decoration,
@@ -36,21 +36,6 @@ async function ls(dir: string) {
     ];
   }
 }
-
-let ENV_HOME = "/";
-(async () => {
-  const result: ProcessRunResult = await commands.executeCommand(
-    "remote-commons.process.run",
-    "/bin/bash",
-    ["-c", "echo ~"],
-  );
-  if (result.error) {
-    window.showErrorMessage(`Failed to run bash? ${JSON.stringify(result)}`);
-  } else {
-    ENV_HOME = result.stdout.trim();
-    log(`Got ENV_HOME=${ENV_HOME}`);
-  }
-})();
 
 const NUM_ABOVE_OR_BELOW = 10;
 const NUM_TOTAL = NUM_ABOVE_OR_BELOW * 2 + 1;
@@ -120,13 +105,6 @@ export class FindFilePanel {
     }
   }
 
-  private static commonPrefix(strs: string[]) {
-    if (!strs[0] || strs.length == 1) return strs[0] || "";
-    let i = 0;
-    while (strs[0][i] && strs.every((w) => w[i] === strs[0][i])) i++;
-    return strs[0].slice(0, i);
-  }
-
   // TODO left/right arrow
 
   private async keyActionRET() {
@@ -184,7 +162,7 @@ export class FindFilePanel {
             item: r.item,
             subStr: r.item.slice(Math.max(...r.positions) + 1),
           }));
-          const common = FindFilePanel.commonPrefix(subStrs.map(({ subStr }) => subStr));
+          const common = commonPrefix(subStrs.map(({ subStr }) => subStr));
           if ((common === "" || common === "/") && this.lastSelections.length === 1) {
             // only one candidate and text matches to the end
             await this.open(this.lastSelection);

@@ -1,4 +1,3 @@
-import { dirname } from "path-browserify";
 import {
   commands,
   ExtensionContext,
@@ -6,7 +5,8 @@ import {
   window,
   workspace,
 } from "vscode";
-import { init } from "./common/global";
+import { init as initGlobal } from "./common/global";
+import { init as initRemote, pickPathFromUri } from "./common/remote";
 import { register as registerDired } from "./findFile/dired";
 import { FindFilePanel } from "./findFile/findFilePanel";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
@@ -21,7 +21,8 @@ function resetCurrentPanel() {
 }
 
 export async function activate(context: ExtensionContext) {
-  init();
+  initGlobal();
+  initRemote();
   registerDired(context);
 
   const leaderKeyPanel = new LeaderkeyPanel(() => resetCurrentPanel());
@@ -49,9 +50,12 @@ export async function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     commands.registerCommand("leaderkey.findFile", async () => {
-      const editor = window.activeTextEditor;
-      if (!editor) return;
-      findFilePanel.setDir(dirname(editor.document.uri.path));
+      let editor = window.activeTextEditor;
+      if (!editor) {
+        const doc = await workspace.openTextDocument({ language: "text" });
+        editor = await window.showTextDocument(doc, { preview: true });
+      }
+      findFilePanel.setDir(await pickPathFromUri(editor.document.uri, "dirname"));
       findFilePanel.render();
       currentPanel = "findfile";
     }),
