@@ -19,21 +19,28 @@ function stripSlash(basename: string) {
 
 async function ls(dir: string) {
   // a: all, p: append slash, H: follow link for input
-  const result = await runProcess("/bin/ls", [
-    "-apH",
-    "--dereference-command-line-symlink-to-dir",
-    dir,
-  ]);
+  const result = await runProcess("/bin/ls", ["-apH", "--file-type", dir]);
   if (result.error) {
     window.showErrorMessage(`Failed to ls: ${JSON.stringify(result)}`);
     // TODO consider quit?
     return [];
   } else {
-    const filesAndDirs = result.stdout.trim().split("\n");
-    return [
-      ...filesAndDirs.filter((f) => f.endsWith("/")),
-      ...filesAndDirs.filter((f) => !f.endsWith("/")),
-    ];
+    const all = result.stdout.trim().split("\n");
+    const dirs: string[] = [],
+      files: string[] = [];
+    for (const e of all) {
+      switch (e.at(-1)) {
+        case "@":
+          dirs.push(e.slice(0, -1) + "/");
+          break;
+        case "/":
+          dirs.push(e);
+          break;
+        default:
+          files.push(e.replace(/[=>|*]$/, ""));
+      }
+    }
+    return [...dirs, ...files];
   }
 }
 
