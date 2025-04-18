@@ -44,10 +44,26 @@ async function ls(dir: string) {
   }
 }
 
+function dummyFzfResultItem(item: string): FzfResultItem {
+  return {
+    item,
+    positions: new Set(),
+    start: 0,
+    end: 0,
+    score: 0,
+  };
+}
+function nonHighlightChars(r: FzfResultItem<string>) {
+  return [...r.item].map((c, i) => (r.positions.has(i) ? " " : c)).join("");
+}
+function highlightChars(r: FzfResultItem<string>) {
+  return [...r.item].map((c, i) => (r.positions.has(i) ? c : " ")).join("");
+}
+
 const NUM_ABOVE_OR_BELOW = 10;
 const NUM_TOTAL = NUM_ABOVE_OR_BELOW * 2 + 1;
 
-type CurrentSelection =
+type FindFileSelection =
   | { type: "none" }
   | { type: "file"; file: string; idx: number }
   | { type: "input" };
@@ -60,7 +76,7 @@ export class FindFilePanel {
   filesPromise!: Promise<any>;
   files!: string[] | undefined;
   lastFzfResults: FzfResultItem<string>[] = [];
-  lastSelection: CurrentSelection = {
+  lastSelection: FindFileSelection = {
     type: "none",
   };
 
@@ -285,114 +301,40 @@ export class FindFilePanel {
         (visibleRange.end.line - visibleRange.start.line) >> 1,
       );
 
-    let fileListFiles: string;
-    let fileListDirs: string;
-    let fileListHighlight: string;
-    let renderedLines: { start: number; len: number };
-    let newSelection: CurrentSelection;
-
-    if (this.files === undefined) {
-      renderedLines = { start: 0, len: 1 };
-      fileListFiles = "<loading...>";
-      fileListDirs = "";
-      fileListHighlight = "";
-      this.lastFzfResults = [];
-      newSelection = { type: "none" };
-    } else {
-      if (this.input === "") {
-        fileListFiles =
-          "\n" + this.files.map((f) => (f.endsWith("/") ? "" : f)).join("\n");
-        fileListDirs =
-          "\n" + this.files.map((f) => (f.endsWith("/") ? f : "")).join("\n");
-        fileListHighlight = "";
-        this.lastFzfResults = this.files.map<FzfResultItem<string>>((f) => ({
-          item: f,
-          positions: new Set(),
-          start: 0,
-          end: 0,
-          score: 0,
-        }));
-      } else {
-        const dirs = new Set(this.files.filter((f) => f.endsWith("/")).map(stripSlash));
-        this.lastFzfResults = new Fzf(this.files.map(stripSlash), {
-          tiebreakers: [byStartAsc, byLengthAsc],
-        })
-          .find(this.input)
-          .map((r) => (dirs.has(r.item) ? { ...r, item: r.item + "/" } : r));
-      }
-
-      if (this.lastFzfResults.length === 0) {
-        fileListFiles = fileListDirs = fileListHighlight = "";
-        renderedLines = { start: 0, len: 0 };
-        newSelection =
-          this.lastSelection.type === "input" ? this.lastSelection : { type: "none" };
-      } else {
-        let focusIdx: number;
-        if (this.lastSelection.type === "none") {
-          newSelection = {
-            type: "file",
-            file: this.lastFzfResults[0].item,
-            idx: 0,
+    const {
+      renderedLines,
+      newSelection,
+      fzfResults,
+    }: {
+      renderedLines: { start: number; len: number };
+      newSelection: FindFileSelection;
+      fzfResults: FzfResultItem<string>[];
+    } =
+      this.files !== undefined
+        ? FindFilePanel.recompute({
+            ...this,
+            files: this.files,
+          })
+        : {
+            renderedLines: { start: 0, len: 1 },
+            newSelection: { type: "none" },
+            fzfResults: [dummyFzfResultItem("<loading...>")],
           };
-          focusIdx = 0;
-        } else if (this.lastSelection.type === "file") {
-          if (this.isSelectionManuallyChanged) {
-            // follow user selection
-            const file = this.lastSelection.file;
-            focusIdx = Math.max(
-              0,
-              this.lastFzfResults.findIndex((r) => r.item === file),
-            );
-          } else {
-            // use the best fzf match if selection is never manually changed
-            focusIdx = 0;
-          }
-          newSelection = {
-            type: "file",
-            file: this.lastFzfResults[focusIdx].item,
-            idx: focusIdx,
-          };
-        } else {
-          assert(this.lastSelection.type === "input");
-          newSelection = this.lastSelection;
-          focusIdx = 0;
-        }
-
-        const numResults = this.lastFzfResults.length;
-        let renderFrom = Math.max(0, focusIdx - NUM_ABOVE_OR_BELOW),
-          renderTo = Math.min(numResults, focusIdx + NUM_ABOVE_OR_BELOW + 1);
-
-        // try extend upward
-        if (renderTo - renderFrom < NUM_TOTAL && renderFrom > 0) {
-          renderFrom = Math.max(0, renderTo - NUM_TOTAL);
-        }
-        // try extend downward
-        if (renderTo - renderFrom < NUM_TOTAL && renderTo < numResults) {
-          renderTo = Math.min(numResults, renderFrom + NUM_TOTAL);
-        }
-
-        const toRender = this.lastFzfResults.slice(renderFrom, renderTo);
-        renderedLines = { start: renderFrom, len: toRender.length };
-
-        const mapEntries = (f: (r: FzfResultItem<string>) => string) =>
-          toRender.map(f).join("\n");
-
-        fileListFiles = mapEntries((r) =>
-          r.item.endsWith("/")
-            ? ""
-            : [...r.item].map((c, i) => (r.positions.has(i) ? " " : c)).join(""),
-        );
-        fileListDirs = mapEntries((r) =>
-          r.item.endsWith("/")
-            ? [...r.item].map((c, i) => (r.positions.has(i) ? " " : c)).join("")
-            : "",
-        );
-        fileListHighlight = mapEntries((r) =>
-          [...r.item].map((c, i) => (r.positions.has(i) ? c : " ")).join(""),
-        );
-      }
-    }
+    this.lastFzfResults = fzfResults;
     this.lastSelection = newSelection;
+
+    const toRender = fzfResults.slice(
+      renderedLines.start,
+      renderedLines.start + renderedLines.len,
+    );
+
+    const fileListFiles = toRender
+      .map((r) => (r.item.endsWith("/") ? "" : nonHighlightChars(r)))
+      .join("\n");
+    const fileListDirs = toRender
+      .map((r) => (r.item.endsWith("/") ? nonHighlightChars(r) : ""))
+      .join("\n");
+    const fileListHighlight = toRender.map(highlightChars).join("\n");
 
     const counterInfo =
       this.files === undefined
@@ -411,12 +353,14 @@ export class FindFilePanel {
           "file)"
         : "");
 
-    // top border
-    // header
-    // dir + input
-    // selections
-    // ... (highlighted selection)
-    // bottom border
+    /* layout:
+       -------- top border --------
+       header
+       dir + input█
+       selections
+       ... (highlighted selection)
+       bottom border
+       -------- top border -------- */
 
     const decos: Decoration[] = [
       // overall background
@@ -487,6 +431,90 @@ export class FindFilePanel {
       doc.lineAt(lnEnd).range.end,
     );
     return renderDecorations(decos, editor, overallRange);
+  }
+
+  private static recompute(args: {
+    files: string[];
+    input: string;
+    isSelectionManuallyChanged: boolean;
+    lastSelection: FindFileSelection;
+  }): {
+    fzfResults: FzfResultItem<string>[];
+    newSelection: FindFileSelection;
+    renderedLines: { start: number; len: number };
+  } {
+    const { files, input, isSelectionManuallyChanged, lastSelection } = args;
+
+    let fzfResults: FzfResultItem<string>[] = [];
+    if (input === "") {
+      fzfResults = files.map(dummyFzfResultItem);
+    } else {
+      const dirs = new Set(files.filter((f) => f.endsWith("/")).map(stripSlash));
+      fzfResults = new Fzf(files.map(stripSlash), {
+        tiebreakers: [byStartAsc, byLengthAsc],
+      })
+        .find(input)
+        .map((r) => (dirs.has(r.item) ? { ...r, item: r.item + "/" } : r));
+    }
+
+    if (fzfResults.length === 0) {
+      return {
+        fzfResults,
+        renderedLines: { start: 0, len: 0 },
+        newSelection: lastSelection.type === "input" ? lastSelection : { type: "none" },
+      };
+    } else {
+      let focusIdx: number;
+      let newSelection: FindFileSelection;
+      if (lastSelection.type === "none") {
+        newSelection = {
+          type: "file",
+          file: fzfResults[0].item,
+          idx: 0,
+        };
+        focusIdx = 0;
+      } else if (lastSelection.type === "file") {
+        if (isSelectionManuallyChanged) {
+          // follow user selection
+          const file = lastSelection.file;
+          focusIdx = Math.max(
+            0,
+            fzfResults.findIndex((r) => r.item === file),
+          );
+        } else {
+          // use the best fzf match if selection is never manually changed
+          focusIdx = 0;
+        }
+        newSelection = {
+          type: "file",
+          file: fzfResults[focusIdx].item,
+          idx: focusIdx,
+        };
+      } else {
+        assert(lastSelection.type === "input");
+        newSelection = lastSelection;
+        focusIdx = 0;
+      }
+
+      const numResults = fzfResults.length;
+      let renderFrom = Math.max(0, focusIdx - NUM_ABOVE_OR_BELOW),
+        renderTo = Math.min(numResults, focusIdx + NUM_ABOVE_OR_BELOW + 1);
+
+      // try extend upward
+      if (renderTo - renderFrom < NUM_TOTAL && renderFrom > 0) {
+        renderFrom = Math.max(0, renderTo - NUM_TOTAL);
+      }
+      // try extend downward
+      if (renderTo - renderFrom < NUM_TOTAL && renderTo < numResults) {
+        renderTo = Math.min(numResults, renderFrom + NUM_TOTAL);
+      }
+
+      return {
+        fzfResults,
+        newSelection,
+        renderedLines: { start: renderFrom, len: renderTo - renderFrom },
+      };
+    }
   }
 
   public render() {
