@@ -1,4 +1,4 @@
-import { ExecException, ExecOptions } from "child_process";
+import { ExecException, ProcessEnvOptions } from "child_process";
 import { dirname } from "path-browserify";
 import { commands, TextDocumentShowOptions, Uri, window, workspace } from "vscode";
 import { scheme as diredScheme } from "../findFile/dired";
@@ -10,7 +10,11 @@ export type ProcessRunResult = {
   stderr: string;
 };
 
-export async function runProcess(prog: string, args: string[], execOpts?: ExecOptions) {
+export async function runProcess(
+  prog: string,
+  args: string[],
+  execOpts?: ProcessEnvOptions,
+) {
   log(`Running command: ${prog} ${args}`);
   const result: ProcessRunResult = await commands.executeCommand(
     "remote-commons.process.run",
@@ -19,6 +23,103 @@ export async function runProcess(prog: string, args: string[], execOpts?: ExecOp
     execOpts,
   );
   return result;
+}
+
+type ProcessLineStreamerSpawnResult =
+  | { succeed: false; error: ExecException }
+  | { succeed: true; id: string };
+
+type ProcessLineStreamerStatus = {
+  stdout: string[];
+  stderr: string[];
+  exit: number | string | undefined;
+};
+
+type ProcessLineStreamerYieldStatus =
+  | { type: "stdout"; lines: string[] }
+  | { type: "stderr"; lines: string[] }
+  | { type: "error"; error: ExecException }
+  | { type: "exit"; exit: number | string }
+  | { type: "notFound" };
+
+export class ProcessLineStreamer {
+  prog: string;
+  args: string[];
+  execOpts?: ProcessEnvOptions;
+
+  // init (undefined) -> spawned (undetermined) -> running (async string) -> killed (async
+  // undefined)
+  id: Thenable<string | undefined> | undefined;
+  isKilled = false;
+
+  constructor(prog: string, args: string[], execOpts?: ProcessEnvOptions) {
+    this.prog = prog;
+    this.args = args;
+    this.execOpts = execOpts;
+  }
+
+  public async *spawn(): AsyncGenerator<ProcessLineStreamerYieldStatus, void, void> {
+    if (this.id !== undefined) {
+      throw (
+        "process spawned twice " + JSON.stringify({ prog: this.prog, args: this.args })
+      );
+    }
+    log(`Running command (ProcessLineStreamer): ${this.prog} ${this.args}`);
+    const resultPromise: Thenable<ProcessLineStreamerSpawnResult> =
+      commands.executeCommand(
+        "remote-commons.process.lineStreamer.spawn",
+        this.prog,
+        this.args,
+        this.execOpts,
+      );
+    this.id = resultPromise.then((result) => (result.succeed ? result.id : undefined));
+
+    const result = await resultPromise;
+    if (result.succeed === false) {
+      yield { type: "error", error: result.error };
+      return;
+    }
+
+    while (true) {
+      const status: ProcessLineStreamerStatus | undefined = await commands.executeCommand(
+        "remote-commons.process.lineStreamer.read",
+        result.id,
+      );
+      if (status === undefined) {
+        if (this.isKilled) return;
+        throw (
+          "Remote process unexpectedly quits " +
+          JSON.stringify({ prog: this.prog, args: this.args })
+        );
+      }
+      if (status.stdout.length > 0) {
+        yield { type: "stdout", lines: status.stdout };
+        if (this.isKilled) return;
+      }
+      if (status.stderr.length > 0) {
+        yield { type: "stderr", lines: status.stderr };
+        if (this.isKilled) return;
+      }
+      if (status.exit !== undefined) {
+        yield { type: "exit", exit: status.exit };
+        return;
+      }
+    }
+  }
+
+  public async kill(signal?: NodeJS.Signals | number) {
+    if (this.id !== undefined) {
+      const id = await this.id;
+      if (id !== undefined) {
+        this.isKilled = true;
+        await commands.executeCommand(
+          "remote-commons.process.lineStreamer.kill",
+          id,
+          signal,
+        );
+      }
+    }
+  }
 }
 
 export async function openFile(file: string, options?: TextDocumentShowOptions) {

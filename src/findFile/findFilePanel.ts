@@ -273,7 +273,7 @@ export class FindFilePanel {
         this.lastSelection = { type: "none" };
       }
     } else if (type === "file") {
-      const { idx, file } = this.lastSelection;
+      const { idx, file: _ } = this.lastSelection;
       const newIdx =
         delta > 0
           ? Math.min(this.lastFzfResults.length - 1, idx + delta)

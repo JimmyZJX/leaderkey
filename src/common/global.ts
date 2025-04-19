@@ -43,7 +43,7 @@ export function assert(condition: any, msg?: string): asserts condition {
 }
 
 export function commonPrefix(strs: string[]) {
-  if (!strs[0] || strs.length == 1) return strs[0] || "";
+  if (!strs[0] || strs.length === 1) return strs[0] || "";
   let i = 0;
   while (strs[0][i] && strs.every((w) => w[i] === strs[0][i])) i++;
   return strs[0].slice(0, i);

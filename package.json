@@ -92,8 +92,13 @@
         },
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": {},
+          "default": { },
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
+        },
+        "leaderkey.ripgrep.exe": {
+          "type": "string",
+          "default": "/bin/rg",
+          "description": "path to the ripgrep executable"
         }
       }
     },
@@ -1239,7 +1244,8 @@
   "eslintConfig": {
     "root": true,
     "ignorePatterns": [
-      "src/fzf-for-js/**/*"
+      "src/fzf-for-js/**/*",
+      "src/ansi-sequence-parser/**/*"
     ],
     "parser": "@typescript-eslint/parser",
     "plugins": [

@@ -41,6 +41,7 @@ async function loadContent(uri: Uri) {
     {
       textHook: (stdout: string) => {
         // ignore this specific ANSI code
+        // eslint-disable-next-line no-control-regex
         stdout = stdout.replace(/\x1B\[K/g, "");
         const diredFooter = RE_DIRED_FOOTER.exec(stdout);
         const diredIndices = diredFooter?.groups?.dired;
@@ -126,7 +127,7 @@ function registerProviders() {
       }
     }),
     languages.registerDocumentSymbolProvider(
-      [{ language: language }],
+      [{ language }],
       new (class implements DocumentSymbolProvider {
         provideDocumentSymbols(document: TextDocument): DocumentSymbol[] {
           const line0 = document.lineAt(0);

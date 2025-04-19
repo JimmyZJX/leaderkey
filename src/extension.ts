@@ -1,11 +1,12 @@
 import {
+  CancellationTokenSource,
   commands,
   ExtensionContext,
   TextEditorSelectionChangeKind,
   window,
   workspace,
 } from "vscode";
-import { init as initGlobal } from "./common/global";
+import { init as initGlobal, log } from "./common/global";
 import { init as initRemote, pickPathFromUri } from "./common/remote";
 import { register as registerDired } from "./findFile/dired";
 import { FindFilePanel } from "./findFile/findFilePanel";
@@ -14,6 +15,7 @@ import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
 import { updateGlobalThemeType, updateStickyScrollConf } from "./leaderkey/decoration";
 import { LeaderkeyPanel } from "./leaderkey/leaderKeyPanel";
+import { doQuery, RipGrepQuery } from "./ripgrep/rg";
 
 let currentPanel: "leaderkey" | "findfile" | undefined = undefined;
 function resetCurrentPanel() {
