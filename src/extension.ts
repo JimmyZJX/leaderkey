@@ -1,12 +1,11 @@
 import {
-  CancellationTokenSource,
   commands,
   ExtensionContext,
   TextEditorSelectionChangeKind,
   window,
   workspace,
 } from "vscode";
-import { init as initGlobal, log } from "./common/global";
+import { init as initGlobal } from "./common/global";
 import { init as initRemote, pickPathFromUri } from "./common/remote";
 import { register as registerDired } from "./findFile/dired";
 import { FindFilePanel } from "./findFile/findFilePanel";
@@ -15,9 +14,15 @@ import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
 import { updateGlobalThemeType, updateStickyScrollConf } from "./leaderkey/decoration";
 import { LeaderkeyPanel } from "./leaderkey/leaderKeyPanel";
-import { doQuery, RipGrepQuery } from "./ripgrep/rg";
+import { RgPanel } from "./ripgrep/rgPanel";
+import { defaultQueryMode } from "./ripgrep/rg";
 
-let currentPanel: "leaderkey" | "findfile" | undefined = undefined;
+// TODO panel dispatcher
+let currentPanel:
+  | { type: "leaderkey" }
+  | { type: "findfile" }
+  | { type: "ripgrep"; panel: RgPanel }
+  | undefined = undefined;
 function resetCurrentPanel() {
   currentPanel = undefined;
 }
@@ -36,10 +41,17 @@ export async function activate(context: ExtensionContext) {
   );
 
   function resetPanel() {
-    if (currentPanel === "findfile") {
-      findFilePanel.reset();
-    } else {
-      leaderKeyPanel.reset();
+    if (currentPanel === undefined) return;
+    switch (currentPanel.type) {
+      case "leaderkey":
+        leaderKeyPanel.reset();
+        break;
+      case "findfile":
+        findFilePanel.reset();
+        break;
+      case "ripgrep":
+        currentPanel.panel.quit();
+        break;
     }
   }
 
@@ -59,24 +71,52 @@ export async function activate(context: ExtensionContext) {
       }
       findFilePanel.setDir(await pickPathFromUri(editor.document.uri, "dirname"));
       findFilePanel.render();
-      currentPanel = "findfile";
+      currentPanel = { type: "findfile" };
+    }),
+    commands.registerCommand("leaderkey.ripgrep", async () => {
+      let editor = window.activeTextEditor;
+      if (!editor) {
+        const doc = await workspace.openTextDocument({ language: "text" });
+        editor = await window.showTextDocument(doc, { preview: true });
+      }
+
+      //  synchronously show and then set dir
+      const dir = await pickPathFromUri(editor.document.uri, "dirname");
+      const rgPanel = new RgPanel({
+        dir: [dir],
+        query: "",
+        cwd: dir,
+        ...defaultQueryMode(),
+      });
+      currentPanel = { type: "ripgrep", panel: rgPanel };
     }),
     commands.registerCommand(
       "leaderkey.render",
       (pathOrWithWhen: string | { path: string; when: string }) => {
-        if (currentPanel === "findfile") {
-          findFilePanel.reset();
-        }
+        resetPanel();
+        currentPanel = { type: "leaderkey" };
         leaderKeyPanel.render(pathOrWithWhen);
       },
     ),
     commands.registerCommand(
       "leaderkey.onkey",
       (keyOrObj: string | { key: string; when: string }) => {
-        if (currentPanel === "findfile") {
-          findFilePanel.onkey(typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key);
-        } else {
-          leaderKeyPanel.onkey(keyOrObj);
+        currentPanel ??= { type: "leaderkey" };
+        switch (currentPanel.type) {
+          case "leaderkey":
+            leaderKeyPanel.onKey(keyOrObj);
+            break;
+          case "findfile":
+            findFilePanel.onKey(typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key);
+            break;
+          case "ripgrep":
+            currentPanel.panel.onKey(
+              typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
+            );
+            break;
+          default: {
+            const _exhaustive: never = currentPanel;
+          }
         }
       },
     ),

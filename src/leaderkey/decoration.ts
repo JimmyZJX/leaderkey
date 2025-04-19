@@ -2,6 +2,7 @@ import {
   ColorThemeKind,
   Range,
   TextEditor,
+  TextEditorDecorationType,
   ThemableDecorationAttachmentRenderOptions,
   window,
   workspace,

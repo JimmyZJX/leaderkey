@@ -1,6 +1,7 @@
 import { relative } from "path-browserify";
 import { CancellationToken, workspace } from "vscode";
 import { ProcessLineStreamer } from "../common/remote";
+import { log } from "../common/global";
 
 //#region ripgrep message format (incomplete)
 interface GrepBegin {
@@ -42,6 +43,12 @@ export type RipGrepQuery = {
   // IDEA: maybe render \b...\b around user query
 };
 
+export const defaultQueryMode: () => {
+  case: "smart";
+  regex: "on";
+  word: "off";
+} = () => ({ case: "smart", regex: "on", word: "off" });
+
 function toArgs(q: RipGrepQuery) {
   const rgOpts = ["--json"];
   if (q.case === "smart") {
@@ -77,7 +84,7 @@ export type Summary =
   // TOOD ??
   | { type: "start"; query: string };
 
-type RipgrepStatusUpdate =
+export type RipgrepStatusUpdate =
   | { type: "summary"; summary: Summary }
   | { type: "match"; lines: GrepLine[] };
 
@@ -98,24 +105,29 @@ export async function doQuery(
         let summary: Summary | undefined = undefined;
         const grepLines: GrepLine[] = [];
         for (const line of status.lines) {
-          const msg: GrepMessage = JSON.parse(line);
-          if (msg.type === "match") {
-            const data = msg.data;
-            const text = data.lines.text;
-            if (text !== undefined && text.endsWith("\n")) {
-              grepLines.push({
-                file: data.path?.text ?? "<bad filename>",
-                lineNo: data.line_number,
-                line: text.trimEnd(),
-                match: data.submatches.map(({ start, end }) => ({ start, end })),
-              });
+          if (line === "") continue;
+          try {
+            const msg: GrepMessage = JSON.parse(line);
+            if (msg.type === "match") {
+              const data = msg.data;
+              const text = data.lines.text;
+              if (text !== undefined && text.endsWith("\n")) {
+                grepLines.push({
+                  file: data.path?.text ?? "<bad filename>",
+                  lineNo: data.line_number,
+                  line: text.trimEnd(),
+                  match: data.submatches.map(({ start, end }) => ({ start, end })),
+                });
+              }
+            } else if (msg.type === "summary") {
+              const data = msg.data;
+              const elapsed =
+                (data.elapsed_total.secs + data.elapsed_total.nanos * 1e-9).toFixed(2) +
+                "s";
+              summary = { type: "done", matches: data.stats.matched_lines, elapsed };
             }
-          } else if (msg.type === "summary") {
-            const data = msg.data;
-            const elapsed =
-              (data.elapsed_total.secs + data.elapsed_total.nanos * 1e-9).toFixed(2) +
-              "s";
-            summary = { type: "done", matches: data.stats.matched_lines, elapsed };
+          } catch (e) {
+            log(`Error parsing line [${line}]: ${JSON.stringify(e)}`);
           }
         }
         if (grepLines.length > 0) onUpdate({ type: "match", lines: grepLines });
@@ -129,10 +141,7 @@ export async function doQuery(
         });
         break;
       case "exit":
-        onUpdate({
-          type: "summary",
-          summary: { type: "error", msg: "rg quits unexpectedly" },
-        });
+        // TODO indicate this? especially when summary was not sent?
         break;
       case "notFound":
         onUpdate({
@@ -143,7 +152,7 @@ export async function doQuery(
       case "stderr":
         onUpdate({
           type: "summary",
-          summary: { type: "error", msg: `unexpected stderr ${status.lines}` },
+          summary: { type: "error", msg: `unexpected stderr [${status.lines}]` },
         });
         break;
       default: {

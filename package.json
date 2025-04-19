@@ -80,6 +80,11 @@
         "command": "leaderkey.findFile",
         "title": "Show find-file panel",
         "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.ripgrep",
+        "title": "Show ripgrep panel",
+        "category": "Leaderkey"
       }
     ],
     "configuration": {
@@ -97,7 +102,7 @@
         },
         "leaderkey.ripgrep.exe": {
           "type": "string",
-          "default": "/bin/rg",
+          "default": "rg",
           "description": "path to the ripgrep executable"
         }
       }

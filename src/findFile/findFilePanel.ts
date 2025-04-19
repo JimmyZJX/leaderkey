@@ -186,6 +186,7 @@ export class FindFilePanel {
     RET: async () => this.keyActionRET(),
     "C-l": async () => this.keyActionRET(),
     TAB: async (last) => {
+      // TODO immediately select if selection has changed?
       if (this.lastSelection.type === "file") {
         const file = this.lastSelection.file;
         if (last === "TAB") {
@@ -241,7 +242,7 @@ export class FindFilePanel {
     "C-v": () => this.pasteAction(),
   };
 
-  public async onkey(key: string) {
+  public async onKey(key: string) {
     const last = this.lastKey;
     this.lastKey = key;
 

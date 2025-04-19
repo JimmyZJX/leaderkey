@@ -118,7 +118,7 @@ export class LeaderkeyPanel {
     return lastSpaceIndex === -1 ? "" : path.slice(0, lastSpaceIndex);
   }
 
-  public async onkey(keyOrObj: string | { key: string; when: string }) {
+  public async onKey(keyOrObj: string | { key: string; when: string }) {
     const [key, when] =
       typeof keyOrObj === "string"
         ? [keyOrObj, undefined]
