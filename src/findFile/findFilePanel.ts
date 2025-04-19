@@ -1,16 +1,20 @@
 // init: check if remote extension is available
 
 import { dirname, normalize } from "path-browserify";
-import { commands, env, Range, TextEditorDecorationType, window } from "vscode";
+import {
+  commands,
+  env,
+  Range,
+  TextEditor,
+  TextEditorDecorationType,
+  window,
+} from "vscode";
 import { assert, commonPrefix, log, WHICHKEY_STATE } from "../common/global";
 import { ENV_HOME, openFile, runProcess } from "../common/remote";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
-import {
-  Decoration,
-  renderDecorations,
-  stickyScrollMaxRows,
-} from "../leaderkey/decoration";
+import { Decoration, renderDecorations, stickyScrollMaxRows } from "../common/decoration";
 import { showDir } from "./dired";
+import { getRenderRangeFromTop } from "../common/renderRange";
 
 const RE_TRAILING_SLASH = /\/$/;
 function stripSlash(basename: string) {
@@ -290,18 +294,7 @@ export class FindFilePanel {
     }
   }
 
-  private doRender() {
-    const editor = window.activeTextEditor;
-    if (editor === undefined) return [];
-
-    const visibleRange = editor.visibleRanges[0];
-    let lnHeader =
-      visibleRange.start.line +
-      Math.min(
-        stickyScrollMaxRows,
-        (visibleRange.end.line - visibleRange.start.line) >> 1,
-      );
-
+  private doRender(editor: TextEditor) {
     const {
       renderedLines,
       newSelection,
@@ -422,16 +415,8 @@ export class FindFilePanel {
         });
     }
 
-    const doc = editor.document;
-    const docLines = doc.lineCount;
-    // fix header to be at least on the 2nd last line
-    lnHeader = Math.max(0, Math.min(docLines - 2, lnHeader));
-    const lnEnd = Math.min(docLines - 1, lnHeader + renderedLines.len);
-    const overallRange = new Range(
-      doc.lineAt(lnHeader).range.start,
-      doc.lineAt(lnEnd).range.end,
-    );
-    return renderDecorations(decos, editor, overallRange);
+    const range = getRenderRangeFromTop(editor, renderedLines.len + 2);
+    return renderDecorations(decos, editor, range);
   }
 
   private static recompute(args: {
@@ -524,7 +509,8 @@ export class FindFilePanel {
     try {
       commands.executeCommand("_setContext", WHICHKEY_STATE, ":findFile");
       commands.executeCommand("_setContext", "inDebugRepl", true);
-      this.disposableDecos = this.doRender();
+      const editor = window.activeTextEditor;
+      this.disposableDecos = editor === undefined ? [] : this.doRender(editor);
     } finally {
       for (const dsp of oldDisposables) dsp.dispose();
     }

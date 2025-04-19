@@ -4,14 +4,12 @@ import {
   TextEditorDecorationType,
   Range,
   commands,
+  TextEditor,
 } from "vscode";
 import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
-import {
-  Decoration,
-  renderDecorations,
-  stickyScrollMaxRows,
-} from "../leaderkey/decoration";
+import { Decoration, renderDecorations, stickyScrollMaxRows } from "../common/decoration";
 import { WHICHKEY_STATE } from "../common/global";
+import { getRenderRangeFromTop } from "../common/renderRange";
 
 type RgMatchState = {
   matches: GrepLine[];
@@ -63,13 +61,14 @@ export class RgPanel {
     try {
       commands.executeCommand("_setContext", WHICHKEY_STATE, ":ripgrep");
       commands.executeCommand("_setContext", "inDebugRepl", true);
-      this.lastDecorations = this.doRender();
+      const editor = window.activeTextEditor;
+      this.lastDecorations = editor === undefined ? [] : this.doRender(editor);
     } finally {
       for (const dsp of lastDecorations) dsp.dispose();
     }
   }
 
-  doRender() {
+  doRender(editor: TextEditor) {
     const decos: Decoration[] = [
       { type: "background", lines: 2 + this.matchState.matches.length },
       { type: "text", text: this.query.query, foreground: "command" },
@@ -79,28 +78,8 @@ export class RgPanel {
         return { type: "text", text, foreground: "command", lineOffset: 2 + i };
       }),
     ];
-    const totalLines = 2 + this.matchState.matches.length;
-
-    // TODO duplicated code
-    const editor = window.activeTextEditor;
-    if (editor === undefined) return [];
-    const visibleRange = editor.visibleRanges[0];
-    let lnHeader =
-      visibleRange.start.line +
-      Math.min(
-        stickyScrollMaxRows,
-        (visibleRange.end.line - visibleRange.start.line) >> 1,
-      );
-    const doc = editor.document;
-    const docLines = doc.lineCount;
-    lnHeader = Math.max(0, Math.min(docLines - 2, lnHeader));
-    const lnEnd = Math.min(docLines - 1, lnHeader + totalLines);
-    const overallRange = new Range(
-      doc.lineAt(lnHeader).range.start,
-      doc.lineAt(lnEnd).range.end,
-    );
-
-    return renderDecorations(decos, editor, overallRange);
+    const range = getRenderRangeFromTop(editor, 2 + this.matchState.matches.length);
+    return renderDecorations(decos, editor, range);
   }
 
   private onUpdate(update: RipgrepStatusUpdate) {

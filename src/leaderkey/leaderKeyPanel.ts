@@ -16,8 +16,8 @@ import {
   overrideExn,
   showAsQuickPickItems,
 } from "./command";
-import { renderBinding, stickyScrollMaxRows } from "./decoration";
 import { defaultBindings } from "./defaultBindings";
+import { renderBinding } from "./render";
 
 export class LeaderkeyPanel {
   root: Bindings;
@@ -92,19 +92,19 @@ export class LeaderkeyPanel {
     } finally {
       const oldDisposables = this.disposableDecos;
       try {
-        if (path === "") {
-          this.when = undefined;
-        } else {
-          const bOrC = binding ?? go(this.root, path, this.when);
-          if (bOrC === undefined || isCommand(bOrC)) {
-            // skip rendering
+        this.disposableDecos = [];
+        const editor = window.activeTextEditor;
+        if (editor !== undefined) {
+          if (path === "") {
+            // reset
+            this.when = undefined;
           } else {
-            this.disposableDecos = renderBinding(
-              bOrC,
-              path,
-              this.when,
-              stickyScrollMaxRows,
-            );
+            const bOrC = binding ?? go(this.root, path, this.when);
+            if (bOrC === undefined || isCommand(bOrC)) {
+              // skip rendering
+            } else {
+              this.disposableDecos = renderBinding(editor, bOrC, path, this.when);
+            }
           }
         }
       } finally {

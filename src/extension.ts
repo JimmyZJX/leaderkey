@@ -5,6 +5,7 @@ import {
   window,
   workspace,
 } from "vscode";
+import { updateGlobalThemeType, updateStickyScrollConf } from "./common/decoration";
 import { init as initGlobal } from "./common/global";
 import { init as initRemote, pickPathFromUri } from "./common/remote";
 import { register as registerDired } from "./findFile/dired";
@@ -12,10 +13,9 @@ import { FindFilePanel } from "./findFile/findFilePanel";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
-import { updateGlobalThemeType, updateStickyScrollConf } from "./leaderkey/decoration";
 import { LeaderkeyPanel } from "./leaderkey/leaderKeyPanel";
-import { RgPanel } from "./ripgrep/rgPanel";
 import { defaultQueryMode } from "./ripgrep/rg";
+import { RgPanel } from "./ripgrep/rgPanel";
 
 // TODO panel dispatcher
 let currentPanel:

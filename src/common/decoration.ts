@@ -2,13 +2,11 @@ import {
   ColorThemeKind,
   Range,
   TextEditor,
-  TextEditorDecorationType,
   ThemableDecorationAttachmentRenderOptions,
   window,
   workspace,
 } from "vscode";
-import { Bindings, TokenType } from "./command";
-import { render } from "./render";
+import { TokenType } from "../leaderkey/command";
 
 type ThemeType = "dark" | "light";
 let globalThemeType: ThemeType = "dark";
@@ -146,65 +144,4 @@ export function renderDecorations(
 
 export function getThemeRenderOpts(tokenType: TextType) {
   return themeRenderOpts[globalThemeType][tokenType];
-}
-
-function appendStringRightAligned(input: string, toAppend: string, right: number) {
-  return (
-    input + " ".repeat(Math.max(0, right - input.length - toAppend.length)) + toAppend
-  );
-}
-
-export function renderBinding(
-  binding: Bindings,
-  path: string,
-  when: string | undefined,
-  stickyScrollMaxRows: number,
-) {
-  const editor = window.activeTextEditor;
-  if (editor === undefined) return [];
-
-  const rendered = render(binding, 100, when);
-  const visibleRange = editor.visibleRanges[0];
-  let lnHeader =
-    visibleRange.start.line +
-    Math.min(stickyScrollMaxRows, (visibleRange.end.line - visibleRange.start.line) >> 1);
-
-  const headerWhen = when === undefined ? "" : `(${when})`;
-  let strHeader = `${path}-    `;
-  const transientMode = binding.transient ? `${binding.name}    ` : "";
-  strHeader = appendStringRightAligned(strHeader, transientMode, rendered.maxLen >> 1);
-  strHeader = appendStringRightAligned(strHeader, headerWhen, rendered.maxLen);
-  const header: Decoration = {
-    type: "text",
-    text: strHeader,
-    foreground: "command",
-    background: "header",
-  };
-  const background: Decoration = {
-    type: "background",
-    background: "default",
-    lines: rendered.nLines + 2,
-    lineOffset: -0.5,
-  };
-
-  const decos = [
-    header,
-    background,
-    ...rendered.decos.map<Decoration>(([tt, str]) => ({
-      type: "text",
-      text: str,
-      lineOffset: 1,
-      foreground: tt,
-    })),
-  ];
-
-  const doc = editor.document;
-  // fix header to be at least on the 2nd last line
-  lnHeader = Math.max(0, Math.min(doc.lineCount - 2, lnHeader));
-  const lnEnd = Math.min(doc.lineCount - 1, lnHeader + 1 + rendered.nLines - 1);
-  const overallRange = new Range(
-    doc.lineAt(lnHeader).range.start,
-    doc.lineAt(lnEnd).range.end,
-  );
-  return renderDecorations(decos, editor, overallRange);
 }
