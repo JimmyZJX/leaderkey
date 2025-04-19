@@ -14,7 +14,7 @@ import { ENV_HOME, openFile, runProcess } from "../common/remote";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
 import { Decoration, renderDecorations, stickyScrollMaxRows } from "../common/decoration";
 import { showDir } from "./dired";
-import { getRenderRangeFromTop } from "../common/renderRange";
+import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
 
 const RE_TRAILING_SLASH = /\/$/;
 function stripSlash(basename: string) {
@@ -63,9 +63,6 @@ function nonHighlightChars(r: FzfResultItem<string>) {
 function highlightChars(r: FzfResultItem<string>) {
   return [...r.item].map((c, i) => (r.positions.has(i) ? c : " ")).join("");
 }
-
-const NUM_ABOVE_OR_BELOW = 10;
-const NUM_TOTAL = NUM_ABOVE_OR_BELOW * 2 + 1;
 
 type FindFileSelection =
   | { type: "none" }
@@ -245,6 +242,7 @@ export class FindFilePanel {
     "C-y": () => this.pasteAction(),
     "C-v": () => this.pasteAction(),
   };
+  // TODO implement <left> <right> and C-<left> C-<right>
 
   public async onKey(key: string) {
     const last = this.lastKey;
@@ -482,24 +480,11 @@ export class FindFilePanel {
         focusIdx = 0;
       }
 
-      const numResults = fzfResults.length;
-      let renderFrom = Math.max(0, focusIdx - NUM_ABOVE_OR_BELOW),
-        renderTo = Math.min(numResults, focusIdx + NUM_ABOVE_OR_BELOW + 1);
-
-      // try extend upward
-      if (renderTo - renderFrom < NUM_TOTAL && renderFrom > 0) {
-        renderFrom = Math.max(0, renderTo - NUM_TOTAL);
-      }
-      // try extend downward
-      if (renderTo - renderFrom < NUM_TOTAL && renderTo < numResults) {
-        renderTo = Math.min(numResults, renderFrom + NUM_TOTAL);
-      }
-
-      return {
-        fzfResults,
-        newSelection,
-        renderedLines: { start: renderFrom, len: renderTo - renderFrom },
-      };
+      const renderedLines = indicesToRender({
+        length: fzfResults.length,
+        focus: focusIdx,
+      });
+      return { fzfResults, newSelection, renderedLines };
     }
   }
 

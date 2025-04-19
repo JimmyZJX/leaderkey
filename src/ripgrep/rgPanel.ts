@@ -1,15 +1,14 @@
 import {
-  window,
   CancellationTokenSource,
-  TextEditorDecorationType,
-  Range,
   commands,
   TextEditor,
+  TextEditorDecorationType,
+  window,
 } from "vscode";
-import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
-import { Decoration, renderDecorations, stickyScrollMaxRows } from "../common/decoration";
+import { Decoration, renderDecorations } from "../common/decoration";
 import { WHICHKEY_STATE } from "../common/global";
-import { getRenderRangeFromTop } from "../common/renderRange";
+import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
+import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
 
 type RgMatchState = {
   matches: GrepLine[];
@@ -30,7 +29,7 @@ export class RgPanel {
   private cancellationToken: CancellationTokenSource;
 
   private matchState: RgMatchState = emptyRgMatchState();
-  private lastDecorations: TextEditorDecorationType[] = [];
+  private disposableDecos: TextEditorDecorationType[] = [];
 
   constructor(query: RipGrepQuery) {
     this.query = query;
@@ -39,46 +38,105 @@ export class RgPanel {
   }
 
   public async quit() {
-    for (const d of this.lastDecorations) d.dispose();
-    this.lastDecorations = [];
+    for (const d of this.disposableDecos) d.dispose();
+    this.disposableDecos = [];
     this.cancellationToken.cancel();
     await commands.executeCommand("_setContext", WHICHKEY_STATE, "");
     await commands.executeCommand("_setContext", "inDebugRepl", false);
   }
 
   public onKey(key: string) {
-    let f = (input: string) => {
-      if (key === "<backspace>") return input.slice(0, -1);
-      if (key.length === 1) return input + key;
-      return input;
-    };
-    this.query.query = f(this.query.query);
-    this.spawn();
+    const uiAction = this.uiActions[key];
+    if (uiAction) {
+      uiAction();
+      this.render();
+    } else {
+      let f = (input: string) => {
+        if (key === "<backspace>") return input.slice(0, -1);
+        if (key.length === 1) return input + key;
+        return input;
+      };
+      this.query.query = f(this.query.query);
+      this.spawn();
+    }
+  }
+
+  private uiActions: {
+    [key: string]: () => void;
+  } = {
+    "<up>": () => this.moveSelection(-1),
+    "C-k": () => this.moveSelection(-1),
+    "<down>": () => this.moveSelection(1),
+    "C-j": () => this.moveSelection(1),
+    "C-u": () => this.moveSelection(-5),
+    "C-d": () => this.moveSelection(5),
+  };
+
+  moveSelection(delta: number) {
+    const ms = this.matchState;
+    if (ms.selection === undefined) return;
+    if (delta > 0) {
+      ms.selection = Math.min(ms.matches.length - 1, ms.selection + delta);
+    } else {
+      ms.selection = Math.max(0, ms.selection + delta);
+    }
   }
 
   render() {
-    const lastDecorations = this.lastDecorations;
+    const lastDecorations = this.disposableDecos;
     try {
       commands.executeCommand("_setContext", WHICHKEY_STATE, ":ripgrep");
       commands.executeCommand("_setContext", "inDebugRepl", true);
       const editor = window.activeTextEditor;
-      this.lastDecorations = editor === undefined ? [] : this.doRender(editor);
+      this.disposableDecos = editor === undefined ? [] : this.doRender(editor);
     } finally {
       for (const dsp of lastDecorations) dsp.dispose();
     }
   }
 
   doRender(editor: TextEditor) {
+    if (this.matchState.selection === undefined && this.matchState.matches.length > 0) {
+      this.matchState.selection = 0;
+    }
+    const { selection, message, matches } = this.matchState;
+    const HEADER_NUM_LINES = 2;
+
+    const renderedLines =
+      selection === undefined
+        ? { start: 0, len: 0 }
+        : indicesToRender({
+            length: matches.length,
+            focus: selection,
+          });
+
+    const highlight: Decoration[] = [];
+    if (selection !== undefined) {
+      highlight.push({
+        type: "background",
+        lines: 1,
+        background: "header",
+        zOffset: 1,
+        lineOffset: selection - renderedLines.start + HEADER_NUM_LINES,
+      });
+    }
     const decos: Decoration[] = [
-      { type: "background", lines: 2 + this.matchState.matches.length },
-      { type: "text", text: this.query.query, foreground: "command" },
-      { type: "text", text: this.matchState.message, foreground: "arrow", lineOffset: 1 },
-      ...this.matchState.matches.map<Decoration>((grepLine, i) => {
-        const text = `${grepLine.file}:${grepLine.lineNo}:${grepLine.line}`;
-        return { type: "text", text, foreground: "command", lineOffset: 2 + i };
-      }),
+      { type: "background", lines: HEADER_NUM_LINES + renderedLines.len },
+      { type: "text", text: this.query.query + "█", foreground: "command" },
+      { type: "text", text: message, foreground: "arrow", lineOffset: 1 },
+      ...highlight,
+      ...matches
+        .slice(renderedLines.start, renderedLines.start + renderedLines.len)
+        .map<Decoration>((grepLine, i) => {
+          const text = `${grepLine.file}:${grepLine.lineNo}:${grepLine.line}`;
+          return {
+            type: "text",
+            text,
+            foreground: "command",
+            lineOffset: HEADER_NUM_LINES + i,
+          };
+        }),
     ];
-    const range = getRenderRangeFromTop(editor, 2 + this.matchState.matches.length);
+    const range = getRenderRangeFromTop(editor, HEADER_NUM_LINES + renderedLines.len);
     return renderDecorations(decos, editor, range);
   }
 
@@ -98,7 +156,7 @@ export class RgPanel {
               this.matchState.message = `ERROR: ${summary.msg}`;
               break;
             case "start":
-              this.matchState.message = `⏳ [${summary.query}]`;
+              this.matchState.message = `finding [${summary.query}]`;
               break;
             default: {
               const _exhaustive: never = summary;

@@ -15,3 +15,23 @@ export function getRenderRangeFromTop(editor: TextEditor, totalLines: number) {
   const lnEnd = Math.min(docLines - 1, lnHeader + totalLines);
   return new Range(doc.lineAt(lnHeader).range.start, doc.lineAt(lnEnd).range.end);
 }
+
+const NUM_ABOVE_OR_BELOW = 10;
+const NUM_TOTAL = NUM_ABOVE_OR_BELOW * 2 + 1;
+
+export function indicesToRender(_: { length: number; focus: number }) {
+  const { length, focus } = _;
+  let from = Math.max(0, focus - NUM_ABOVE_OR_BELOW),
+    to = Math.min(length, focus + NUM_ABOVE_OR_BELOW + 1);
+
+  // try extend upward
+  if (to - from < NUM_TOTAL && from > 0) {
+    from = Math.max(0, to - NUM_TOTAL);
+  }
+  // try extend downward
+  if (to - from < NUM_TOTAL && to < length) {
+    to = Math.min(length, from + NUM_TOTAL);
+  }
+
+  return { start: from, len: to - from };
+}
