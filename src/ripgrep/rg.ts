@@ -111,7 +111,7 @@ export async function doQuery(
             if (msg.type === "match") {
               const data = msg.data;
               const text = data.lines.text;
-              if (text !== undefined && text.endsWith("\n")) {
+              if (text !== undefined) {
                 grepLines.push({
                   file: normalizePath(data.path?.text ?? "<bad filename>"),
                   lineNo: data.line_number,
