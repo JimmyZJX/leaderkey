@@ -56,7 +56,7 @@ const decoRenderOpts: {
   },
 };
 
-type TextType = TokenType | "dir" | "highlight";
+type TextType = TokenType | "dir" | "highlight" | "arrow-highlight";
 
 const themeRenderOpts: {
   [themeType in ThemeType]: {
@@ -67,6 +67,7 @@ const themeRenderOpts: {
     dir: { color: "#bc6ec5" },
     key: { color: "#bc6ec5", fontWeight: "bold" },
     arrow: { color: "#2d9574" },
+    "arrow-highlight": { color: "#2d9574", fontWeight: "bold" },
     binding: { color: "#4190d8" },
     highlight: { color: "#4190d8", fontWeight: "bold" },
     command: { color: "#ccc" },
@@ -75,6 +76,7 @@ const themeRenderOpts: {
     key: { color: "#692F60", fontWeight: "bold" },
     dir: { color: "#692F60" },
     arrow: { color: "#2A976D" },
+    "arrow-highlight": { color: "#2A976D", fontWeight: "bold" },
     binding: { color: "#3781C2" },
     highlight: { color: "#3781C2", fontWeight: "bold" },
     command: { color: "#67537A" },
@@ -98,7 +100,11 @@ export type Decoration =
     };
 
 function escapeTextForBeforeContentText(text: string) {
-  return text.replaceAll("'", "\\'").replaceAll(" ", "\\00a0 ").replaceAll("\n", " \\A ");
+  return text
+    .replaceAll("\\", "\\\\")
+    .replaceAll("'", "\\'")
+    .replaceAll(" ", "\\00a0 ")
+    .replaceAll("\n", " \\A ");
 }
 
 export function renderDecorations(

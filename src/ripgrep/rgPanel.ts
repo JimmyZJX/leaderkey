@@ -7,21 +7,33 @@ import {
 } from "vscode";
 import { Decoration, renderDecorations } from "../common/decoration";
 import { WHICHKEY_STATE } from "../common/global";
-import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
+import {
+  getNumTotal,
+  getRenderRangeFromTop,
+  indicesToRender,
+} from "../common/renderRange";
 import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
 
 type RgMatchState = {
   matches: GrepLine[];
   message: string;
   selection: number | undefined;
+  isDone: boolean;
 };
 
-function emptyRgMatchState() {
+function emptyRgMatchState(): RgMatchState {
   return {
     matches: [],
-    message: "<init>",
+    message: "",
     selection: undefined,
+    isDone: false,
   };
+}
+
+const PAD_INDICATOR_COUNT = 5;
+
+function spcs(len: number) {
+  return " ".repeat(len);
 }
 
 export class RgPanel {
@@ -95,11 +107,15 @@ export class RgPanel {
   }
 
   doRender(editor: TextEditor) {
-    if (this.matchState.selection === undefined && this.matchState.matches.length > 0) {
-      this.matchState.selection = 0;
+    const ms = this.matchState;
+    if (ms.selection === undefined && ms.matches.length > 0) {
+      ms.selection = 0;
     }
-    const { selection, message, matches } = this.matchState;
+    const { selection, message, matches } = ms;
     const HEADER_NUM_LINES = 2;
+
+    // status line
+    const status = `[${this.query.dir[0]}] ${message}`;
 
     const renderedLines =
       selection === undefined
@@ -109,9 +125,9 @@ export class RgPanel {
             focus: selection,
           });
 
-    const highlight: Decoration[] = [];
+    const selectedBg: Decoration[] = [];
     if (selection !== undefined) {
-      highlight.push({
+      selectedBg.push({
         type: "background",
         lines: 1,
         background: "header",
@@ -119,22 +135,85 @@ export class RgPanel {
         lineOffset: selection - renderedLines.start + HEADER_NUM_LINES,
       });
     }
+
+    const matchText = matches
+      .slice(renderedLines.start, renderedLines.start + renderedLines.len)
+      .map((grepLine) => {
+        const normalChars = [...grepLine.line];
+        let highlightChars = Array(grepLine.line.length).fill(" ");
+        for (const { start, end } of grepLine.match) {
+          for (let i = start; i < end; i++) {
+            highlightChars[i] = normalChars[i];
+            normalChars[i] = " ";
+          }
+        }
+        const lineNormal = normalChars.join("");
+        const lineHighlight = highlightChars.join("");
+
+        // line format:
+        // <file>:<line>:  line with optional highlighted text
+
+        const file = grepLine.file;
+        const strLineNo = grepLine.lineNo.toString();
+        const lineNo = spcs(file.length + 1) + strLineNo;
+        const linePrefix = spcs(file.length) + ":" + spcs(strLineNo.length) + ":";
+        const normal = linePrefix + lineNormal;
+        const highlight = spcs(linePrefix.length) + lineHighlight;
+        return { file, lineNo, normal, highlight };
+      });
+    const fileText = matchText.map(({ file }) => file).join("\n");
+    const lineNoText = matchText.map(({ lineNo }) => lineNo).join("\n");
+    const normalText = matchText.map(({ normal }) => normal).join("\n");
+    const highlightText = matchText.map(({ highlight }) => highlight).join("\n");
+
+    const bgSize = HEADER_NUM_LINES + Math.max(getNumTotal(), renderedLines.len);
+
+    const rgIndicator =
+      (ms.isDone ? ms.matches.length.toString() : "").padEnd(PAD_INDICATOR_COUNT) +
+      " rg: ";
+    const inputText = spcs(rgIndicator.length) + this.query.query + "█";
+
     const decos: Decoration[] = [
-      { type: "background", lines: HEADER_NUM_LINES + renderedLines.len },
-      { type: "text", text: this.query.query + "█", foreground: "command" },
-      { type: "text", text: message, foreground: "arrow", lineOffset: 1 },
-      ...highlight,
-      ...matches
-        .slice(renderedLines.start, renderedLines.start + renderedLines.len)
-        .map<Decoration>((grepLine, i) => {
-          const text = `${grepLine.file}:${grepLine.lineNo}:${grepLine.line}`;
-          return {
-            type: "text",
-            text,
-            foreground: "command",
-            lineOffset: HEADER_NUM_LINES + i,
-          };
-        }),
+      { type: "background", lines: bgSize },
+      { type: "background", lines: 0.5, lineOffset: -0.5, background: "border" },
+      {
+        type: "background",
+        lines: 0.5,
+        lineOffset: bgSize,
+        background: "border",
+      },
+      {
+        type: "text",
+        text: rgIndicator,
+        foreground: ms.isDone ? "arrow-highlight" : "binding",
+      },
+      { type: "text", text: inputText, foreground: "command" },
+      { type: "text", text: status, foreground: "command", lineOffset: 1 },
+      ...selectedBg,
+      {
+        type: "text",
+        text: fileText,
+        foreground: "binding",
+        lineOffset: HEADER_NUM_LINES,
+      },
+      {
+        type: "text",
+        text: lineNoText,
+        foreground: "arrow",
+        lineOffset: HEADER_NUM_LINES,
+      },
+      {
+        type: "text",
+        text: normalText,
+        foreground: "command",
+        lineOffset: HEADER_NUM_LINES,
+      },
+      {
+        type: "text",
+        text: highlightText,
+        foreground: "key",
+        lineOffset: HEADER_NUM_LINES,
+      },
     ];
     const range = getRenderRangeFromTop(editor, HEADER_NUM_LINES + renderedLines.len);
     return renderDecorations(decos, editor, range);
@@ -151,6 +230,7 @@ export class RgPanel {
           switch (summary.type) {
             case "done":
               this.matchState.message = `${summary.matches} matches in ${summary.elapsed}`;
+              this.matchState.isDone = true;
               break;
             case "error":
               this.matchState.message = `ERROR: ${summary.msg}`;

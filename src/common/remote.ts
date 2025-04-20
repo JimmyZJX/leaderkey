@@ -4,6 +4,31 @@ import { commands, TextDocumentShowOptions, Uri, window, workspace } from "vscod
 import { scheme as diredScheme } from "../findFile/dired";
 import { commonPrefix, log } from "./global";
 
+const RE_WINDOWS_URL_PATH = /^\/(?<drive>[a-z]):\/(?<rest>.+)$/;
+function ppWinPath(arg: string) {
+  const m = RE_WINDOWS_URL_PATH.exec(arg);
+  if (m) {
+    return m.groups!.drive!.toUpperCase() + ":\\" + m.groups!.rest!.replaceAll("/", "\\");
+  }
+  return arg;
+}
+function ppWinPaths(args: string[]) {
+  return args.map(ppWinPath);
+}
+
+// TODO determine platform first
+
+const RE_WINDOWS_NATIVE_PATH = /^(?<drive>[A-Z]):\\(?<rest>.+)$/;
+export function normalizePath(path: string) {
+  const m = RE_WINDOWS_NATIVE_PATH.exec(path);
+  if (m) {
+    return (
+      "/" + m.groups!.drive!.toLowerCase() + ":/" + m.groups!.rest!.replaceAll("\\", "/")
+    );
+  }
+  return path.replaceAll("\\", "/");
+}
+
 export type ProcessRunResult = {
   error: ExecException | null;
   stdout: string;
@@ -15,6 +40,7 @@ export async function runProcess(
   args: string[],
   execOpts?: ProcessEnvOptions,
 ) {
+  args = ppWinPaths(args);
   log(`Running command: ${prog} ${args}`);
   const result: ProcessRunResult = await commands.executeCommand(
     "remote-commons.process.run",
@@ -54,7 +80,10 @@ export class ProcessLineStreamer {
 
   constructor(prog: string, args: string[], execOpts?: ProcessEnvOptions) {
     this.prog = prog;
-    this.args = args;
+    this.args = ppWinPaths(args);
+    if (execOpts && typeof execOpts.cwd === "string") {
+      execOpts.cwd = ppWinPath(execOpts.cwd);
+    }
     this.execOpts = execOpts;
   }
 
@@ -64,7 +93,9 @@ export class ProcessLineStreamer {
         "process spawned twice " + JSON.stringify({ prog: this.prog, args: this.args })
       );
     }
-    log(`Running command (ProcessLineStreamer): ${this.prog} ${this.args}`);
+    log(
+      `Running command (ProcessLineStreamer): ${this.prog} ${this.args} ${JSON.stringify(this.execOpts)}`,
+    );
     const resultPromise: Thenable<ProcessLineStreamerSpawnResult> =
       commands.executeCommand(
         "remote-commons.process.lineStreamer.spawn",
@@ -159,7 +190,8 @@ export async function pickPathFromUri(uri: Uri, mode?: "dirname") {
 
   if (
     uri.scheme in ["file", "vscode-remote", diredScheme] ||
-    COMMON_PATH_PREFIX.some((p) => uri.path.startsWith(p))
+    COMMON_PATH_PREFIX.some((p) => uri.path.startsWith(p)) ||
+    RE_WINDOWS_URL_PATH.test(uri.path)
   ) {
     // looks like a path, accept immediately
     return modeOf(uri.path);

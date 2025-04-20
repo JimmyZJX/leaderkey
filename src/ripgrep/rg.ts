@@ -1,6 +1,6 @@
 import { relative } from "path-browserify";
 import { CancellationToken, workspace } from "vscode";
-import { ProcessLineStreamer } from "../common/remote";
+import { normalizePath, ProcessLineStreamer } from "../common/remote";
 import { log } from "../common/global";
 
 //#region ripgrep message format (incomplete)
@@ -113,7 +113,7 @@ export async function doQuery(
               const text = data.lines.text;
               if (text !== undefined && text.endsWith("\n")) {
                 grepLines.push({
-                  file: data.path?.text ?? "<bad filename>",
+                  file: normalizePath(data.path?.text ?? "<bad filename>"),
                   lineNo: data.line_number,
                   line: text.trimEnd(),
                   match: data.submatches.map(({ start, end }) => ({ start, end })),

@@ -19,6 +19,10 @@ export function getRenderRangeFromTop(editor: TextEditor, totalLines: number) {
 const NUM_ABOVE_OR_BELOW = 10;
 const NUM_TOTAL = NUM_ABOVE_OR_BELOW * 2 + 1;
 
+export function getNumTotal() {
+  return NUM_TOTAL;
+}
+
 export function indicesToRender(_: { length: number; focus: number }) {
   const { length, focus } = _;
   let from = Math.max(0, focus - NUM_ABOVE_OR_BELOW),

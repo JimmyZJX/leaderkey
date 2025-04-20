@@ -1063,6 +1063,10 @@ const SpaceRoot: Bindings = {
             ],
           },
         },
+        d: {
+          name: "Ripgrep",
+          command: "leaderkey.ripgrep",
+        },
         e: {
           name: "Edit symbol",
           command: "editor.action.rename",
