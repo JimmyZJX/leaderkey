@@ -6,12 +6,13 @@ import {
   window,
 } from "vscode";
 import { Decoration, renderDecorations } from "../common/decoration";
-import { WHICHKEY_STATE } from "../common/global";
+import { log, WHICHKEY_STATE } from "../common/global";
 import {
   getNumTotal,
   getRenderRangeFromTop,
   indicesToRender,
 } from "../common/renderRange";
+import { OneLineEditor } from "../common/singleLineEditor";
 import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
 
 type RgMatchState = {
@@ -37,6 +38,7 @@ function spcs(len: number) {
 }
 
 export class RgPanel {
+  private editor: OneLineEditor;
   private query: RipGrepQuery;
   private cancellationToken: CancellationTokenSource;
 
@@ -44,6 +46,7 @@ export class RgPanel {
   private disposableDecos: TextEditorDecorationType[] = [];
 
   constructor(query: RipGrepQuery) {
+    this.editor = new OneLineEditor(query.query);
     this.query = query;
     this.cancellationToken = new CancellationTokenSource();
     this.spawn();
@@ -57,19 +60,16 @@ export class RgPanel {
     await commands.executeCommand("_setContext", "inDebugRepl", false);
   }
 
-  public onKey(key: string) {
+  public async onKey(key: string) {
     const uiAction = this.uiActions[key];
     if (uiAction) {
       uiAction();
       this.render();
-    } else {
-      let f = (input: string) => {
-        if (key === "<backspace>") return input.slice(0, -1);
-        if (key.length === 1) return input + key;
-        return input;
-      };
-      this.query.query = f(this.query.query);
+    } else if ((await this.editor.tryKey(key)) === "handled") {
+      this.query.query = this.editor.value();
       this.spawn();
+    } else {
+      log(`[rgPanel] Key not handled: ${key}`);
     }
   }
 
@@ -171,7 +171,7 @@ export class RgPanel {
     const rgIndicator =
       (ms.isDone ? ms.matches.length.toString() : "").padEnd(PAD_INDICATOR_COUNT) +
       " rg: ";
-    const inputText = spcs(rgIndicator.length) + this.query.query + "█";
+    const editorDecos = this.editor.render({ char: rgIndicator.length });
 
     const decos: Decoration[] = [
       { type: "background", lines: bgSize },
@@ -187,7 +187,7 @@ export class RgPanel {
         text: rgIndicator,
         foreground: ms.isDone ? "arrow-highlight" : "binding",
       },
-      { type: "text", text: inputText, foreground: "command" },
+      ...editorDecos,
       { type: "text", text: status, foreground: "command", lineOffset: 1 },
       ...selectedBg,
       {

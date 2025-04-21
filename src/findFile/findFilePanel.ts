@@ -1,20 +1,14 @@
 // init: check if remote extension is available
 
 import { dirname, normalize } from "path-browserify";
-import {
-  commands,
-  env,
-  Range,
-  TextEditor,
-  TextEditorDecorationType,
-  window,
-} from "vscode";
+import { commands, TextEditor, TextEditorDecorationType, window } from "vscode";
+import { Decoration, renderDecorations } from "../common/decoration";
 import { assert, commonPrefix, log, WHICHKEY_STATE } from "../common/global";
 import { ENV_HOME, openFile, runProcess } from "../common/remote";
-import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
-import { Decoration, renderDecorations, stickyScrollMaxRows } from "../common/decoration";
-import { showDir } from "./dired";
 import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
+import { OneLineEditor as SingleLineEditor } from "../common/singleLineEditor";
+import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
+import { showDir } from "./dired";
 
 const RE_TRAILING_SLASH = /\/$/;
 function stripSlash(basename: string) {
@@ -73,7 +67,7 @@ export class FindFilePanel {
   disposableDecos: TextEditorDecorationType[] = [];
 
   dir!: string;
-  input: string;
+  editor: SingleLineEditor;
   filesPromise!: Promise<any>;
   files!: string[] | undefined;
   lastFzfResults: FzfResultItem<string>[] = [];
@@ -89,14 +83,14 @@ export class FindFilePanel {
   constructor(dir: string, onReset: () => void) {
     this.onReset = onReset;
     this.isShowing = false;
+    this.editor = new SingleLineEditor("");
     this.setDir(dir);
-    this.input = "";
     this.isSelectionManuallyChanged = false;
   }
 
   setDir(dir: string) {
     this.dir = normalize(dir.endsWith("/") ? dir : dir + "/");
-    this.input = "";
+    this.editor.reset("");
     this.lastSelection = { type: "none" };
     this.isSelectionManuallyChanged = false;
     const promise = ls(dir);
@@ -146,11 +140,8 @@ export class FindFilePanel {
         break;
       case "input":
       case "none":
-        await this.open(this.input, "forceCreate");
+        await this.open(this.editor.value(), "forceCreate");
     }
-  }
-  private async pasteAction() {
-    this.input += (await env.clipboard.readText()).replaceAll("\n", "");
   }
 
   private keyActions: {
@@ -158,9 +149,14 @@ export class FindFilePanel {
   } = {
     ESC: async () => await this.reset(),
     "C-/": () => {
-      this.input += "/";
+      this.editor.insert("/");
     },
     "/": async () => {
+      const isCursorAtEnd = this.editor.edit((lr) => lr.r === "");
+      if (!isCursorAtEnd) {
+        this.editor.insert("/");
+        return;
+      }
       if (
         this.lastSelection.type === "file" &&
         this.lastSelection.file !== "./" &&
@@ -168,22 +164,23 @@ export class FindFilePanel {
       ) {
         await this.open(this.lastSelection.file);
       } else {
-        if (this.input.startsWith("/") && this.lastSelection.type !== "input") {
-          this.setDir(this.input);
+        const input = this.editor.value();
+        if (input.startsWith("/") && this.lastSelection.type !== "input") {
+          this.setDir(input);
         } else {
-          this.input += "/";
+          this.editor.insert("/");
         }
       }
     },
     "~": () => {
-      if (this.input === "") this.setDir(ENV_HOME + "/");
-      else this.input += "~";
+      if (this.editor.value() === "") this.setDir(ENV_HOME + "/");
+      else this.editor.insert("~");
     },
     SPC: () => {
-      this.input += " ";
+      this.editor.insert(" ");
     },
-    "S-RET": async () => await this.open(this.input, "forceCreate"),
-    "C-RET": async () => await this.open(this.input, "forceCreate"),
+    "S-RET": async () => await this.open(this.editor.value(), "forceCreate"),
+    "C-RET": async () => await this.open(this.editor.value(), "forceCreate"),
     RET: async () => this.keyActionRET(),
     "C-l": async () => this.keyActionRET(),
     TAB: async (last) => {
@@ -209,11 +206,11 @@ export class FindFilePanel {
             // only one candidate and text matches to the end
             await this.open(file);
           } else {
-            this.input += stripSlash(common);
+            this.editor.insert(stripSlash(common));
           }
         }
       } else if (this.lastSelection.type === "input") {
-        await this.open(this.input);
+        await this.open(this.editor.value());
       }
     },
     "C-j": () => this.moveSelection(1),
@@ -226,21 +223,19 @@ export class FindFilePanel {
     "<pageup>": () => this.moveSelection(-15),
     "C-h": () => this.setDir(dirname(this.dir)),
     "C-<backspace>": () => {
-      if (this.input.length > 0) {
-        this.input = "";
+      if (this.editor.value().length > 0) {
+        this.editor.reset("");
       } else {
         this.setDir(dirname(this.dir));
       }
     },
     "<backspace>": () => {
-      if (this.input.length > 0) {
-        this.input = this.input.slice(0, this.input.length - 1);
+      if (this.editor.value().length > 0) {
+        this.editor.edit((lr) => (lr.l = lr.l.slice(0, -1)));
       } else {
         this.setDir(dirname(this.dir));
       }
     },
-    "C-y": () => this.pasteAction(),
-    "C-v": () => this.pasteAction(),
   };
   // TODO implement <left> <right> and C-<left> C-<right>
 
@@ -251,8 +246,8 @@ export class FindFilePanel {
     const keyAction = this.keyActions[key];
     if (keyAction) {
       await keyAction(last);
-    } else if (key.length === 1) {
-      this.input += key;
+    } else if ((await this.editor.tryKey(key)) === "handled") {
+      // handled by editor
     } else {
       log(`find-file: unknown key ${key} (last=${last})`);
     }
@@ -305,6 +300,7 @@ export class FindFilePanel {
       this.files !== undefined
         ? FindFilePanel.recompute({
             ...this,
+            input: this.editor.value(),
             files: this.files,
           })
         : {
@@ -333,17 +329,19 @@ export class FindFilePanel {
         ? "0/0"
         : `${this.lastFzfResults.length}/${this.files.length}`;
 
-    const inputText =
-      " ".repeat(this.dir.length) +
-      this.input +
-      "█" +
-      (newSelection.type === "input" ||
+    const inputPostfix =
+      newSelection.type === "input" ||
       (this.files !== undefined &&
         (this.files.length === 0 || this.lastFzfResults.length === 0))
         ? "   (RET to create " +
-          (this.input.slice(1, -1).includes("/") ? "dir and " : "") +
+          (this.editor.value().slice(1, -1).includes("/") ? "dir and " : "") +
           "file)"
-        : "");
+        : "";
+    const inputDeco = this.editor.render({
+      char: this.dir.length,
+      line: 1,
+      postfix: inputPostfix,
+    });
 
     /* layout:
        -------- top border --------
@@ -380,12 +378,7 @@ export class FindFilePanel {
       // dir
       { type: "text", foreground: "binding", text: this.dir, lineOffset: 1 },
       // input
-      {
-        type: "text",
-        foreground: "command",
-        text: inputText,
-        lineOffset: 1,
-      },
+      ...inputDeco,
       // selections
       { type: "text", foreground: "dir", text: fileListDirs, lineOffset: 2 },
       { type: "text", foreground: "command", text: fileListFiles, lineOffset: 2 },

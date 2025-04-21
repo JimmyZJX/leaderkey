@@ -39,7 +39,7 @@ export function updateStickyScrollConf() {
 }
 updateStickyScrollConf();
 
-type BackgroundType = "default" | "header" | "border";
+type BackgroundType = "default" | "header" | "border" | "cursor";
 
 const decoRenderOpts: {
   [themeType in ThemeType]: { [decoType in BackgroundType]: string };
@@ -48,15 +48,17 @@ const decoRenderOpts: {
     default: "#292b2e",
     header: "#5d4d7a",
     border: "#68217A",
+    cursor: "#BBB",
   },
   light: {
     default: "#FAF7EC",
     header: "#E6E6EA",
     border: "#E7E5EB",
+    cursor: "#444",
   },
 };
 
-type TextType = TokenType | "dir" | "highlight" | "arrow-highlight";
+export type TextType = TokenType | "dir" | "highlight" | "arrow-highlight";
 
 const themeRenderOpts: {
   [themeType in ThemeType]: {
@@ -88,7 +90,9 @@ export type Decoration =
       type: "background";
       background?: BackgroundType;
       lines: number;
+      width?: number;
       lineOffset?: number;
+      charOffset?: number;
       zOffset?: number;
     }
   | {
@@ -96,6 +100,7 @@ export type Decoration =
       background?: BackgroundType;
       foreground: TextType;
       lineOffset?: number;
+      charOffset?: number;
       text: string;
     };
 
@@ -122,9 +127,10 @@ export function renderDecorations(
             backgroundColor:
               decoRenderOpts[globalThemeType][deco.background ?? "default"],
             height: `${100 * deco.lines}%`,
-            width: "200ch",
-            margin: `0 -1ch 0 0; position: absolute; z-index: ${100 + (deco.zOffset ?? 0)};
-               ${deco.lineOffset === undefined ? "" : `top: ${deco.lineOffset * 100}%;`}`,
+            width: `${deco.width ?? 200}ch`,
+            margin: `0 -1ch 0 ${deco.charOffset !== undefined ? 0.5 + deco.charOffset : 0}ch;
+                position: absolute; z-index: ${100 + (deco.zOffset ?? 0)};
+                ${deco.lineOffset === undefined ? "" : `top: ${deco.lineOffset * 100}%;`}`,
           },
         });
       case "text":
@@ -137,7 +143,7 @@ export function renderDecorations(
               : { backgroundColor: decoRenderOpts[globalThemeType][deco.background] }),
             height: "100%",
             width: "200ch",
-            margin: `0 -1ch 0 0; position: absolute; z-index: 110; padding-left: 0.5ch; white-space: pre;
+            margin: `0 -1ch 0 ${deco.charOffset ?? 0}ch; position: absolute; z-index: 110; padding-left: 0.5ch; white-space: pre;
                ${deco.lineOffset === undefined ? "" : `top: ${deco.lineOffset * 100}%;`}
                content: '${escapeTextForBeforeContentText(deco.text)}'`,
           },

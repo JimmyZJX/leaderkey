@@ -100,17 +100,19 @@ export async function activate(context: ExtensionContext) {
     ),
     commands.registerCommand(
       "leaderkey.onkey",
-      (keyOrObj: string | { key: string; when: string }) => {
+      async (keyOrObj: string | { key: string; when: string }) => {
         currentPanel ??= { type: "leaderkey" };
         switch (currentPanel.type) {
           case "leaderkey":
-            leaderKeyPanel.onKey(keyOrObj);
+            await leaderKeyPanel.onKey(keyOrObj);
             break;
           case "findfile":
-            findFilePanel.onKey(typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key);
+            await findFilePanel.onKey(
+              typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
+            );
             break;
           case "ripgrep":
-            currentPanel.panel.onKey(
+            await currentPanel.panel.onKey(
               typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
             );
             break;
