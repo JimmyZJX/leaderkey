@@ -13,6 +13,7 @@ import {
   indicesToRender,
 } from "../common/renderRange";
 import { OneLineEditor } from "../common/singleLineEditor";
+import { eagerDebouncer } from "../common/throttle";
 import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
 
 type RgMatchState = {
@@ -32,6 +33,7 @@ function emptyRgMatchState(): RgMatchState {
 }
 
 const PAD_INDICATOR_COUNT = 5;
+const INPUT_DEBOUNCE_TIMEOUT = 200;
 
 function spcs(len: number) {
   return " ".repeat(len);
@@ -45,14 +47,19 @@ export class RgPanel {
   private matchState: RgMatchState = emptyRgMatchState();
   private disposableDecos: TextEditorDecorationType[] = [];
 
+  private spawnDebouncer: (f: () => void) => "immediately" | "delayed";
+  private isShowing: boolean = true;
+
   constructor(query: RipGrepQuery) {
     this.editor = new OneLineEditor(query.query);
     this.query = query;
     this.cancellationToken = new CancellationTokenSource();
+    this.spawnDebouncer = eagerDebouncer(INPUT_DEBOUNCE_TIMEOUT);
     this.spawn();
   }
 
   public async quit() {
+    this.isShowing = false;
     for (const d of this.disposableDecos) d.dispose();
     this.disposableDecos = [];
     this.cancellationToken.cancel();
@@ -252,7 +259,10 @@ export class RgPanel {
     this.render();
   }
 
-  spawn() {
+  private doSpawn() {
+    // to prevent rendering after the panel is closed
+    if (!this.isShowing) return;
+
     this.matchState = emptyRgMatchState();
     this.cancellationToken.cancel();
     this.cancellationToken = new CancellationTokenSource();
@@ -264,5 +274,15 @@ export class RgPanel {
       );
     }
     this.render();
+  }
+
+  private spawn() {
+    switch (this.spawnDebouncer(() => this.doSpawn())) {
+      case "immediately":
+        break;
+      case "delayed":
+        this.render();
+        break;
+    }
   }
 }

@@ -3,6 +3,7 @@ import { dirname } from "path-browserify";
 import { commands, TextDocumentShowOptions, Uri, window, workspace } from "vscode";
 import { scheme as diredScheme } from "../findFile/dired";
 import { commonPrefix, log } from "./global";
+import { throttler } from "./throttle";
 
 const RE_WINDOWS_URL_PATH = /^\/(?<drive>[a-z]):\/(?<rest>.+)$/;
 function ppWinPath(arg: string) {
@@ -117,18 +118,7 @@ export class ProcessLineStreamer {
       return;
     }
 
-    // TODO encapsulate to an async generator
-    const minDelayMs = config?.minDelayMs ?? 100;
-    let lastQueryAt = performance.now() - minDelayMs;
-
-    while (true) {
-      const now = performance.now();
-      const toSleep = lastQueryAt + minDelayMs - now;
-      if (toSleep > 0) {
-        await new Promise((resolve) => setTimeout(resolve, toSleep));
-      }
-      lastQueryAt = performance.now();
-
+    for await (const _ of throttler(config?.minDelayMs ?? 100)) {
       const status: ProcessLineStreamerStatus | undefined = await commands.executeCommand(
         "remote-commons.process.lineStreamer.read",
         result.id,
