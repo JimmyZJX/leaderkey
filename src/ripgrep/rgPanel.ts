@@ -169,8 +169,9 @@ export class RgPanel {
     const bgSize = HEADER_NUM_LINES + Math.max(getNumTotal(), renderedLines.len);
 
     const rgIndicator =
-      (ms.isDone ? ms.matches.length.toString() : "").padEnd(PAD_INDICATOR_COUNT) +
-      " rg: ";
+      (ms.isDone || ms.matches.length > 0 ? ms.matches.length.toString() : "").padEnd(
+        PAD_INDICATOR_COUNT,
+      ) + " rg: ";
     const editorDecos = this.editor.render({ char: rgIndicator.length });
 
     const decos: Decoration[] = [
@@ -185,7 +186,7 @@ export class RgPanel {
       {
         type: "text",
         text: rgIndicator,
-        foreground: ms.isDone ? "arrow-highlight" : "binding",
+        foreground: ms.isDone ? "arrow-bold" : "binding",
       },
       ...editorDecos,
       { type: "text", text: status, foreground: "command", lineOffset: 1 },
@@ -211,7 +212,7 @@ export class RgPanel {
       {
         type: "text",
         text: highlightText,
-        foreground: "key",
+        foreground: "error-bold",
         lineOffset: HEADER_NUM_LINES,
       },
     ];

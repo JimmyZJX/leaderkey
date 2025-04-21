@@ -1,7 +1,7 @@
 import { relative } from "path-browserify";
 import { CancellationToken, workspace } from "vscode";
-import { normalizePath, ProcessLineStreamer } from "../common/remote";
 import { log } from "../common/global";
+import { normalizePath, ProcessLineStreamer } from "../common/remote";
 
 //#region ripgrep message format (incomplete)
 interface GrepBegin {

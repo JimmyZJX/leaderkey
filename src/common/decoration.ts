@@ -3,6 +3,7 @@ import {
   Range,
   TextEditor,
   ThemableDecorationAttachmentRenderOptions,
+  ThemeColor,
   window,
   workspace,
 } from "vscode";
@@ -58,7 +59,7 @@ const decoRenderOpts: {
   },
 };
 
-export type TextType = TokenType | "dir" | "highlight" | "arrow-highlight";
+export type TextType = TokenType | "dir" | "highlight" | "arrow-bold" | "error-bold";
 
 const themeRenderOpts: {
   [themeType in ThemeType]: {
@@ -69,19 +70,21 @@ const themeRenderOpts: {
     dir: { color: "#bc6ec5" },
     key: { color: "#bc6ec5", fontWeight: "bold" },
     arrow: { color: "#2d9574" },
-    "arrow-highlight": { color: "#2d9574", fontWeight: "bold" },
+    "arrow-bold": { color: "#2d9574", fontWeight: "bold" },
     binding: { color: "#4190d8" },
     highlight: { color: "#4190d8", fontWeight: "bold" },
     command: { color: "#ccc" },
+    "error-bold": { color: new ThemeColor("errorForeground"), fontWeight: "bold" },
   },
   light: {
     key: { color: "#692F60", fontWeight: "bold" },
     dir: { color: "#692F60" },
     arrow: { color: "#2A976D" },
-    "arrow-highlight": { color: "#2A976D", fontWeight: "bold" },
+    "arrow-bold": { color: "#2A976D", fontWeight: "bold" },
     binding: { color: "#3781C2" },
     highlight: { color: "#3781C2", fontWeight: "bold" },
     command: { color: "#67537A" },
+    "error-bold": { color: new ThemeColor("errorForeground"), fontWeight: "bold" },
   },
 };
 

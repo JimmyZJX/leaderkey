@@ -68,6 +68,10 @@ type ProcessLineStreamerYieldStatus =
   | { type: "exit"; exit: number | string }
   | { type: "notFound" };
 
+type SpawnConfig = {
+  minDelayMs?: number;
+};
+
 export class ProcessLineStreamer {
   prog: string;
   args: string[];
@@ -87,7 +91,9 @@ export class ProcessLineStreamer {
     this.execOpts = execOpts;
   }
 
-  public async *spawn(): AsyncGenerator<ProcessLineStreamerYieldStatus, void, void> {
+  public async *spawn(
+    config?: SpawnConfig,
+  ): AsyncGenerator<ProcessLineStreamerYieldStatus, void, void> {
     if (this.id !== undefined) {
       throw (
         "process spawned twice " + JSON.stringify({ prog: this.prog, args: this.args })
@@ -111,7 +117,18 @@ export class ProcessLineStreamer {
       return;
     }
 
+    // TODO encapsulate to an async generator
+    const minDelayMs = config?.minDelayMs ?? 100;
+    let lastQueryAt = performance.now() - minDelayMs;
+
     while (true) {
+      const now = performance.now();
+      const toSleep = lastQueryAt + minDelayMs - now;
+      if (toSleep > 0) {
+        await new Promise((resolve) => setTimeout(resolve, toSleep));
+      }
+      lastQueryAt = performance.now();
+
       const status: ProcessLineStreamerStatus | undefined = await commands.executeCommand(
         "remote-commons.process.lineStreamer.read",
         result.id,
