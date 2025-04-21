@@ -82,15 +82,22 @@ export class RgPanel {
   }
 
   public async onKey(key: string) {
-    const uiAction = this.uiActions[key];
-    if (uiAction) {
-      await uiAction();
-      this.render();
-    } else if ((await this.editor.tryKey(key)) === "handled") {
-      this.query.query = this.editor.value();
-      this.spawn();
+    if (key === "RET") {
+      if (this.matchState.selection === undefined) return;
+      const match = this.matchState.matches[this.matchState.selection];
+      if (match === undefined) return;
+      await this.quit({ file: join(this.query.cwd, match.file), lineNo: match.lineNo });
     } else {
-      log(`[rgPanel] Key not handled: ${key}`);
+      const uiAction = this.uiActions[key];
+      if (uiAction) {
+        await uiAction();
+        this.render();
+      } else if ((await this.editor.tryKey(key)) === "handled") {
+        this.query.query = this.editor.value();
+        this.spawn();
+      } else {
+        log(`[rgPanel] Key not handled: ${key}`);
+      }
     }
   }
 
@@ -103,12 +110,6 @@ export class RgPanel {
     "C-j": () => this.moveSelection(1),
     "C-u": () => this.moveSelection(-5),
     "C-d": () => this.moveSelection(5),
-    RET: async () => {
-      if (this.matchState.selection === undefined) return;
-      const match = this.matchState.matches[this.matchState.selection];
-      if (match === undefined) return;
-      await this.quit({ file: join(this.query.cwd, match.file), lineNo: match.lineNo });
-    },
   };
 
   moveSelection(delta: number) {
