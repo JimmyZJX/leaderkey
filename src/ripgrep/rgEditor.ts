@@ -40,7 +40,10 @@ function guessGroupHeight() {
 }
 
 // TODO store old layout to restore!
-async function getRgPanelEditor() {
+async function getRgPanelEditor(): Promise<{
+  editor: TextEditor;
+  layout: EditorGroupLayout;
+}> {
   const file = Uri.from({ scheme, path: `/rg` });
   const doc = await workspace.openTextDocument(file);
   languages.setTextDocumentLanguage(doc, RIPGREP_LANGID);
@@ -48,6 +51,7 @@ async function getRgPanelEditor() {
   const editorGroupLayout: EditorGroupLayout = await commands.executeCommand(
     "vscode.getEditorLayout",
   );
+  const layout = structuredClone(editorGroupLayout);
 
   const guessedHeight = guessGroupHeight();
   if (editorGroupLayout.orientation == 1) {
@@ -115,7 +119,7 @@ async function getRgPanelEditor() {
       }
     }
   }
-  return rgPanelEditor;
+  return { editor: rgPanelEditor, layout };
 }
 
 const focusDecoration = window.createTextEditorDecorationType({
@@ -147,13 +151,13 @@ async function vimEsc(goToLine?: number) {
 export class RgEditor {
   // undefined when being initialized
   private rgPanelEditor: TextEditor | undefined;
-  private rgPanelPromise: Promise<TextEditor>;
+  private rgPanelPromise: Promise<{ editor: TextEditor; layout: EditorGroupLayout }>;
   private reqViewColumn: number | undefined;
   private reqDoc: TextDocument;
 
-  // `undefined` indicates that the RgEditor is no longer active
   private toPreview: { path: string; line: number } | undefined;
   private previewDebouncer: () => void;
+  private isQuit = false;
 
   constructor(reqSrcEditor: TextEditor, onInit: () => void) {
     this.rgPanelEditor = reqSrcEditor;
@@ -162,7 +166,7 @@ export class RgEditor {
 
     this.rgPanelEditor = undefined;
     this.rgPanelPromise = getRgPanelEditor();
-    this.rgPanelPromise.then((editor) => {
+    this.rgPanelPromise.then(({ editor }) => {
       this.rgPanelEditor = editor;
       onInit();
     });
@@ -212,12 +216,13 @@ export class RgEditor {
   }
 
   public async quit(backToStart: boolean) {
-    if (this.toPreview === undefined) return;
+    if (this.isQuit) return;
+    this.isQuit = true;
     this.toPreview = undefined;
     {
-      const rgPanelEditor = await this.rgPanelPromise;
+      const { editor, layout } = await this.rgPanelPromise;
       // close rgPanel editor
-      const doc = rgPanelEditor.document;
+      const doc = editor.document;
       const activeEditor = window.activeTextEditor;
       if (
         activeEditor !== undefined &&
@@ -228,7 +233,7 @@ export class RgEditor {
         // try to switch to the panel editor doc on the same view column
         await window.showTextDocument(doc, {
           preserveFocus: false,
-          viewColumn: rgPanelEditor.viewColumn,
+          viewColumn: editor.viewColumn,
         });
         const activeEditor = window.activeTextEditor;
         if (
@@ -238,6 +243,9 @@ export class RgEditor {
           await closeCurrentEditor();
         }
       }
+
+      // restore layout
+      await commands.executeCommand("vscode.setEditorLayout", layout);
     }
 
     // try to remove decorations on the preview editor
