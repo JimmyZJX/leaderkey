@@ -1,5 +1,3 @@
-import { log } from "./global";
-
 export async function* throttler(ms: number) {
   let lastYieldTime = 0;
 
@@ -21,35 +19,38 @@ export async function* throttler(ms: number) {
   }
 }
 
-export function eagerDebouncer(ms: number): (f: () => void) => "immediately" | "delayed" {
-  let timeoutId: NodeJS.Timeout | null = null;
-  let lastCallTime = 0;
+export function eagerDebouncer(
+  func: () => void | Thenable<void>,
+  wait: number,
+): () => "immediately" | "delayed" {
+  let isRunning = false;
+  let runAgain = false;
 
-  return (f: () => void) => {
-    const currentTime = performance.now();
-    const timeSinceLastCall = currentTime - lastCallTime;
-    lastCallTime = currentTime;
-
-    // Clear any existing timeout
-    if (timeoutId !== null) {
-      clearTimeout(timeoutId);
-      timeoutId = null;
+  async function run() {
+    runAgain = false;
+    try {
+      await func();
+    } finally {
+      setTimeout(() => {
+        if (runAgain) {
+          runAgain = false;
+          run();
+        } else {
+          isRunning = false;
+        }
+      }, wait);
     }
+  }
 
-    if (timeSinceLastCall >= ms) {
-      // If enough time has passed since the last call, execute immediately
-      log("eagerDebouncer: immediate execution");
-      f();
-      return "immediately";
-    } else {
-      // Otherwise, set a timeout to execute after the remaining time
-      timeoutId = setTimeout(() => {
-        lastCallTime = performance.now();
-        log("eagerDebouncer: delayed execution");
-        f();
-        timeoutId = null;
-      }, ms);
+  return () => {
+    if (isRunning) {
+      runAgain = true;
       return "delayed";
+    } else {
+      isRunning = true;
+      runAgain = false;
+      run();
+      return "immediately";
     }
   };
 }

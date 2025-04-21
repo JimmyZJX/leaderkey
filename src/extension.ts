@@ -14,6 +14,10 @@ import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
 import { LeaderkeyPanel } from "./leaderkey/leaderKeyPanel";
+import {
+  register as registerRipgrepFs,
+  scheme as ripgrepFsScheme,
+} from "./ripgrep/dummyFs";
 import { defaultQueryMode } from "./ripgrep/rg";
 import { RgPanel } from "./ripgrep/rgPanel";
 
@@ -31,6 +35,7 @@ export async function activate(context: ExtensionContext) {
   initGlobal();
   initRemote();
   registerDired(context);
+  registerRipgrepFs(context);
 
   const leaderKeyPanel = new LeaderkeyPanel(() => resetCurrentPanel());
   await leaderKeyPanel.activate(context);
@@ -40,17 +45,17 @@ export async function activate(context: ExtensionContext) {
     () => resetCurrentPanel(),
   );
 
-  function resetPanel() {
+  async function resetPanel() {
     if (currentPanel === undefined) return;
     switch (currentPanel.type) {
       case "leaderkey":
         leaderKeyPanel.reset();
         break;
       case "findfile":
-        findFilePanel.reset();
+        await findFilePanel.reset();
         break;
       case "ripgrep":
-        currentPanel.panel.quit();
+        await currentPanel.panel.quit("normal");
         break;
     }
   }
@@ -82,12 +87,16 @@ export async function activate(context: ExtensionContext) {
 
       //  synchronously show and then set dir
       const dir = await pickPathFromUri(editor.document.uri, "dirname");
-      const rgPanel = new RgPanel({
-        dir: [dir],
-        query: "",
-        cwd: dir,
-        ...defaultQueryMode(),
-      });
+      const rgPanel = new RgPanel(
+        {
+          dir: [dir],
+          query: "",
+          cwd: dir,
+          ...defaultQueryMode(),
+        },
+        editor,
+        () => resetCurrentPanel(),
+      );
       currentPanel = { type: "ripgrep", panel: rgPanel };
     }),
     commands.registerCommand(
@@ -101,7 +110,12 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand(
       "leaderkey.onkey",
       async (keyOrObj: string | { key: string; when: string }) => {
-        currentPanel ??= { type: "leaderkey" };
+        if (currentPanel === undefined) {
+          currentPanel = { type: "leaderkey" };
+          window.showWarningMessage(
+            `onkey got [${JSON.stringify(keyOrObj)}] when no panel is active`,
+          );
+        }
         switch (currentPanel.type) {
           case "leaderkey":
             await leaderKeyPanel.onKey(keyOrObj);
@@ -137,7 +151,16 @@ export async function activate(context: ExtensionContext) {
     }),
 
     window.onDidChangeActiveColorTheme((_ct) => updateGlobalThemeType()),
-    window.onDidChangeActiveTextEditor((_e) => resetPanel()),
+    window.onDidChangeActiveTextEditor((editor) => {
+      if (
+        currentPanel?.type === "ripgrep" &&
+        editor?.document.uri.scheme === ripgrepFsScheme
+      ) {
+        // this is likely spawned by ripgrep, pass
+      } else {
+        resetPanel();
+      }
+    }),
     window.onDidChangeTextEditorSelection((event) => {
       if (event.kind === TextEditorSelectionChangeKind.Mouse) {
         resetPanel();

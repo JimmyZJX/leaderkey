@@ -97,7 +97,7 @@
         },
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": { },
+          "default": {},
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         },
         "leaderkey.ripgrep.exe": {
@@ -1239,9 +1239,48 @@
     ],
     "languages": [
       {
-        "id": "leaderkey.dired"
+        "id": "leaderkey-dired"
+      },
+      {
+        "id": "leaderkey-ripgrep-panel"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "[leaderkey-dired]": {
+        "editor.lineNumbers": "off",
+        "editor.folding": false,
+        "editor.glyphMargin": false,
+        "editor.autoClosingBrackets": "never",
+        "editor.autoSurround": "never",
+        "editor.quickSuggestions": {
+          "other": "off",
+          "comments": "off",
+          "strings": "off"
+        },
+        "editor.rulers": [],
+        "editor.stickyScroll.enabled": true,
+        "editor.stickyScroll.maxLineCount": 2,
+        "editor.occurrencesHighlight": "off",
+        "editor.selectionHighlight": false
+      },
+      "[leaderkey-ripgrep-panel]": {
+        "editor.lineNumbers": "off",
+        "editor.folding": false,
+        "editor.glyphMargin": false,
+        "editor.autoClosingBrackets": "never",
+        "editor.autoSurround": "never",
+        "editor.quickSuggestions": {
+          "other": "off",
+          "comments": "off",
+          "strings": "off"
+        },
+        "editor.rulers": [],
+        "editor.stickyScroll.enabled": true,
+        "editor.stickyScroll.maxLineCount": 2,
+        "editor.occurrencesHighlight": "off",
+        "editor.selectionHighlight": false
+      }
+    }
   },
   "prettier": {
     "printWidth": 90

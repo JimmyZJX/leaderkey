@@ -1,12 +1,12 @@
+import { join } from "path-browserify";
 import {
   CancellationTokenSource,
   commands,
   TextEditor,
   TextEditorDecorationType,
-  window,
 } from "vscode";
 import { Decoration, renderDecorations } from "../common/decoration";
-import { log, WHICHKEY_STATE } from "../common/global";
+import { WHICHKEY_STATE as LEADERKEY_STATE, log } from "../common/global";
 import {
   getNumTotal,
   getRenderRangeFromTop,
@@ -15,6 +15,7 @@ import {
 import { OneLineEditor } from "../common/singleLineEditor";
 import { eagerDebouncer } from "../common/throttle";
 import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
+import { RgEditor } from "./rgEditor";
 
 type RgMatchState = {
   matches: GrepLine[];
@@ -48,29 +49,42 @@ export class RgPanel {
   private disposableDecos: TextEditorDecorationType[] = [];
 
   private spawnDebouncer: (f: () => void) => "immediately" | "delayed";
-  private isShowing: boolean = true;
+  // undefined means quit
+  private rgEditor: RgEditor | undefined;
 
-  constructor(query: RipGrepQuery) {
+  private onReset: () => void;
+
+  constructor(query: RipGrepQuery, activeTextEditor: TextEditor, onReset: () => void) {
     this.editor = new OneLineEditor(query.query);
     this.query = query;
+    this.onReset = onReset;
     this.cancellationToken = new CancellationTokenSource();
-    this.spawnDebouncer = eagerDebouncer(INPUT_DEBOUNCE_TIMEOUT);
+    this.rgEditor = new RgEditor(activeTextEditor, () => this.render());
+    this.spawnDebouncer = eagerDebouncer(() => this.doSpawn(), INPUT_DEBOUNCE_TIMEOUT);
     this.spawn();
   }
 
-  public async quit() {
-    this.isShowing = false;
+  public async quit(mode: "interrupt" | "normal" | { file: string; lineNo: number }) {
+    this.cancellationToken.cancel();
+    await commands.executeCommand("_setContext", "inDebugRepl", false);
+    if (mode === "interrupt") {
+      await this.rgEditor?.quit(true);
+    } else if (mode === "normal") {
+      await this.rgEditor?.quit(false);
+    } else {
+      await this.rgEditor?.enter(mode.file, mode.lineNo);
+    }
+    this.rgEditor = undefined;
     for (const d of this.disposableDecos) d.dispose();
     this.disposableDecos = [];
-    this.cancellationToken.cancel();
-    await commands.executeCommand("_setContext", WHICHKEY_STATE, "");
-    await commands.executeCommand("_setContext", "inDebugRepl", false);
+    this.onReset();
+    await commands.executeCommand("_setContext", LEADERKEY_STATE, "");
   }
 
   public async onKey(key: string) {
     const uiAction = this.uiActions[key];
     if (uiAction) {
-      uiAction();
+      await uiAction();
       this.render();
     } else if ((await this.editor.tryKey(key)) === "handled") {
       this.query.query = this.editor.value();
@@ -81,7 +95,7 @@ export class RgPanel {
   }
 
   private uiActions: {
-    [key: string]: () => void;
+    [key: string]: () => void | Promise<void>;
   } = {
     "<up>": () => this.moveSelection(-1),
     "C-k": () => this.moveSelection(-1),
@@ -89,6 +103,12 @@ export class RgPanel {
     "C-j": () => this.moveSelection(1),
     "C-u": () => this.moveSelection(-5),
     "C-d": () => this.moveSelection(5),
+    RET: async () => {
+      if (this.matchState.selection === undefined) return;
+      const match = this.matchState.matches[this.matchState.selection];
+      if (match === undefined) return;
+      await this.quit({ file: join(this.query.cwd, match.file), lineNo: match.lineNo });
+    },
   };
 
   moveSelection(delta: number) {
@@ -104,9 +124,9 @@ export class RgPanel {
   render() {
     const lastDecorations = this.disposableDecos;
     try {
-      commands.executeCommand("_setContext", WHICHKEY_STATE, ":ripgrep");
+      commands.executeCommand("_setContext", LEADERKEY_STATE, ":ripgrep");
       commands.executeCommand("_setContext", "inDebugRepl", true);
-      const editor = window.activeTextEditor;
+      const editor = this.rgEditor?.getEditor();
       this.disposableDecos = editor === undefined ? [] : this.doRender(editor);
     } finally {
       for (const dsp of lastDecorations) dsp.dispose();
@@ -120,6 +140,11 @@ export class RgPanel {
     }
     const { selection, message, matches } = ms;
     const HEADER_NUM_LINES = 2;
+
+    const selected = ms.matches[ms.selection ?? 0];
+    if (selected) {
+      this.rgEditor?.preview(join(this.query.cwd, selected.file), selected.lineNo);
+    }
 
     // status line
     const status = `[${this.query.dir[0]}] ${message}`;
@@ -223,7 +248,11 @@ export class RgPanel {
         lineOffset: HEADER_NUM_LINES,
       },
     ];
-    const range = getRenderRangeFromTop(editor, HEADER_NUM_LINES + renderedLines.len);
+    const range = getRenderRangeFromTop(
+      editor,
+      HEADER_NUM_LINES + renderedLines.len,
+      "ignore-sticky-scroll",
+    );
     return renderDecorations(decos, editor, range);
   }
 
@@ -261,7 +290,7 @@ export class RgPanel {
 
   private doSpawn() {
     // to prevent rendering after the panel is closed
-    if (!this.isShowing) return;
+    if (!this.rgEditor) return;
 
     this.matchState = emptyRgMatchState();
     this.cancellationToken.cancel();

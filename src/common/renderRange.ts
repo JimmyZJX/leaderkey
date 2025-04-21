@@ -1,11 +1,16 @@
-import { TextEditor, Range } from "vscode";
+import { Range, TextEditor } from "vscode";
 import { stickyScrollMaxRows } from "./decoration";
 
-export function getRenderRangeFromTop(editor: TextEditor, totalLines: number) {
+export function getRenderRangeFromTop(
+  editor: TextEditor,
+  totalLines: number,
+  mode?: "ignore-sticky-scroll",
+) {
   const visibleRange = editor.visibleRanges[0];
+  const toSkip = mode === "ignore-sticky-scroll" ? 0 : stickyScrollMaxRows;
   let lnHeader =
     visibleRange.start.line +
-    Math.min(stickyScrollMaxRows, (visibleRange.end.line - visibleRange.start.line) >> 1);
+    Math.min(toSkip, (visibleRange.end.line - visibleRange.start.line) >> 1);
   const doc = editor.document;
   const docLines = doc.lineCount;
 
