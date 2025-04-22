@@ -1,4 +1,4 @@
-import { join } from "path-browserify";
+import { dirname, join } from "path-browserify";
 import { CancellationTokenSource, TextEditor, TextEditorDecorationType } from "vscode";
 import {
   disableLeaderKey,
@@ -40,9 +40,13 @@ function spcs(len: number) {
   return " ".repeat(len);
 }
 
+type Query = RipGrepQuery & {
+  dirHistory: { cwd: string; dir: string[] }[];
+};
+
 export class RgPanel {
   private editor: OneLineEditor;
-  private query: RipGrepQuery;
+  private query: Query;
   private cancellationToken: CancellationTokenSource;
 
   private matchState: RgMatchState = emptyRgMatchState();
@@ -57,7 +61,7 @@ export class RgPanel {
   constructor(query: RipGrepQuery, activeTextEditor: TextEditor, onReset: () => void) {
     enableLeaderKeyAndDisableVim(":ripgrep");
     this.editor = new OneLineEditor(query.query);
-    this.query = query;
+    this.query = { ...query, dirHistory: [] };
     this.onReset = onReset;
     this.cancellationToken = new CancellationTokenSource();
     this.rgEditor = new RgEditor(activeTextEditor, () => this.render());
@@ -83,23 +87,67 @@ export class RgPanel {
   }
 
   public async onKey(key: string) {
-    if (key === "RET") {
+    const queryAction = this.queryActions[key];
+    if (queryAction) {
+      await queryAction();
+      return;
+    }
+    const uiAction = this.uiActions[key];
+    if (uiAction) {
+      await uiAction();
+      this.render();
+      return;
+    }
+    if ((await this.editor.tryKey(key)) === "handled") {
+      this.query.query = this.editor.value();
+      this.spawn();
+      return;
+    }
+    log(`[rgPanel] Key not handled: ${key}`);
+  }
+
+  private queryActions: {
+    [key: string]: () => void | Promise<void>;
+  } = {
+    RET: async () => {
       if (this.matchState.selection === undefined) return;
       const match = this.matchState.matches[this.matchState.selection];
       if (match === undefined) return;
       await this.quit({ file: join(this.query.cwd, match.file), lineNo: match.lineNo });
-    } else {
-      const uiAction = this.uiActions[key];
-      if (uiAction) {
-        await uiAction();
-        this.render();
-      } else if ((await this.editor.tryKey(key)) === "handled") {
-        this.query.query = this.editor.value();
-        this.spawn();
-      } else {
-        log(`[rgPanel] Key not handled: ${key}`);
-      }
+    },
+    "C-h": () => this.dirUp(),
+    "M-h": () => this.dirUp(),
+    "<left>": () => this.dirUp(),
+    "C-l": () => this.dirDown(),
+    "M-l": () => this.dirDown(),
+    "<right>": () => this.dirDown(),
+  };
+
+  dirDown() {
+    const history = this.query.dirHistory;
+    const top = history.pop();
+    if (top) {
+      const { cwd, dir } = top;
+      this.query.cwd = cwd;
+      this.query.dir = dir;
+      this.spawn();
     }
+  }
+
+  dirUp() {
+    const query = this.query;
+    if (query.dir.length === 1 && query.dir[0] === "/") {
+      return;
+    }
+    query.dirHistory.push({ cwd: query.cwd, dir: query.dir });
+    if (query.dir.length > 1) {
+      query.dir = [query.cwd];
+    } else {
+      const newDir = dirname(query.cwd);
+      query.dir = [newDir];
+      query.cwd = newDir;
+    }
+    this.spawn();
   }
 
   private uiActions: {
@@ -147,7 +195,10 @@ export class RgPanel {
     }
 
     // status line
-    const status = `[${this.query.dir[0]}] ${message}`;
+    const statusSubFolder =
+      this.query.dir.length === 1 ? "" : ` (x${this.query.dir.length} sub-dirs)`;
+    const status = `[${this.query.cwd}]${statusSubFolder}`;
+    const statusDim = spcs(status.length) + " " + message;
 
     const renderedLines =
       selection === undefined
@@ -222,6 +273,7 @@ export class RgPanel {
       },
       ...editorDecos,
       { type: "text", text: status, foreground: "command", lineOffset: 1 },
+      { type: "text", text: statusDim, foreground: "dim", lineOffset: 1 },
       ...selectedBg,
       {
         type: "text",

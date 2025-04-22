@@ -59,7 +59,13 @@ const decoRenderOpts: {
   },
 };
 
-export type TextType = TokenType | "dir" | "highlight" | "arrow-bold" | "error-bold";
+export type TextType =
+  | TokenType
+  | "dir"
+  | "highlight"
+  | "arrow-bold"
+  | "error-bold"
+  | "dim";
 
 const themeRenderOpts: {
   [themeType in ThemeType]: {
@@ -74,6 +80,7 @@ const themeRenderOpts: {
     binding: { color: "#4190d8" },
     highlight: { color: "#4190d8", fontWeight: "bold" },
     command: { color: "#ccc" },
+    dim: { color: "#ccc8" },
     "error-bold": { color: new ThemeColor("errorForeground"), fontWeight: "bold" },
   },
   light: {
@@ -84,6 +91,7 @@ const themeRenderOpts: {
     binding: { color: "#3781C2" },
     highlight: { color: "#3781C2", fontWeight: "bold" },
     command: { color: "#67537A" },
+    dim: { color: "#67537A80" },
     "error-bold": { color: new ThemeColor("errorForeground"), fontWeight: "bold" },
   },
 };
