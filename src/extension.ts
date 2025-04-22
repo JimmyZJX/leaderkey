@@ -18,8 +18,7 @@ import {
   register as registerRipgrepFs,
   scheme as ripgrepFsScheme,
 } from "./ripgrep/dummyFs";
-import { defaultQueryMode } from "./ripgrep/rg";
-import { RgPanel } from "./ripgrep/rgPanel";
+import { createRgPanel, CreateRgPanelOptions, RgPanel } from "./ripgrep/rgPanel";
 
 // TODO panel dispatcher
 let currentPanel:
@@ -78,27 +77,13 @@ export async function activate(context: ExtensionContext) {
       findFilePanel.render();
       currentPanel = { type: "findfile" };
     }),
-    commands.registerCommand("leaderkey.ripgrep", async () => {
-      let editor = window.activeTextEditor;
-      if (!editor) {
-        const doc = await workspace.openTextDocument({ language: "text" });
-        editor = await window.showTextDocument(doc, { preview: true });
-      }
-
-      //  synchronously show and then set dir
-      const dir = await pickPathFromUri(editor.document.uri, "dirname");
-      const rgPanel = new RgPanel(
-        {
-          dir: [dir],
-          query: "",
-          cwd: dir,
-          ...defaultQueryMode(),
-        },
-        editor,
-        () => resetCurrentPanel(),
-      );
-      currentPanel = { type: "ripgrep", panel: rgPanel };
-    }),
+    commands.registerCommand(
+      "leaderkey.ripgrep",
+      async (mode: CreateRgPanelOptions | undefined) => {
+        const rgPanel = await createRgPanel(mode, resetCurrentPanel);
+        currentPanel = { type: "ripgrep", panel: rgPanel };
+      },
+    ),
     commands.registerCommand(
       "leaderkey.render",
       (pathOrWithWhen: string | { path: string; when: string }) => {
@@ -112,9 +97,6 @@ export async function activate(context: ExtensionContext) {
       async (keyOrObj: string | { key: string; when: string }) => {
         if (currentPanel === undefined) {
           currentPanel = { type: "leaderkey" };
-          window.showWarningMessage(
-            `onkey got [${JSON.stringify(keyOrObj)}] when no panel is active`,
-          );
         }
         switch (currentPanel.type) {
           case "leaderkey":

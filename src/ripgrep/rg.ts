@@ -43,6 +43,22 @@ export type RipGrepQuery = {
   // IDEA: maybe render \b...\b around user query
 };
 
+const RE_DASHDASH = /^(?<query>.+?)( +-- +(?<flags>.+))?$/;
+/** `query` returned must be a prefix of `rawQuery` */
+export function normalizeQueryString(rawQuery: string) {
+  const match = RE_DASHDASH.exec(rawQuery);
+  if (!match) {
+    throw new Error("RE_DASHDASH unexpectedly not matched on [" + rawQuery + "]");
+  }
+  const { query, flags } = match.groups!;
+
+  const RE_QUOTED = /(?<=\s|^)'[^']+'|[^'\s]+(?=\s|$)/g;
+  const args = Array.from((flags ?? "").matchAll(RE_QUOTED), (m) =>
+    m[0].startsWith("'") ? m[0].slice(1, -1) : m[0],
+  );
+  return { query, args };
+}
+
 export const defaultQueryMode: () => {
   case: "smart";
   regex: "on";
@@ -68,7 +84,8 @@ function toArgs(q: RipGrepQuery) {
     dirs = [];
   }
   const prog = workspace.getConfiguration("leaderkey").get("ripgrep.exe", "rg");
-  return { prog, args: [q.query, ...dirs, ...rgOpts], cwd: q.cwd };
+  const { query, args: additionalArgs } = normalizeQueryString(q.query);
+  return { prog, args: [query, ...dirs, ...rgOpts, ...additionalArgs], cwd: q.cwd };
 }
 
 export interface GrepLine {

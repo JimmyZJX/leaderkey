@@ -65,6 +65,7 @@ export class OneLineEditor {
     },
 
     // editing
+    SPC: () => this.insert(" "),
     "<backspace>": () => {
       this.edit((lr) => (lr.l = lr.l.slice(0, -1)));
     },

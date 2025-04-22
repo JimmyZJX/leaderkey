@@ -196,7 +196,7 @@ export async function pickPathFromUri(uri: Uri, mode?: "dirname") {
   }
 
   if (
-    uri.scheme in ["file", "vscode-remote", diredScheme] ||
+    ["file", "vscode-remote", diredScheme].includes(uri.scheme) ||
     COMMON_PATH_PREFIX.some((p) => uri.path.startsWith(p)) ||
     RE_WINDOWS_URL_PATH.test(uri.path)
   ) {

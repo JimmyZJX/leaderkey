@@ -1,12 +1,19 @@
 import { dirname, join } from "path-browserify";
-import { CancellationTokenSource, TextEditor, TextEditorDecorationType } from "vscode";
+import {
+  CancellationTokenSource,
+  TextEditor,
+  TextEditorDecorationType,
+  window,
+  workspace,
+} from "vscode";
 import {
   disableLeaderKey,
   enableLeaderKeyAndDisableVim,
   enableVim,
 } from "../common/context";
 import { Decoration, renderDecorations } from "../common/decoration";
-import { log } from "../common/global";
+import { commonPrefix, log } from "../common/global";
+import { ENV_HOME, pickPathFromUri } from "../common/remote";
 import {
   getNumTotal,
   getRenderRangeFromTop,
@@ -14,8 +21,15 @@ import {
 } from "../common/renderRange";
 import { OneLineEditor } from "../common/singleLineEditor";
 import { eagerDebouncer } from "../common/throttle";
-import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
+import {
+  defaultQueryMode,
+  doQuery,
+  GrepLine,
+  RipGrepQuery,
+  RipgrepStatusUpdate,
+} from "./rg";
 import { RgEditor } from "./rgEditor";
+import { getCurrentSelectionFromDoc } from "./utils";
 
 type RgMatchState = {
   matches: GrepLine[];
@@ -366,4 +380,50 @@ export class RgPanel {
         break;
     }
   }
+}
+
+export type CreateRgPanelOptions = {
+  query?: "selection-only" | "expand";
+  dir?: "current" | "workspace";
+};
+
+export async function createRgPanel(
+  mode: CreateRgPanelOptions | undefined,
+  onReset: () => void,
+) {
+  const queryMode = mode?.query ?? "selection-only";
+  const dirMode = mode?.dir ?? "current";
+
+  let editor = window.activeTextEditor;
+  if (!editor) {
+    const doc = await workspace.openTextDocument({ language: "text" });
+    editor = await window.showTextDocument(doc, { preview: true });
+  }
+
+  // TODO synchronously show and then set dir
+  let dir: string[];
+  if (dirMode === "current") {
+    dir = [await pickPathFromUri(editor.document.uri, "dirname")];
+  } else {
+    dir = (workspace.workspaceFolders ?? []).flatMap((folder) => {
+      const uri = folder.uri;
+      if (["file", "vscode-remote"].includes(uri.scheme)) {
+        return [uri.fsPath];
+      }
+      return [];
+    });
+    if (dir.length === 0) dir = [ENV_HOME];
+  }
+
+  const query = getCurrentSelectionFromDoc(editor, queryMode, "regex");
+  return new RgPanel(
+    {
+      dir,
+      query,
+      cwd: commonPrefix(dir),
+      ...defaultQueryMode(),
+    },
+    editor,
+    onReset,
+  );
 }

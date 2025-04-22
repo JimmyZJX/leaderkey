@@ -1,4 +1,4 @@
-import { Bindings, normalize } from "./command";
+import { Bindings, Command, normalize } from "./command";
 
 const selectWindow0To8: Bindings["keys"] = {
   "0": {
@@ -134,6 +134,41 @@ const SpcWTransientKeysExcluding0To8: Bindings["keys"] = {
     name: "Quit",
     command: "leaderkey.render",
     args: "",
+  },
+};
+
+const RipGrepKeys: { [key: string]: Bindings | Command } = {
+  d: {
+    name: "Search current dir (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: "selection-only",
+      dir: "current",
+    },
+  },
+  D: {
+    name: "Search current dir (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: "expand",
+      dir: "current",
+    },
+  },
+  p: {
+    name: "Search workspace (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: "selection-only",
+      dir: "workspace",
+    },
+  },
+  P: {
+    name: "Search workspace (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: "expand",
+      dir: "workspace",
+    },
   },
 };
 
@@ -1052,6 +1087,11 @@ const SpaceRoot: Bindings = {
     s: {
       name: "+Search/Symbol",
       keys: {
+        ...RipGrepKeys,
+        r: {
+          name: "+RipGrep",
+          keys: RipGrepKeys,
+        },
         c: {
           name: "Clear highlight",
           command: "vim.remap",
@@ -1062,10 +1102,6 @@ const SpaceRoot: Bindings = {
               },
             ],
           },
-        },
-        d: {
-          name: "Ripgrep",
-          command: "leaderkey.ripgrep",
         },
         e: {
           name: "Edit symbol",
@@ -1100,14 +1136,6 @@ const SpaceRoot: Bindings = {
           name: "Jump to symbol in buffer",
           command: "workbench.action.gotoSymbol",
         },
-        p: {
-          name: "Search in project",
-          command: "workbench.action.findInFiles",
-        },
-        r: {
-          name: "Search all references",
-          command: "editor.action.referenceSearch.trigger",
-        },
         s: {
           name: "Fuzzy search in current buffer",
           command: "fuzzySearch.activeTextEditorWithCurrentSelection",
@@ -1115,13 +1143,6 @@ const SpaceRoot: Bindings = {
         J: {
           name: "Jump to symbol in project",
           command: "workbench.action.showAllSymbols",
-        },
-        P: {
-          name: "Search in project with selection",
-          commands: [
-            "editor.action.addSelectionToNextFindMatch",
-            "workbench.action.findInFiles",
-          ],
         },
         R: {
           name: "Search all references in side bar",
