@@ -58,6 +58,8 @@ type Query = RipGrepQuery & {
   dirHistory: { cwd: string; dir: string[] }[];
 };
 
+let lastRgQuery: Query | undefined;
+
 export class RgPanel {
   private editor: OneLineEditor;
   private query: Query;
@@ -76,6 +78,7 @@ export class RgPanel {
     enableLeaderKeyAndDisableVim(":ripgrep");
     this.editor = new OneLineEditor(query.query);
     this.query = { ...query, dirHistory: [] };
+    lastRgQuery = this.query;
     this.onReset = onReset;
     this.cancellationToken = new CancellationTokenSource();
     this.rgEditor = new RgEditor(activeTextEditor, () => this.render());
@@ -87,9 +90,9 @@ export class RgPanel {
     this.cancellationToken.cancel();
     enableVim();
     if (mode === "interrupt") {
-      await this.rgEditor?.quit(true);
-    } else if (mode === "normal") {
       await this.rgEditor?.quit(false);
+    } else if (mode === "normal") {
+      await this.rgEditor?.quit(true);
     } else {
       await this.rgEditor?.enter(mode.file, mode.lineNo);
     }
@@ -175,8 +178,10 @@ export class RgPanel {
     "C-k": () => this.moveSelection(-1),
     "<down>": () => this.moveSelection(1),
     "C-j": () => this.moveSelection(1),
-    "C-u": () => this.moveSelection(-5),
-    "C-d": () => this.moveSelection(5),
+    "C-u": () => this.moveSelection(-8),
+    "C-d": () => this.moveSelection(8),
+    "<pagedown>": () => this.moveSelection(15),
+    "<pageup>": () => this.moveSelection(-15),
   };
 
   moveSelection(delta: number) {
@@ -388,46 +393,55 @@ export class RgPanel {
 
 export type CreateRgPanelOptions = {
   query?: "selection-only" | "expand";
-  dir?: "current" | "workspace";
+  dir?: "current" | "workspace" | string;
+  resume?: true;
 };
 
 export async function createRgPanel(
   mode: CreateRgPanelOptions | undefined,
   onReset: () => void,
 ) {
-  const queryMode = mode?.query ?? "selection-only";
-  const dirMode = mode?.dir ?? "current";
-
   let editor = window.activeTextEditor;
   if (!editor) {
     const doc = await workspace.openTextDocument({ language: "text" });
     editor = await window.showTextDocument(doc, { preview: true });
   }
 
-  // TODO synchronously show and then set dir
-  let dir: string[];
-  if (dirMode === "current") {
-    dir = [await pickPathFromUri(editor.document.uri, "dirname")];
+  let rgQuery: RipGrepQuery;
+  if (mode?.resume && lastRgQuery) {
+    rgQuery = structuredClone(lastRgQuery);
   } else {
-    dir = (workspace.workspaceFolders ?? []).flatMap((folder) => {
-      const uri = folder.uri;
-      if (["file", "vscode-remote"].includes(uri.scheme)) {
-        return [uri.fsPath];
-      }
-      return [];
-    });
-    if (dir.length === 0) dir = [ENV_HOME];
-  }
+    const queryMode = mode?.query ?? "selection-only";
+    const dirMode = mode?.dir ?? "current";
 
-  const query = getCurrentSelectionFromDoc(editor, queryMode, "regex");
-  return new RgPanel(
-    {
+    let dir: string[];
+    // TODO synchronously show and then set dir
+    if (dirMode === "current") {
+      dir = [await pickPathFromUri(editor.document.uri, "dirname")];
+    } else if (dirMode === "workspace") {
+      dir = (workspace.workspaceFolders ?? []).flatMap((folder) => {
+        const uri = folder.uri;
+        if (["file", "vscode-remote"].includes(uri.scheme)) {
+          return [uri.fsPath];
+        }
+        return [];
+      });
+      if (dir.length === 0) dir = [ENV_HOME];
+    } else if (dirMode.startsWith("/")) {
+      dir = [dirMode];
+    } else {
+      dir = [ENV_HOME];
+    }
+
+    const query = getCurrentSelectionFromDoc(editor, queryMode, "regex");
+
+    rgQuery = {
       dir,
       query,
       cwd: commonPrefix(dir),
       ...defaultQueryMode(),
-    },
-    editor,
-    onReset,
-  );
+    };
+  }
+
+  return new RgPanel(rgQuery, editor, onReset);
 }

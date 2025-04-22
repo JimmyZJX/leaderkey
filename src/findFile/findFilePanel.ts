@@ -68,10 +68,18 @@ type FindFileSelection =
   | { type: "file"; file: string; idx: number }
   | { type: "input" };
 
+export type FindFileOptions = {
+  init?: string;
+  dirOnly?: boolean;
+  title?: string;
+  returnOnly?: boolean;
+};
+
 export class FindFilePanel {
   disposableDecos: TextEditorDecorationType[] = [];
 
   dir!: string;
+  dirOnly: boolean;
   editor: SingleLineEditor;
   filesPromise!: Promise<any>;
   files!: string[] | undefined;
@@ -80,22 +88,28 @@ export class FindFilePanel {
     type: "none",
   };
 
+  title: string;
+  returnOnly: boolean;
+
   isSelectionManuallyChanged: boolean;
-  isShowing: boolean;
 
-  onReset: () => void;
+  isQuit: boolean;
+  onQuit: (path: string | undefined) => void;
 
-  constructor(dir: string, onReset: () => void) {
-    this.onReset = onReset;
-    this.isShowing = false;
+  constructor(options: FindFileOptions, onQuit: (path: string | undefined) => void) {
+    enableLeaderKeyAndDisableVim(":findFile");
+    this.onQuit = onQuit;
+    this.isQuit = false;
     this.editor = new SingleLineEditor("");
-    this.setDir(dir);
+    this.dirOnly = options.dirOnly ?? false;
+    // TODO dirOnly mode
+    this.returnOnly = options.returnOnly ?? false;
+    this.title = options.title ?? "Find File";
+    this.setDir(options.init ?? ENV_HOME);
     this.isSelectionManuallyChanged = false;
   }
 
   setDir(dir: string) {
-    // TODO lifetime management refactor
-    enableLeaderKeyAndDisableVim(":findFile");
     this.dir = normalize(dir.endsWith("/") ? dir : dir + "/");
     this.editor.reset("");
     this.lastSelection = { type: "none" };
@@ -106,7 +120,7 @@ export class FindFilePanel {
     promise.then((files) => {
       if (this.filesPromise === promise) {
         this.files = files;
-        if (this.isShowing) this.render();
+        this.render();
       }
     });
   }
@@ -120,8 +134,8 @@ export class FindFilePanel {
       // TODO return value to promise
       const path = normalize(this.dir + basename);
       if (path.endsWith("/")) {
-        await this.reset();
-        await showDir(path);
+        await this.quit(path);
+        if (!this.returnOnly) await showDir(path);
       } else {
         if (mode === "forceCreate") {
           await Promise.allSettled([
@@ -129,11 +143,12 @@ export class FindFilePanel {
               await runProcess("/bin/mkdir", ["-p", dirname(path)]);
               await runProcess("/bin/touch", ["-a", path]);
             })(),
-            this.reset(),
+            this.quit(path),
           ]);
+        } else {
+          await this.quit(path);
         }
-        await openFile(path, { preview: false });
-        await this.reset();
+        if (!this.returnOnly) await openFile(path, { preview: false });
       }
     }
   }
@@ -154,7 +169,7 @@ export class FindFilePanel {
   private keyActions: {
     [key: string]: (last: string | undefined) => void | Promise<void>;
   } = {
-    ESC: async () => await this.reset(),
+    ESC: async () => await this.quit(),
     "C-/": () => {
       this.editor.insert("/");
     },
@@ -244,7 +259,6 @@ export class FindFilePanel {
       }
     },
   };
-  // TODO implement <left> <right> and C-<left> C-<right>
 
   public async onKey(key: string) {
     const last = this.lastKey;
@@ -258,7 +272,7 @@ export class FindFilePanel {
     } else {
       log(`find-file: unknown key ${key} (last=${last})`);
     }
-    if (this.isShowing) this.render();
+    this.render();
   }
 
   private moveSelection(delta: number) {
@@ -365,7 +379,7 @@ export class FindFilePanel {
       // header
       {
         type: "text",
-        text: `${counterInfo.padEnd(7)} Find file`,
+        text: `${counterInfo.padEnd(7)} ${this.title}`,
         foreground: "binding",
       },
       // top border
@@ -489,7 +503,7 @@ export class FindFilePanel {
   }
 
   public render() {
-    this.isShowing = true;
+    if (this.isQuit) return;
     const oldDisposables = this.disposableDecos;
     try {
       const editor = window.activeTextEditor;
@@ -499,12 +513,12 @@ export class FindFilePanel {
     }
   }
 
-  public async reset() {
-    log("findFile: reset");
+  public async quit(path?: string) {
+    if (this.isQuit) return;
+    this.isQuit = true;
     for (const dsp of this.disposableDecos) dsp.dispose();
     this.disposableDecos = [];
-    this.isShowing = false;
-    this.onReset();
+    this.onQuit(path);
     await disableLeaderKey();
     await enableVim();
   }

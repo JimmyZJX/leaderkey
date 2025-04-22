@@ -20,6 +20,7 @@ import {
 import { defaultBindings } from "./defaultBindings";
 import { renderBinding } from "./render";
 
+/** must be a global single instance */
 export class LeaderkeyPanel {
   root: Bindings;
   path: string;
@@ -28,7 +29,11 @@ export class LeaderkeyPanel {
 
   onReset: () => void;
 
+  static isConstructed: boolean = false;
+
   constructor(onReset: () => void) {
+    if (LeaderkeyPanel.isConstructed) throw new Error("LeaderkeyPanel is constructed");
+    LeaderkeyPanel.isConstructed = true;
     this.onReset = onReset;
     this.root = structuredClone(defaultBindings);
     this.path = "";

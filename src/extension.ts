@@ -9,7 +9,7 @@ import { updateGlobalThemeType, updateStickyScrollConf } from "./common/decorati
 import { init as initGlobal } from "./common/global";
 import { init as initRemote, pickPathFromUri } from "./common/remote";
 import { register as registerDired } from "./findFile/dired";
-import { FindFilePanel } from "./findFile/findFilePanel";
+import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
@@ -20,14 +20,127 @@ import {
 } from "./ripgrep/dummyFs";
 import { createRgPanel, CreateRgPanelOptions, RgPanel } from "./ripgrep/rgPanel";
 
-// TODO panel dispatcher
-let currentPanel:
-  | { type: "leaderkey" }
-  | { type: "findfile" }
-  | { type: "ripgrep"; panel: RgPanel }
-  | undefined = undefined;
-function resetCurrentPanel() {
-  currentPanel = undefined;
+class PanelManager {
+  currentPanel:
+    | { type: "leaderkey" }
+    | { type: "findfile"; panel: FindFilePanel }
+    | { type: "ripgrep"; panel: RgPanel }
+    | undefined = undefined;
+
+  // single instance only
+  leaderKeyPanel = new LeaderkeyPanel(() => this.resetCurrent());
+
+  resetCurrent() {
+    this.currentPanel = undefined;
+  }
+
+  async forceReset(mode?: "normal" | "interrupt") {
+    if (this.currentPanel === undefined) return;
+    switch (this.currentPanel.type) {
+      case "leaderkey":
+        this.leaderKeyPanel.reset();
+        break;
+      case "findfile":
+        await this.currentPanel.panel.quit();
+        break;
+      case "ripgrep":
+        await this.currentPanel.panel.quit(mode ?? "normal");
+        break;
+    }
+  }
+
+  async findFile(options?: FindFileOptions) {
+    let editor = window.activeTextEditor;
+    if (!editor) {
+      const doc = await workspace.openTextDocument({ language: "text" });
+      editor = await window.showTextDocument(doc, { preview: true });
+    }
+    const init = options?.init ?? (await pickPathFromUri(editor.document.uri, "dirname"));
+    return new Promise<string | undefined>((resolve) => {
+      const panel = new FindFilePanel({ ...options, init }, (path) => resolve(path));
+      this.currentPanel = { type: "findfile", panel };
+    });
+  }
+
+  async activate(context: ExtensionContext) {
+    await this.leaderKeyPanel.activate(context);
+    context.subscriptions.push(
+      commands.registerCommand(
+        "leaderkey.render",
+        async (pathOrWithWhen: string | { path: string; when: string }) => {
+          await this.forceReset();
+          this.currentPanel = { type: "leaderkey" };
+          this.leaderKeyPanel.render(pathOrWithWhen);
+        },
+      ),
+      commands.registerCommand(
+        "leaderkey.findFile",
+        async (options: FindFileOptions) => await this.findFile(options),
+      ),
+      commands.registerCommand(
+        "leaderkey.ripgrep",
+        async (mode: (CreateRgPanelOptions & { selectDir?: boolean }) | undefined) => {
+          if (mode?.selectDir) {
+            const dir = await this.findFile({
+              title: "Select dir to ripgrep from...",
+              dirOnly: true,
+              returnOnly: true,
+            });
+            if (dir === undefined) return;
+            mode ??= {};
+            mode.dir = dir;
+          }
+          const rgPanel = await createRgPanel(mode, () => this.resetCurrent());
+          this.currentPanel = { type: "ripgrep", panel: rgPanel };
+        },
+      ),
+      commands.registerCommand(
+        "leaderkey.onkey",
+        async (keyOrObj: string | { key: string; when: string }) => {
+          if (this.currentPanel === undefined) {
+            this.currentPanel = { type: "leaderkey" };
+          }
+          switch (this.currentPanel.type) {
+            case "leaderkey":
+              await this.leaderKeyPanel.onKey(keyOrObj);
+              break;
+            case "findfile":
+              await this.currentPanel.panel.onKey(
+                typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
+              );
+              break;
+            case "ripgrep":
+              await this.currentPanel.panel.onKey(
+                typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
+              );
+              break;
+            default: {
+              const _exhaustive: never = this.currentPanel;
+            }
+          }
+        },
+      ),
+      commands.registerCommand(
+        "leaderkey.searchBindings",
+        async () => await this.leaderKeyPanel.searchBindings(),
+      ),
+      window.onDidChangeActiveTextEditor((editor) => {
+        if (
+          this.currentPanel?.type === "ripgrep" &&
+          editor?.document.uri.scheme === ripgrepFsScheme
+        ) {
+          // this is likely spawned by ripgrep, pass
+        } else {
+          this.forceReset("interrupt");
+        }
+      }),
+      window.onDidChangeTextEditorSelection((event) => {
+        if (event.kind === TextEditorSelectionChangeKind.Mouse) {
+          this.forceReset("interrupt");
+        }
+      }),
+    );
+  }
 }
 
 export async function activate(context: ExtensionContext) {
@@ -36,30 +149,12 @@ export async function activate(context: ExtensionContext) {
   registerDired(context);
   registerRipgrepFs(context);
 
-  const leaderKeyPanel = new LeaderkeyPanel(() => resetCurrentPanel());
-  await leaderKeyPanel.activate(context);
-
-  const findFilePanel = new FindFilePanel(
-    workspace.workspaceFolders?.at(0)?.uri?.path ?? "/",
-    () => resetCurrentPanel(),
-  );
-
-  async function resetPanel() {
-    if (currentPanel === undefined) return;
-    switch (currentPanel.type) {
-      case "leaderkey":
-        leaderKeyPanel.reset();
-        break;
-      case "findfile":
-        await findFilePanel.reset();
-        break;
-      case "ripgrep":
-        await currentPanel.panel.quit("normal");
-        break;
-    }
-  }
+  const panelManager = new PanelManager();
+  await panelManager.activate(context);
 
   // check if remote-commons is registered
+  // TODO go to gallery page
+  // TODO check version
   try {
     await commands.executeCommand("remote-commons.ping");
   } catch {
@@ -67,64 +162,9 @@ export async function activate(context: ExtensionContext) {
   }
 
   context.subscriptions.push(
-    commands.registerCommand("leaderkey.findFile", async () => {
-      let editor = window.activeTextEditor;
-      if (!editor) {
-        const doc = await workspace.openTextDocument({ language: "text" });
-        editor = await window.showTextDocument(doc, { preview: true });
-      }
-      findFilePanel.setDir(await pickPathFromUri(editor.document.uri, "dirname"));
-      findFilePanel.render();
-      currentPanel = { type: "findfile" };
-    }),
-    commands.registerCommand(
-      "leaderkey.ripgrep",
-      async (mode: CreateRgPanelOptions | undefined) => {
-        const rgPanel = await createRgPanel(mode, resetCurrentPanel);
-        currentPanel = { type: "ripgrep", panel: rgPanel };
-      },
-    ),
-    commands.registerCommand(
-      "leaderkey.render",
-      (pathOrWithWhen: string | { path: string; when: string }) => {
-        resetPanel();
-        currentPanel = { type: "leaderkey" };
-        leaderKeyPanel.render(pathOrWithWhen);
-      },
-    ),
-    commands.registerCommand(
-      "leaderkey.onkey",
-      async (keyOrObj: string | { key: string; when: string }) => {
-        if (currentPanel === undefined) {
-          currentPanel = { type: "leaderkey" };
-        }
-        switch (currentPanel.type) {
-          case "leaderkey":
-            await leaderKeyPanel.onKey(keyOrObj);
-            break;
-          case "findfile":
-            await findFilePanel.onKey(
-              typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
-            );
-            break;
-          case "ripgrep":
-            await currentPanel.panel.onKey(
-              typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
-            );
-            break;
-          default: {
-            const _exhaustive: never = currentPanel;
-          }
-        }
-      },
-    ),
     commands.registerCommand("leaderkey.migrateFromVSpaceCode", migrateFromVSpaceCode),
     commands.registerCommand("leaderkey.pushGotoStack", pushGotoStack),
     commands.registerCommand("leaderkey.popGotoStack", popGotoStack),
-    commands.registerCommand(
-      "leaderkey.searchBindings",
-      async () => await leaderKeyPanel.searchBindings(),
-    ),
 
     workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration("editor.stickyScroll")) {
@@ -133,21 +173,6 @@ export async function activate(context: ExtensionContext) {
     }),
 
     window.onDidChangeActiveColorTheme((_ct) => updateGlobalThemeType()),
-    window.onDidChangeActiveTextEditor((editor) => {
-      if (
-        currentPanel?.type === "ripgrep" &&
-        editor?.document.uri.scheme === ripgrepFsScheme
-      ) {
-        // this is likely spawned by ripgrep, pass
-      } else {
-        resetPanel();
-      }
-    }),
-    window.onDidChangeTextEditorSelection((event) => {
-      if (event.kind === TextEditorSelectionChangeKind.Mouse) {
-        resetPanel();
-      }
-    }),
   );
 
   registerCommands(context);

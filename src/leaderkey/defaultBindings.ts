@@ -137,6 +137,14 @@ const SpcWTransientKeysExcluding0To8: Bindings["keys"] = {
   },
 };
 
+const RipGrepResume: Command = {
+  name: "Redo last search (rg)",
+  command: "leaderkey.ripgrep",
+  args: {
+    resume: true,
+  },
+};
+
 const RipGrepKeys: { [key: string]: Bindings | Command } = {
   d: {
     name: "Search current dir (rg)",
@@ -154,6 +162,25 @@ const RipGrepKeys: { [key: string]: Bindings | Command } = {
       dir: "current",
     },
   },
+  f: {
+    name: "Search selected dir (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: "selection-only",
+      dir: "current",
+      selectDir: true,
+    },
+  },
+  F: {
+    name: "Search current dir (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: "selection-only",
+      dir: "current",
+      selectDir: true,
+    },
+  },
+  l: RipGrepResume,
   p: {
     name: "Search workspace (rg)",
     command: "leaderkey.ripgrep",
@@ -1074,6 +1101,7 @@ const SpaceRoot: Bindings = {
         //   command: "whichkey.repeatRecent",
         //   args: "vspacecode.bindings",
         // },
+        l: RipGrepResume,
         b: {
           name: "Recent buffers",
           command: "workbench.action.showAllEditorsByMostRecentlyUsed",

@@ -22,7 +22,7 @@ import { assert } from "../common/global";
 import { openFile } from "../common/remote";
 
 export const scheme = "leaderkey.dired";
-export const language = "leaderkey.dired";
+export const language = "leaderkey-dired";
 
 const RE_DIRED_FOOTER = /\/\/DIRED\/\/(?<dired>[0-9 ]+)\n\/\/DIRED-OPTIONS\/\/.+\n$/;
 
