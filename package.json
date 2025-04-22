@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "0.7.5",
+  "version": "0.7.7",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -109,388 +109,16 @@
     },
     "keybindings": [
       {
-        "key": "`",
-        "when": "leaderkeyState && !config.leaderkey.disabled.backtick",
-        "command": "leaderkey.onkey",
-        "args": "`"
-      },
-      {
-        "key": "ctrl+`",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-backtick",
-        "command": "leaderkey.onkey",
-        "args": "C-`"
-      },
-      {
-        "key": "shift+`",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-backtick",
-        "command": "leaderkey.onkey",
-        "args": "~"
-      },
-      {
-        "key": "1",
-        "when": "leaderkeyState && !config.leaderkey.disabled.1",
-        "command": "leaderkey.onkey",
-        "args": "1"
-      },
-      {
-        "key": "ctrl+1",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-1",
-        "command": "leaderkey.onkey",
-        "args": "C-1"
-      },
-      {
-        "key": "shift+1",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-1",
-        "command": "leaderkey.onkey",
-        "args": "!"
-      },
-      {
-        "key": "2",
-        "when": "leaderkeyState && !config.leaderkey.disabled.2",
-        "command": "leaderkey.onkey",
-        "args": "2"
-      },
-      {
-        "key": "ctrl+2",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-2",
-        "command": "leaderkey.onkey",
-        "args": "C-2"
-      },
-      {
-        "key": "shift+2",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-2",
-        "command": "leaderkey.onkey",
-        "args": "@"
-      },
-      {
-        "key": "3",
-        "when": "leaderkeyState && !config.leaderkey.disabled.3",
-        "command": "leaderkey.onkey",
-        "args": "3"
-      },
-      {
-        "key": "ctrl+3",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-3",
-        "command": "leaderkey.onkey",
-        "args": "C-3"
-      },
-      {
-        "key": "shift+3",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-3",
-        "command": "leaderkey.onkey",
-        "args": "#"
-      },
-      {
-        "key": "4",
-        "when": "leaderkeyState && !config.leaderkey.disabled.4",
-        "command": "leaderkey.onkey",
-        "args": "4"
-      },
-      {
-        "key": "ctrl+4",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-4",
-        "command": "leaderkey.onkey",
-        "args": "C-4"
-      },
-      {
-        "key": "shift+4",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-4",
-        "command": "leaderkey.onkey",
-        "args": "$"
-      },
-      {
-        "key": "5",
-        "when": "leaderkeyState && !config.leaderkey.disabled.5",
-        "command": "leaderkey.onkey",
-        "args": "5"
-      },
-      {
-        "key": "ctrl+5",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-5",
-        "command": "leaderkey.onkey",
-        "args": "C-5"
-      },
-      {
-        "key": "shift+5",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-5",
-        "command": "leaderkey.onkey",
-        "args": "%"
-      },
-      {
-        "key": "6",
-        "when": "leaderkeyState && !config.leaderkey.disabled.6",
-        "command": "leaderkey.onkey",
-        "args": "6"
-      },
-      {
-        "key": "ctrl+6",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-6",
-        "command": "leaderkey.onkey",
-        "args": "C-6"
-      },
-      {
-        "key": "shift+6",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-6",
-        "command": "leaderkey.onkey",
-        "args": "^"
-      },
-      {
-        "key": "7",
-        "when": "leaderkeyState && !config.leaderkey.disabled.7",
-        "command": "leaderkey.onkey",
-        "args": "7"
-      },
-      {
-        "key": "ctrl+7",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-7",
-        "command": "leaderkey.onkey",
-        "args": "C-7"
-      },
-      {
-        "key": "shift+7",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-7",
-        "command": "leaderkey.onkey",
-        "args": "&"
-      },
-      {
-        "key": "8",
-        "when": "leaderkeyState && !config.leaderkey.disabled.8",
-        "command": "leaderkey.onkey",
-        "args": "8"
-      },
-      {
-        "key": "ctrl+8",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-8",
-        "command": "leaderkey.onkey",
-        "args": "C-8"
-      },
-      {
-        "key": "shift+8",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-8",
-        "command": "leaderkey.onkey",
-        "args": "*"
-      },
-      {
-        "key": "9",
-        "when": "leaderkeyState && !config.leaderkey.disabled.9",
-        "command": "leaderkey.onkey",
-        "args": "9"
-      },
-      {
-        "key": "ctrl+9",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-9",
-        "command": "leaderkey.onkey",
-        "args": "C-9"
-      },
-      {
-        "key": "shift+9",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-9",
-        "command": "leaderkey.onkey",
-        "args": "("
-      },
-      {
-        "key": "0",
-        "when": "leaderkeyState && !config.leaderkey.disabled.0",
-        "command": "leaderkey.onkey",
-        "args": "0"
-      },
-      {
-        "key": "ctrl+0",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-0",
-        "command": "leaderkey.onkey",
-        "args": "C-0"
-      },
-      {
-        "key": "shift+0",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-0",
-        "command": "leaderkey.onkey",
-        "args": ")"
-      },
-      {
-        "key": "-",
-        "when": "leaderkeyState && !config.leaderkey.disabled.dash",
-        "command": "leaderkey.onkey",
-        "args": "-"
-      },
-      {
-        "key": "ctrl+-",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-dash",
-        "command": "leaderkey.onkey",
-        "args": "C--"
-      },
-      {
-        "key": "shift+-",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-dash",
-        "command": "leaderkey.onkey",
-        "args": "_"
-      },
-      {
-        "key": "=",
-        "when": "leaderkeyState && !config.leaderkey.disabled.equal",
-        "command": "leaderkey.onkey",
-        "args": "="
-      },
-      {
-        "key": "ctrl+=",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-equal",
-        "command": "leaderkey.onkey",
-        "args": "C-="
-      },
-      {
-        "key": "shift+=",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-equal",
-        "command": "leaderkey.onkey",
-        "args": "+"
-      },
-      {
-        "key": ",",
-        "when": "leaderkeyState && !config.leaderkey.disabled.comma",
-        "command": "leaderkey.onkey",
-        "args": ","
-      },
-      {
-        "key": "ctrl+,",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-comma",
-        "command": "leaderkey.onkey",
-        "args": "C-,"
-      },
-      {
-        "key": "shift+,",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-comma",
-        "command": "leaderkey.onkey",
-        "args": "<"
-      },
-      {
-        "key": ".",
-        "when": "leaderkeyState && !config.leaderkey.disabled.dot",
-        "command": "leaderkey.onkey",
-        "args": "."
-      },
-      {
-        "key": "ctrl+.",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-dot",
-        "command": "leaderkey.onkey",
-        "args": "C-."
-      },
-      {
-        "key": "shift+.",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-dot",
-        "command": "leaderkey.onkey",
-        "args": ">"
-      },
-      {
-        "key": "/",
-        "when": "leaderkeyState && !config.leaderkey.disabled.slash",
-        "command": "leaderkey.onkey",
-        "args": "/"
-      },
-      {
-        "key": "ctrl+/",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-slash",
-        "command": "leaderkey.onkey",
-        "args": "C-/"
-      },
-      {
-        "key": "shift+/",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-slash",
-        "command": "leaderkey.onkey",
-        "args": "?"
-      },
-      {
-        "key": "[",
-        "when": "leaderkeyState && !config.leaderkey.disabled.openingbracket",
-        "command": "leaderkey.onkey",
-        "args": "["
-      },
-      {
-        "key": "ctrl+[",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-openingbracket",
-        "command": "leaderkey.onkey",
-        "args": "C-["
-      },
-      {
-        "key": "shift+[",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-openingbracket",
-        "command": "leaderkey.onkey",
-        "args": "{"
-      },
-      {
-        "key": "]",
-        "when": "leaderkeyState && !config.leaderkey.disabled.closingbracket",
-        "command": "leaderkey.onkey",
-        "args": "]"
-      },
-      {
-        "key": "ctrl+]",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-closingbracket",
-        "command": "leaderkey.onkey",
-        "args": "C-]"
-      },
-      {
-        "key": "shift+]",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-closingbracket",
-        "command": "leaderkey.onkey",
-        "args": "}"
-      },
-      {
-        "key": ";",
-        "when": "leaderkeyState && !config.leaderkey.disabled.semicolon",
-        "command": "leaderkey.onkey",
-        "args": ";"
-      },
-      {
-        "key": "ctrl+;",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-semicolon",
-        "command": "leaderkey.onkey",
-        "args": "C-;"
-      },
-      {
-        "key": "shift+;",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-semicolon",
-        "command": "leaderkey.onkey",
-        "args": ":"
-      },
-      {
-        "key": "'",
-        "when": "leaderkeyState && !config.leaderkey.disabled.singlequote",
-        "command": "leaderkey.onkey",
-        "args": "'"
-      },
-      {
-        "key": "ctrl+'",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-singlequote",
-        "command": "leaderkey.onkey",
-        "args": "C-'"
-      },
-      {
-        "key": "shift+'",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-singlequote",
-        "command": "leaderkey.onkey",
-        "args": "\""
-      },
-      {
-        "key": "\\",
-        "when": "leaderkeyState && !config.leaderkey.disabled.forwardslash",
-        "command": "leaderkey.onkey",
-        "args": "\\"
-      },
-      {
-        "key": "ctrl+\\",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-forwardslash",
-        "command": "leaderkey.onkey",
-        "args": "C-\\"
-      },
-      {
-        "key": "shift+\\",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-forwardslash",
-        "command": "leaderkey.onkey",
-        "args": "|"
-      },
-      {
         "key": "a",
         "when": "leaderkeyState && !config.leaderkey.disabled.a",
         "command": "leaderkey.onkey",
         "args": "a"
+      },
+      {
+        "key": "alt+a",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-a",
+        "command": "leaderkey.onkey",
+        "args": "M-a"
       },
       {
         "key": "ctrl+a",
@@ -500,7 +128,7 @@
       },
       {
         "key": "shift+a",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-a",
+        "when": "leaderkeyState && !config.leaderkey.disabled.A",
         "command": "leaderkey.onkey",
         "args": "A"
       },
@@ -511,6 +139,12 @@
         "args": "b"
       },
       {
+        "key": "alt+b",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-b",
+        "command": "leaderkey.onkey",
+        "args": "M-b"
+      },
+      {
         "key": "ctrl+b",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-b",
         "command": "leaderkey.onkey",
@@ -518,7 +152,7 @@
       },
       {
         "key": "shift+b",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-b",
+        "when": "leaderkeyState && !config.leaderkey.disabled.B",
         "command": "leaderkey.onkey",
         "args": "B"
       },
@@ -529,6 +163,12 @@
         "args": "c"
       },
       {
+        "key": "alt+c",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-c",
+        "command": "leaderkey.onkey",
+        "args": "M-c"
+      },
+      {
         "key": "ctrl+c",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-c",
         "command": "leaderkey.onkey",
@@ -536,7 +176,7 @@
       },
       {
         "key": "shift+c",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-c",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C",
         "command": "leaderkey.onkey",
         "args": "C"
       },
@@ -547,6 +187,12 @@
         "args": "d"
       },
       {
+        "key": "alt+d",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-d",
+        "command": "leaderkey.onkey",
+        "args": "M-d"
+      },
+      {
         "key": "ctrl+d",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-d",
         "command": "leaderkey.onkey",
@@ -554,7 +200,7 @@
       },
       {
         "key": "shift+d",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-d",
+        "when": "leaderkeyState && !config.leaderkey.disabled.D",
         "command": "leaderkey.onkey",
         "args": "D"
       },
@@ -565,6 +211,12 @@
         "args": "e"
       },
       {
+        "key": "alt+e",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-e",
+        "command": "leaderkey.onkey",
+        "args": "M-e"
+      },
+      {
         "key": "ctrl+e",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-e",
         "command": "leaderkey.onkey",
@@ -572,7 +224,7 @@
       },
       {
         "key": "shift+e",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-e",
+        "when": "leaderkeyState && !config.leaderkey.disabled.E",
         "command": "leaderkey.onkey",
         "args": "E"
       },
@@ -583,6 +235,12 @@
         "args": "f"
       },
       {
+        "key": "alt+f",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-f",
+        "command": "leaderkey.onkey",
+        "args": "M-f"
+      },
+      {
         "key": "ctrl+f",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-f",
         "command": "leaderkey.onkey",
@@ -590,7 +248,7 @@
       },
       {
         "key": "shift+f",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-f",
+        "when": "leaderkeyState && !config.leaderkey.disabled.F",
         "command": "leaderkey.onkey",
         "args": "F"
       },
@@ -601,6 +259,12 @@
         "args": "g"
       },
       {
+        "key": "alt+g",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-g",
+        "command": "leaderkey.onkey",
+        "args": "M-g"
+      },
+      {
         "key": "ctrl+g",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-g",
         "command": "leaderkey.onkey",
@@ -608,7 +272,7 @@
       },
       {
         "key": "shift+g",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-g",
+        "when": "leaderkeyState && !config.leaderkey.disabled.G",
         "command": "leaderkey.onkey",
         "args": "G"
       },
@@ -619,6 +283,12 @@
         "args": "h"
       },
       {
+        "key": "alt+h",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-h",
+        "command": "leaderkey.onkey",
+        "args": "M-h"
+      },
+      {
         "key": "ctrl+h",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-h",
         "command": "leaderkey.onkey",
@@ -626,7 +296,7 @@
       },
       {
         "key": "shift+h",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-h",
+        "when": "leaderkeyState && !config.leaderkey.disabled.H",
         "command": "leaderkey.onkey",
         "args": "H"
       },
@@ -637,6 +307,12 @@
         "args": "i"
       },
       {
+        "key": "alt+i",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-i",
+        "command": "leaderkey.onkey",
+        "args": "M-i"
+      },
+      {
         "key": "ctrl+i",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-i",
         "command": "leaderkey.onkey",
@@ -644,7 +320,7 @@
       },
       {
         "key": "shift+i",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-i",
+        "when": "leaderkeyState && !config.leaderkey.disabled.I",
         "command": "leaderkey.onkey",
         "args": "I"
       },
@@ -655,6 +331,12 @@
         "args": "j"
       },
       {
+        "key": "alt+j",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-j",
+        "command": "leaderkey.onkey",
+        "args": "M-j"
+      },
+      {
         "key": "ctrl+j",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-j",
         "command": "leaderkey.onkey",
@@ -662,7 +344,7 @@
       },
       {
         "key": "shift+j",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-j",
+        "when": "leaderkeyState && !config.leaderkey.disabled.J",
         "command": "leaderkey.onkey",
         "args": "J"
       },
@@ -673,6 +355,12 @@
         "args": "k"
       },
       {
+        "key": "alt+k",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-k",
+        "command": "leaderkey.onkey",
+        "args": "M-k"
+      },
+      {
         "key": "ctrl+k",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-k",
         "command": "leaderkey.onkey",
@@ -680,7 +368,7 @@
       },
       {
         "key": "shift+k",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-k",
+        "when": "leaderkeyState && !config.leaderkey.disabled.K",
         "command": "leaderkey.onkey",
         "args": "K"
       },
@@ -691,6 +379,12 @@
         "args": "l"
       },
       {
+        "key": "alt+l",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-l",
+        "command": "leaderkey.onkey",
+        "args": "M-l"
+      },
+      {
         "key": "ctrl+l",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-l",
         "command": "leaderkey.onkey",
@@ -698,7 +392,7 @@
       },
       {
         "key": "shift+l",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-l",
+        "when": "leaderkeyState && !config.leaderkey.disabled.L",
         "command": "leaderkey.onkey",
         "args": "L"
       },
@@ -709,6 +403,12 @@
         "args": "m"
       },
       {
+        "key": "alt+m",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-m",
+        "command": "leaderkey.onkey",
+        "args": "M-m"
+      },
+      {
         "key": "ctrl+m",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-m",
         "command": "leaderkey.onkey",
@@ -716,7 +416,7 @@
       },
       {
         "key": "shift+m",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-m",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M",
         "command": "leaderkey.onkey",
         "args": "M"
       },
@@ -727,6 +427,12 @@
         "args": "n"
       },
       {
+        "key": "alt+n",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-n",
+        "command": "leaderkey.onkey",
+        "args": "M-n"
+      },
+      {
         "key": "ctrl+n",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-n",
         "command": "leaderkey.onkey",
@@ -734,7 +440,7 @@
       },
       {
         "key": "shift+n",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-n",
+        "when": "leaderkeyState && !config.leaderkey.disabled.N",
         "command": "leaderkey.onkey",
         "args": "N"
       },
@@ -745,6 +451,12 @@
         "args": "o"
       },
       {
+        "key": "alt+o",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-o",
+        "command": "leaderkey.onkey",
+        "args": "M-o"
+      },
+      {
         "key": "ctrl+o",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-o",
         "command": "leaderkey.onkey",
@@ -752,7 +464,7 @@
       },
       {
         "key": "shift+o",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-o",
+        "when": "leaderkeyState && !config.leaderkey.disabled.O",
         "command": "leaderkey.onkey",
         "args": "O"
       },
@@ -763,6 +475,12 @@
         "args": "p"
       },
       {
+        "key": "alt+p",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-p",
+        "command": "leaderkey.onkey",
+        "args": "M-p"
+      },
+      {
         "key": "ctrl+p",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-p",
         "command": "leaderkey.onkey",
@@ -770,7 +488,7 @@
       },
       {
         "key": "shift+p",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-p",
+        "when": "leaderkeyState && !config.leaderkey.disabled.P",
         "command": "leaderkey.onkey",
         "args": "P"
       },
@@ -781,6 +499,12 @@
         "args": "q"
       },
       {
+        "key": "alt+q",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-q",
+        "command": "leaderkey.onkey",
+        "args": "M-q"
+      },
+      {
         "key": "ctrl+q",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-q",
         "command": "leaderkey.onkey",
@@ -788,7 +512,7 @@
       },
       {
         "key": "shift+q",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-q",
+        "when": "leaderkeyState && !config.leaderkey.disabled.Q",
         "command": "leaderkey.onkey",
         "args": "Q"
       },
@@ -799,6 +523,12 @@
         "args": "r"
       },
       {
+        "key": "alt+r",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-r",
+        "command": "leaderkey.onkey",
+        "args": "M-r"
+      },
+      {
         "key": "ctrl+r",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-r",
         "command": "leaderkey.onkey",
@@ -806,7 +536,7 @@
       },
       {
         "key": "shift+r",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-r",
+        "when": "leaderkeyState && !config.leaderkey.disabled.R",
         "command": "leaderkey.onkey",
         "args": "R"
       },
@@ -817,6 +547,12 @@
         "args": "s"
       },
       {
+        "key": "alt+s",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-s",
+        "command": "leaderkey.onkey",
+        "args": "M-s"
+      },
+      {
         "key": "ctrl+s",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-s",
         "command": "leaderkey.onkey",
@@ -824,7 +560,7 @@
       },
       {
         "key": "shift+s",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-s",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S",
         "command": "leaderkey.onkey",
         "args": "S"
       },
@@ -835,6 +571,12 @@
         "args": "t"
       },
       {
+        "key": "alt+t",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-t",
+        "command": "leaderkey.onkey",
+        "args": "M-t"
+      },
+      {
         "key": "ctrl+t",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-t",
         "command": "leaderkey.onkey",
@@ -842,7 +584,7 @@
       },
       {
         "key": "shift+t",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-t",
+        "when": "leaderkeyState && !config.leaderkey.disabled.T",
         "command": "leaderkey.onkey",
         "args": "T"
       },
@@ -853,6 +595,12 @@
         "args": "u"
       },
       {
+        "key": "alt+u",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-u",
+        "command": "leaderkey.onkey",
+        "args": "M-u"
+      },
+      {
         "key": "ctrl+u",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-u",
         "command": "leaderkey.onkey",
@@ -860,7 +608,7 @@
       },
       {
         "key": "shift+u",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-u",
+        "when": "leaderkeyState && !config.leaderkey.disabled.U",
         "command": "leaderkey.onkey",
         "args": "U"
       },
@@ -871,6 +619,12 @@
         "args": "v"
       },
       {
+        "key": "alt+v",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-v",
+        "command": "leaderkey.onkey",
+        "args": "M-v"
+      },
+      {
         "key": "ctrl+v",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-v",
         "command": "leaderkey.onkey",
@@ -878,7 +632,7 @@
       },
       {
         "key": "shift+v",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-v",
+        "when": "leaderkeyState && !config.leaderkey.disabled.V",
         "command": "leaderkey.onkey",
         "args": "V"
       },
@@ -889,6 +643,12 @@
         "args": "w"
       },
       {
+        "key": "alt+w",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-w",
+        "command": "leaderkey.onkey",
+        "args": "M-w"
+      },
+      {
         "key": "ctrl+w",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-w",
         "command": "leaderkey.onkey",
@@ -896,7 +656,7 @@
       },
       {
         "key": "shift+w",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-w",
+        "when": "leaderkeyState && !config.leaderkey.disabled.W",
         "command": "leaderkey.onkey",
         "args": "W"
       },
@@ -907,6 +667,12 @@
         "args": "x"
       },
       {
+        "key": "alt+x",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-x",
+        "command": "leaderkey.onkey",
+        "args": "M-x"
+      },
+      {
         "key": "ctrl+x",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-x",
         "command": "leaderkey.onkey",
@@ -914,7 +680,7 @@
       },
       {
         "key": "shift+x",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-x",
+        "when": "leaderkeyState && !config.leaderkey.disabled.X",
         "command": "leaderkey.onkey",
         "args": "X"
       },
@@ -925,6 +691,12 @@
         "args": "y"
       },
       {
+        "key": "alt+y",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-y",
+        "command": "leaderkey.onkey",
+        "args": "M-y"
+      },
+      {
         "key": "ctrl+y",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-y",
         "command": "leaderkey.onkey",
@@ -932,7 +704,7 @@
       },
       {
         "key": "shift+y",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-y",
+        "when": "leaderkeyState && !config.leaderkey.disabled.Y",
         "command": "leaderkey.onkey",
         "args": "Y"
       },
@@ -943,6 +715,12 @@
         "args": "z"
       },
       {
+        "key": "alt+z",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-z",
+        "command": "leaderkey.onkey",
+        "args": "M-z"
+      },
+      {
         "key": "ctrl+z",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-z",
         "command": "leaderkey.onkey",
@@ -950,69 +728,621 @@
       },
       {
         "key": "shift+z",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-z",
+        "when": "leaderkeyState && !config.leaderkey.disabled.Z",
         "command": "leaderkey.onkey",
         "args": "Z"
       },
       {
-        "key": "tab",
-        "when": "leaderkeyState && !config.leaderkey.disabled.tab",
+        "key": "`",
+        "when": "leaderkeyState && !config.leaderkey.disabled.backtick",
         "command": "leaderkey.onkey",
-        "args": "TAB"
+        "args": "`"
       },
       {
-        "key": "ctrl+tab",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-tab",
+        "key": "alt+`",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-backtick",
         "command": "leaderkey.onkey",
-        "args": "C-TAB"
+        "args": "M-`"
       },
       {
-        "key": "shift+tab",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-tab",
+        "key": "ctrl+`",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-backtick",
         "command": "leaderkey.onkey",
-        "args": "S-TAB"
+        "args": "C-`"
       },
       {
-        "key": "enter",
-        "when": "leaderkeyState && !config.leaderkey.disabled.enter",
+        "key": "shift+`",
+        "when": "leaderkeyState && !config.leaderkey.disabled.tilde",
         "command": "leaderkey.onkey",
-        "args": "RET"
+        "args": "~"
       },
       {
-        "key": "ctrl+enter",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-enter",
+        "key": "1",
+        "when": "leaderkeyState && !config.leaderkey.disabled.1",
         "command": "leaderkey.onkey",
-        "args": "C-RET"
+        "args": "1"
       },
       {
-        "key": "shift+enter",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-enter",
+        "key": "alt+1",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-1",
         "command": "leaderkey.onkey",
-        "args": "S-RET"
+        "args": "M-1"
+      },
+      {
+        "key": "ctrl+1",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-1",
+        "command": "leaderkey.onkey",
+        "args": "C-1"
+      },
+      {
+        "key": "shift+1",
+        "when": "leaderkeyState && !config.leaderkey.disabled.exclamation",
+        "command": "leaderkey.onkey",
+        "args": "!"
+      },
+      {
+        "key": "2",
+        "when": "leaderkeyState && !config.leaderkey.disabled.2",
+        "command": "leaderkey.onkey",
+        "args": "2"
+      },
+      {
+        "key": "alt+2",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-2",
+        "command": "leaderkey.onkey",
+        "args": "M-2"
+      },
+      {
+        "key": "ctrl+2",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-2",
+        "command": "leaderkey.onkey",
+        "args": "C-2"
+      },
+      {
+        "key": "shift+2",
+        "when": "leaderkeyState && !config.leaderkey.disabled.at",
+        "command": "leaderkey.onkey",
+        "args": "@"
+      },
+      {
+        "key": "3",
+        "when": "leaderkeyState && !config.leaderkey.disabled.3",
+        "command": "leaderkey.onkey",
+        "args": "3"
+      },
+      {
+        "key": "alt+3",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-3",
+        "command": "leaderkey.onkey",
+        "args": "M-3"
+      },
+      {
+        "key": "ctrl+3",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-3",
+        "command": "leaderkey.onkey",
+        "args": "C-3"
+      },
+      {
+        "key": "shift+3",
+        "when": "leaderkeyState && !config.leaderkey.disabled.hash",
+        "command": "leaderkey.onkey",
+        "args": "#"
+      },
+      {
+        "key": "4",
+        "when": "leaderkeyState && !config.leaderkey.disabled.4",
+        "command": "leaderkey.onkey",
+        "args": "4"
+      },
+      {
+        "key": "alt+4",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-4",
+        "command": "leaderkey.onkey",
+        "args": "M-4"
+      },
+      {
+        "key": "ctrl+4",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-4",
+        "command": "leaderkey.onkey",
+        "args": "C-4"
+      },
+      {
+        "key": "shift+4",
+        "when": "leaderkeyState && !config.leaderkey.disabled.dollar",
+        "command": "leaderkey.onkey",
+        "args": "$"
+      },
+      {
+        "key": "5",
+        "when": "leaderkeyState && !config.leaderkey.disabled.5",
+        "command": "leaderkey.onkey",
+        "args": "5"
+      },
+      {
+        "key": "alt+5",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-5",
+        "command": "leaderkey.onkey",
+        "args": "M-5"
+      },
+      {
+        "key": "ctrl+5",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-5",
+        "command": "leaderkey.onkey",
+        "args": "C-5"
+      },
+      {
+        "key": "shift+5",
+        "when": "leaderkeyState && !config.leaderkey.disabled.percent",
+        "command": "leaderkey.onkey",
+        "args": "%"
+      },
+      {
+        "key": "6",
+        "when": "leaderkeyState && !config.leaderkey.disabled.6",
+        "command": "leaderkey.onkey",
+        "args": "6"
+      },
+      {
+        "key": "alt+6",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-6",
+        "command": "leaderkey.onkey",
+        "args": "M-6"
+      },
+      {
+        "key": "ctrl+6",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-6",
+        "command": "leaderkey.onkey",
+        "args": "C-6"
+      },
+      {
+        "key": "shift+6",
+        "when": "leaderkeyState && !config.leaderkey.disabled.caret",
+        "command": "leaderkey.onkey",
+        "args": "^"
+      },
+      {
+        "key": "7",
+        "when": "leaderkeyState && !config.leaderkey.disabled.7",
+        "command": "leaderkey.onkey",
+        "args": "7"
+      },
+      {
+        "key": "alt+7",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-7",
+        "command": "leaderkey.onkey",
+        "args": "M-7"
+      },
+      {
+        "key": "ctrl+7",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-7",
+        "command": "leaderkey.onkey",
+        "args": "C-7"
+      },
+      {
+        "key": "shift+7",
+        "when": "leaderkeyState && !config.leaderkey.disabled.ampersand",
+        "command": "leaderkey.onkey",
+        "args": "&"
+      },
+      {
+        "key": "8",
+        "when": "leaderkeyState && !config.leaderkey.disabled.8",
+        "command": "leaderkey.onkey",
+        "args": "8"
+      },
+      {
+        "key": "alt+8",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-8",
+        "command": "leaderkey.onkey",
+        "args": "M-8"
+      },
+      {
+        "key": "ctrl+8",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-8",
+        "command": "leaderkey.onkey",
+        "args": "C-8"
+      },
+      {
+        "key": "shift+8",
+        "when": "leaderkeyState && !config.leaderkey.disabled.asterisk",
+        "command": "leaderkey.onkey",
+        "args": "*"
+      },
+      {
+        "key": "9",
+        "when": "leaderkeyState && !config.leaderkey.disabled.9",
+        "command": "leaderkey.onkey",
+        "args": "9"
+      },
+      {
+        "key": "alt+9",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-9",
+        "command": "leaderkey.onkey",
+        "args": "M-9"
+      },
+      {
+        "key": "ctrl+9",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-9",
+        "command": "leaderkey.onkey",
+        "args": "C-9"
+      },
+      {
+        "key": "shift+9",
+        "when": "leaderkeyState && !config.leaderkey.disabled.openingparenthesis",
+        "command": "leaderkey.onkey",
+        "args": "("
+      },
+      {
+        "key": "0",
+        "when": "leaderkeyState && !config.leaderkey.disabled.0",
+        "command": "leaderkey.onkey",
+        "args": "0"
+      },
+      {
+        "key": "alt+0",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-0",
+        "command": "leaderkey.onkey",
+        "args": "M-0"
+      },
+      {
+        "key": "ctrl+0",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-0",
+        "command": "leaderkey.onkey",
+        "args": "C-0"
+      },
+      {
+        "key": "shift+0",
+        "when": "leaderkeyState && !config.leaderkey.disabled.closingparenthesis",
+        "command": "leaderkey.onkey",
+        "args": ")"
+      },
+      {
+        "key": "-",
+        "when": "leaderkeyState && !config.leaderkey.disabled.dash",
+        "command": "leaderkey.onkey",
+        "args": "-"
+      },
+      {
+        "key": "alt+-",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-dash",
+        "command": "leaderkey.onkey",
+        "args": "M--"
+      },
+      {
+        "key": "ctrl+-",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-dash",
+        "command": "leaderkey.onkey",
+        "args": "C--"
+      },
+      {
+        "key": "shift+-",
+        "when": "leaderkeyState && !config.leaderkey.disabled.underscore",
+        "command": "leaderkey.onkey",
+        "args": "_"
+      },
+      {
+        "key": "=",
+        "when": "leaderkeyState && !config.leaderkey.disabled.equal",
+        "command": "leaderkey.onkey",
+        "args": "="
+      },
+      {
+        "key": "alt+=",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-equal",
+        "command": "leaderkey.onkey",
+        "args": "M-="
+      },
+      {
+        "key": "ctrl+=",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-equal",
+        "command": "leaderkey.onkey",
+        "args": "C-="
+      },
+      {
+        "key": "shift+=",
+        "when": "leaderkeyState && !config.leaderkey.disabled.plus",
+        "command": "leaderkey.onkey",
+        "args": "+"
+      },
+      {
+        "key": ",",
+        "when": "leaderkeyState && !config.leaderkey.disabled.comma",
+        "command": "leaderkey.onkey",
+        "args": ","
+      },
+      {
+        "key": "alt+,",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-comma",
+        "command": "leaderkey.onkey",
+        "args": "M-,"
+      },
+      {
+        "key": "ctrl+,",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-comma",
+        "command": "leaderkey.onkey",
+        "args": "C-,"
+      },
+      {
+        "key": "shift+,",
+        "when": "leaderkeyState && !config.leaderkey.disabled.less",
+        "command": "leaderkey.onkey",
+        "args": "<"
+      },
+      {
+        "key": ".",
+        "when": "leaderkeyState && !config.leaderkey.disabled.dot",
+        "command": "leaderkey.onkey",
+        "args": "."
+      },
+      {
+        "key": "alt+.",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-dot",
+        "command": "leaderkey.onkey",
+        "args": "M-."
+      },
+      {
+        "key": "ctrl+.",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-dot",
+        "command": "leaderkey.onkey",
+        "args": "C-."
+      },
+      {
+        "key": "shift+.",
+        "when": "leaderkeyState && !config.leaderkey.disabled.greater",
+        "command": "leaderkey.onkey",
+        "args": ">"
+      },
+      {
+        "key": "/",
+        "when": "leaderkeyState && !config.leaderkey.disabled.slash",
+        "command": "leaderkey.onkey",
+        "args": "/"
+      },
+      {
+        "key": "alt+/",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-slash",
+        "command": "leaderkey.onkey",
+        "args": "M-/"
+      },
+      {
+        "key": "ctrl+/",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-slash",
+        "command": "leaderkey.onkey",
+        "args": "C-/"
+      },
+      {
+        "key": "shift+/",
+        "when": "leaderkeyState && !config.leaderkey.disabled.question",
+        "command": "leaderkey.onkey",
+        "args": "?"
+      },
+      {
+        "key": "[",
+        "when": "leaderkeyState && !config.leaderkey.disabled.openingbracket",
+        "command": "leaderkey.onkey",
+        "args": "["
+      },
+      {
+        "key": "alt+[",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-openingbracket",
+        "command": "leaderkey.onkey",
+        "args": "M-["
+      },
+      {
+        "key": "ctrl+[",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-openingbracket",
+        "command": "leaderkey.onkey",
+        "args": "C-["
+      },
+      {
+        "key": "shift+[",
+        "when": "leaderkeyState && !config.leaderkey.disabled.openingbrace",
+        "command": "leaderkey.onkey",
+        "args": "{"
+      },
+      {
+        "key": "]",
+        "when": "leaderkeyState && !config.leaderkey.disabled.closingbracket",
+        "command": "leaderkey.onkey",
+        "args": "]"
+      },
+      {
+        "key": "alt+]",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-closingbracket",
+        "command": "leaderkey.onkey",
+        "args": "M-]"
+      },
+      {
+        "key": "ctrl+]",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-closingbracket",
+        "command": "leaderkey.onkey",
+        "args": "C-]"
+      },
+      {
+        "key": "shift+]",
+        "when": "leaderkeyState && !config.leaderkey.disabled.closingbrace",
+        "command": "leaderkey.onkey",
+        "args": "}"
+      },
+      {
+        "key": ";",
+        "when": "leaderkeyState && !config.leaderkey.disabled.semicolon",
+        "command": "leaderkey.onkey",
+        "args": ";"
+      },
+      {
+        "key": "alt+;",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-semicolon",
+        "command": "leaderkey.onkey",
+        "args": "M-;"
+      },
+      {
+        "key": "ctrl+;",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-semicolon",
+        "command": "leaderkey.onkey",
+        "args": "C-;"
+      },
+      {
+        "key": "shift+;",
+        "when": "leaderkeyState && !config.leaderkey.disabled.colon",
+        "command": "leaderkey.onkey",
+        "args": ":"
+      },
+      {
+        "key": "'",
+        "when": "leaderkeyState && !config.leaderkey.disabled.singlequote",
+        "command": "leaderkey.onkey",
+        "args": "'"
+      },
+      {
+        "key": "alt+'",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-singlequote",
+        "command": "leaderkey.onkey",
+        "args": "M-'"
+      },
+      {
+        "key": "ctrl+'",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-singlequote",
+        "command": "leaderkey.onkey",
+        "args": "C-'"
+      },
+      {
+        "key": "shift+'",
+        "when": "leaderkeyState && !config.leaderkey.disabled.doublequote",
+        "command": "leaderkey.onkey",
+        "args": "\""
+      },
+      {
+        "key": "\\",
+        "when": "leaderkeyState && !config.leaderkey.disabled.forwardslash",
+        "command": "leaderkey.onkey",
+        "args": "\\"
+      },
+      {
+        "key": "alt+\\",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-forwardslash",
+        "command": "leaderkey.onkey",
+        "args": "M-\\"
+      },
+      {
+        "key": "ctrl+\\",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-forwardslash",
+        "command": "leaderkey.onkey",
+        "args": "C-\\"
+      },
+      {
+        "key": "shift+\\",
+        "when": "leaderkeyState && !config.leaderkey.disabled.bar",
+        "command": "leaderkey.onkey",
+        "args": "|"
       },
       {
         "key": "space",
-        "when": "leaderkeyState && !config.leaderkey.disabled.space",
+        "when": "leaderkeyState && !config.leaderkey.disabled.SPC",
         "command": "leaderkey.onkey",
         "args": "SPC"
       },
       {
+        "key": "alt+space",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-SPC",
+        "command": "leaderkey.onkey",
+        "args": "M-SPC"
+      },
+      {
         "key": "ctrl+space",
-        "when": "leaderkeyState && !config.leaderkey.disabled.C-space",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-SPC",
         "command": "leaderkey.onkey",
         "args": "C-SPC"
       },
       {
         "key": "shift+space",
-        "when": "leaderkeyState && !config.leaderkey.disabled.S-space",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-SPC",
         "command": "leaderkey.onkey",
         "args": "S-SPC"
+      },
+      {
+        "key": "enter",
+        "when": "leaderkeyState && !config.leaderkey.disabled.RET",
+        "command": "leaderkey.onkey",
+        "args": "RET"
+      },
+      {
+        "key": "alt+enter",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-RET",
+        "command": "leaderkey.onkey",
+        "args": "M-RET"
+      },
+      {
+        "key": "ctrl+enter",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-RET",
+        "command": "leaderkey.onkey",
+        "args": "C-RET"
+      },
+      {
+        "key": "shift+enter",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-RET",
+        "command": "leaderkey.onkey",
+        "args": "S-RET"
+      },
+      {
+        "key": "tab",
+        "when": "leaderkeyState && !config.leaderkey.disabled.TAB",
+        "command": "leaderkey.onkey",
+        "args": "TAB"
+      },
+      {
+        "key": "alt+tab",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-TAB",
+        "command": "leaderkey.onkey",
+        "args": "M-TAB"
+      },
+      {
+        "key": "ctrl+tab",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-TAB",
+        "command": "leaderkey.onkey",
+        "args": "C-TAB"
+      },
+      {
+        "key": "shift+tab",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-TAB",
+        "command": "leaderkey.onkey",
+        "args": "S-TAB"
+      },
+      {
+        "key": "escape",
+        "when": "leaderkeyState && !config.leaderkey.disabled.ESC",
+        "command": "leaderkey.onkey",
+        "args": "ESC"
+      },
+      {
+        "key": "alt+escape",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-ESC",
+        "command": "leaderkey.onkey",
+        "args": "M-ESC"
+      },
+      {
+        "key": "ctrl+escape",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-ESC",
+        "command": "leaderkey.onkey",
+        "args": "C-ESC"
+      },
+      {
+        "key": "shift+escape",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-ESC",
+        "command": "leaderkey.onkey",
+        "args": "S-ESC"
       },
       {
         "key": "backspace",
         "when": "leaderkeyState && !config.leaderkey.disabled.backspace",
         "command": "leaderkey.onkey",
         "args": "<backspace>"
+      },
+      {
+        "key": "alt+backspace",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-backspace",
+        "command": "leaderkey.onkey",
+        "args": "M-<backspace>"
       },
       {
         "key": "ctrl+backspace",
@@ -1033,6 +1363,12 @@
         "args": "<delete>"
       },
       {
+        "key": "alt+delete",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-delete",
+        "command": "leaderkey.onkey",
+        "args": "M-<delete>"
+      },
+      {
         "key": "ctrl+delete",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-delete",
         "command": "leaderkey.onkey",
@@ -1049,6 +1385,12 @@
         "when": "leaderkeyState && !config.leaderkey.disabled.pageup",
         "command": "leaderkey.onkey",
         "args": "<pageup>"
+      },
+      {
+        "key": "alt+pageup",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-pageup",
+        "command": "leaderkey.onkey",
+        "args": "M-<pageup>"
       },
       {
         "key": "ctrl+pageup",
@@ -1069,6 +1411,12 @@
         "args": "<pagedown>"
       },
       {
+        "key": "alt+pagedown",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-pagedown",
+        "command": "leaderkey.onkey",
+        "args": "M-<pagedown>"
+      },
+      {
         "key": "ctrl+pagedown",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-pagedown",
         "command": "leaderkey.onkey",
@@ -1085,6 +1433,12 @@
         "when": "leaderkeyState && !config.leaderkey.disabled.up",
         "command": "leaderkey.onkey",
         "args": "<up>"
+      },
+      {
+        "key": "alt+up",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-up",
+        "command": "leaderkey.onkey",
+        "args": "M-<up>"
       },
       {
         "key": "ctrl+up",
@@ -1105,6 +1459,12 @@
         "args": "<down>"
       },
       {
+        "key": "alt+down",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-down",
+        "command": "leaderkey.onkey",
+        "args": "M-<down>"
+      },
+      {
         "key": "ctrl+down",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-down",
         "command": "leaderkey.onkey",
@@ -1121,6 +1481,12 @@
         "when": "leaderkeyState && !config.leaderkey.disabled.left",
         "command": "leaderkey.onkey",
         "args": "<left>"
+      },
+      {
+        "key": "alt+left",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-left",
+        "command": "leaderkey.onkey",
+        "args": "M-<left>"
       },
       {
         "key": "ctrl+left",
@@ -1141,6 +1507,12 @@
         "args": "<right>"
       },
       {
+        "key": "alt+right",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-right",
+        "command": "leaderkey.onkey",
+        "args": "M-<right>"
+      },
+      {
         "key": "ctrl+right",
         "when": "leaderkeyState && !config.leaderkey.disabled.C-right",
         "command": "leaderkey.onkey",
@@ -1151,6 +1523,54 @@
         "when": "leaderkeyState && !config.leaderkey.disabled.S-right",
         "command": "leaderkey.onkey",
         "args": "S-<right>"
+      },
+      {
+        "key": "home",
+        "when": "leaderkeyState && !config.leaderkey.disabled.home",
+        "command": "leaderkey.onkey",
+        "args": "<home>"
+      },
+      {
+        "key": "alt+home",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-home",
+        "command": "leaderkey.onkey",
+        "args": "M-<home>"
+      },
+      {
+        "key": "ctrl+home",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-home",
+        "command": "leaderkey.onkey",
+        "args": "C-<home>"
+      },
+      {
+        "key": "shift+home",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-home",
+        "command": "leaderkey.onkey",
+        "args": "S-<home>"
+      },
+      {
+        "key": "end",
+        "when": "leaderkeyState && !config.leaderkey.disabled.end",
+        "command": "leaderkey.onkey",
+        "args": "<end>"
+      },
+      {
+        "key": "alt+end",
+        "when": "leaderkeyState && !config.leaderkey.disabled.M-end",
+        "command": "leaderkey.onkey",
+        "args": "M-<end>"
+      },
+      {
+        "key": "ctrl+end",
+        "when": "leaderkeyState && !config.leaderkey.disabled.C-end",
+        "command": "leaderkey.onkey",
+        "args": "C-<end>"
+      },
+      {
+        "key": "shift+end",
+        "when": "leaderkeyState && !config.leaderkey.disabled.S-end",
+        "command": "leaderkey.onkey",
+        "args": "S-<end>"
       },
       {
         "key": "f",

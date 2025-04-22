@@ -1,5 +1,6 @@
 import { QuickPickItem } from "vscode";
 import { log } from "../common/global";
+import { toEmacsKey } from "./key";
 
 export interface DispEntry {
   key: string;
@@ -80,31 +81,6 @@ export type TokenType = "key" | "arrow" | "command" | "binding";
 const shiftChars = '~!@#$%^&*()_+<>?{}:"|';
 export const unshiftChars = "`1234567890-=,./[];'\\";
 
-export function toVSCodeKey(key: string) {
-  const lastChar = key.at(-1)!;
-  if (/^[A-Z]*$/.test(lastChar)) {
-    key = key.slice(0, key.length - 1) + "shift+" + lastChar.toLowerCase();
-  }
-  const idxNumChar = shiftChars.indexOf(lastChar);
-  if (idxNumChar >= 0) {
-    key =
-      key.slice(0, key.length - 1) +
-      "shift+" +
-      unshiftChars.substring(idxNumChar, idxNumChar + 1);
-  }
-
-  return key
-    .replace(/<(\w+)>/g, (_match, inner) => inner)
-    .replaceAll("SPC", "space")
-    .replaceAll("TAB", "tab")
-    .replaceAll("RET", "enter")
-    .replaceAll("ESC", "escape")
-    .replaceAll("C-", "ctrl+")
-    .replaceAll("M-", "alt+")
-    .replaceAll("S-", "shift+")
-    .replaceAll("shift+shift+", "shift+");
-}
-
 const RE_KEY_WHEN = /^((^:|\+:|[^:])+)(|:.+)$/;
 
 function _containsWhen(key: string) {
@@ -129,36 +105,10 @@ function normalizeBindingName(name: string) {
 }
 
 /** turn keys into how they are displayed on which-key */
-export function normalizeKey(key: string) {
+function normalizeKey(key: string) {
   return key.replace(
     RE_KEY_WHEN,
-    (_all, k: string, _2, when: string) =>
-      k
-        .replaceAll("backspace", "<backspace>")
-        .replaceAll("delete", "<delete>")
-        .replaceAll("pageup", "<pageup>")
-        .replaceAll("pagedown", "<pagedown>")
-        .replace(/\bup\b/g, "<up>")
-        .replace(/\bdown\b/g, "<down>")
-        .replaceAll("left", "<left>")
-        .replaceAll("right", "<right>")
-        .replace(/\bspace\b/g, "SPC")
-        .replaceAll(" ", "SPC")
-        .replaceAll("\t", "TAB")
-        .replaceAll("tab", "TAB")
-        .replaceAll("\n", "RET")
-        .replaceAll("enter", "RET")
-        .replaceAll("escape", "ESC")
-        .replaceAll("ctrl+", "C-")
-        .replaceAll("alt+", "M-")
-        .replaceAll("shift+", "S-")
-        .replaceAll(/S-([`1234567890=,./[\];'\\-])$/g, (match, ch) => {
-          const idx = unshiftChars.indexOf(ch);
-          if (idx >= 0) return shiftChars.substring(idx, idx + 1);
-          return match;
-        })
-        .replaceAll(/S-([a-z])$/g, (_m, ch) => (ch as string).toUpperCase()) + // suffix
-      when,
+    (_all, k: string, _2, when: string) => toEmacsKey(k) + when,
   );
 }
 

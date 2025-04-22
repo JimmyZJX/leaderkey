@@ -26,7 +26,7 @@ class DummyFs implements FileSystemProvider {
     return [];
   }
   readFile(_uri: Uri): Uint8Array {
-    return Buffer.from("\n".repeat(200));
+    return new TextEncoder().encode("\n".repeat(200));
   }
   writeFile(
     _uri: Uri,

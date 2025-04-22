@@ -5,7 +5,8 @@ import {
   window,
   workspace,
 } from "vscode";
-import { log, setStatusBar, WHICHKEY_STATE } from "../common/global";
+import { enableLeaderKeyAndDisableVim } from "../common/context";
+import { log, setStatusBar } from "../common/global";
 import {
   Bindings,
   Command,
@@ -47,7 +48,7 @@ export class LeaderkeyPanel {
         }
       }),
     );
-    await commands.executeCommand("_setContext", WHICHKEY_STATE, this.path);
+    await enableLeaderKeyAndDisableVim(this.path);
   }
 
   private confOverrideRefresh() {
@@ -87,7 +88,7 @@ export class LeaderkeyPanel {
   private async setAndRenderPath(path: string, binding: Bindings | undefined) {
     this.path = path;
     try {
-      commands.executeCommand("_setContext", WHICHKEY_STATE, this.path);
+      await enableLeaderKeyAndDisableVim(this.path);
       setStatusBar(path === "" ? "" : path + "-");
     } finally {
       const oldDisposables = this.disposableDecos;
@@ -131,12 +132,12 @@ export class LeaderkeyPanel {
         : (this.path === "" ? "" : this.path + " ") + key;
     const bOrC = go(this.root, newPath, this.when);
     if (bOrC === undefined) {
-      this.setAndRenderPath("", undefined);
+      await this.setAndRenderPath("", undefined);
       setStatusBar(`Unknown leaderkey: ${newPath}`, "error");
       return;
     }
     if (isBindings(bOrC)) {
-      this.setAndRenderPath(newPath, bOrC);
+      await this.setAndRenderPath(newPath, bOrC);
       return;
     }
     // command

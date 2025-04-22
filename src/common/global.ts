@@ -1,7 +1,5 @@
 import { OutputChannel, StatusBarItem, ThemeColor, window } from "vscode";
 
-export const WHICHKEY_STATE = "leaderkeyState";
-
 let statusBar: StatusBarItem | undefined = undefined;
 let statusBarTimeout: NodeJS.Timeout | undefined = undefined;
 let outputChannel: OutputChannel | undefined = undefined;

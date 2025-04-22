@@ -1,12 +1,12 @@
 import { join } from "path-browserify";
+import { CancellationTokenSource, TextEditor, TextEditorDecorationType } from "vscode";
 import {
-  CancellationTokenSource,
-  commands,
-  TextEditor,
-  TextEditorDecorationType,
-} from "vscode";
+  disableLeaderKey,
+  enableLeaderKeyAndDisableVim,
+  enableVim,
+} from "../common/context";
 import { Decoration, renderDecorations } from "../common/decoration";
-import { WHICHKEY_STATE as LEADERKEY_STATE, log } from "../common/global";
+import { log } from "../common/global";
 import {
   getNumTotal,
   getRenderRangeFromTop,
@@ -55,6 +55,7 @@ export class RgPanel {
   private onReset: () => void;
 
   constructor(query: RipGrepQuery, activeTextEditor: TextEditor, onReset: () => void) {
+    enableLeaderKeyAndDisableVim(":ripgrep");
     this.editor = new OneLineEditor(query.query);
     this.query = query;
     this.onReset = onReset;
@@ -66,7 +67,7 @@ export class RgPanel {
 
   public async quit(mode: "interrupt" | "normal" | { file: string; lineNo: number }) {
     this.cancellationToken.cancel();
-    await commands.executeCommand("_setContext", "inDebugRepl", false);
+    enableVim();
     if (mode === "interrupt") {
       await this.rgEditor?.quit(true);
     } else if (mode === "normal") {
@@ -78,7 +79,7 @@ export class RgPanel {
     for (const d of this.disposableDecos) d.dispose();
     this.disposableDecos = [];
     this.onReset();
-    await commands.executeCommand("_setContext", LEADERKEY_STATE, "");
+    await disableLeaderKey();
   }
 
   public async onKey(key: string) {
@@ -125,8 +126,6 @@ export class RgPanel {
   render() {
     const lastDecorations = this.disposableDecos;
     try {
-      commands.executeCommand("_setContext", LEADERKEY_STATE, ":ripgrep");
-      commands.executeCommand("_setContext", "inDebugRepl", true);
       const editor = this.rgEditor?.getEditor();
       this.disposableDecos = editor === undefined ? [] : this.doRender(editor);
     } finally {

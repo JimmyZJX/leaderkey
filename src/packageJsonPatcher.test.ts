@@ -1,6 +1,6 @@
 import { readFileSync, unlinkSync, writeFileSync } from "fs";
 import { keys as diredKeys, scheme as diredScheme } from "./findFile/dired";
-import { normalizeKey, unshiftChars } from "./leaderkey/command";
+import { allVSCodeKeys, toEmacsKey, toEmacsKeyDesc } from "./leaderkey/key";
 
 const IN_DIRED_EDITOR_WHEN = `editorTextFocus && resourceScheme == '${diredScheme}' && !leaderkeyState && (!vim.active || vim.mode == 'Normal')`;
 const diredKeyBindings = Object.entries(diredKeys).map(([key, { name, f: _ }]) => ({
@@ -9,61 +9,22 @@ const diredKeyBindings = Object.entries(diredKeys).map(([key, { name, f: _ }]) =
   command: `leaderkey.dired.${name}`,
 }));
 
+const vscodeModifiers = ["", "alt+", "ctrl+", "shift+"];
+
 function patch(packageJson: any) {
-  const ALL_KEY_CHARS = [
-    ...unshiftChars,
-    ..."abcdefghijklmnopqrstuvwxyz",
-    "tab",
-    "enter",
-    "space",
-    "backspace",
-    "delete",
-    "pageup",
-    "pagedown",
-    "up",
-    "down",
-    "left",
-    "right",
-  ];
-
-  function toDesc(keyChar: string) {
-    return (
-      {
-        ["`"]: "backtick",
-        ["-"]: "dash",
-        ["="]: "equal",
-        [","]: "comma",
-        ["."]: "dot",
-        ["/"]: "slash",
-        ["["]: "openingbracket",
-        ["]"]: "closingbracket",
-        [";"]: "semicolon",
-        ["'"]: "singlequote",
-        ["\\"]: "forwardslash",
-      }[keyChar] ?? keyChar
-    );
-  }
-
   // patch all keys
-  const allKeyCharBindings = ALL_KEY_CHARS.flatMap((k) => [
-    {
-      key: k,
-      when: `leaderkeyState && !config.leaderkey.disabled.${toDesc(k)}`,
-      command: "leaderkey.onkey",
-      args: normalizeKey(k),
-    },
-    {
-      key: "ctrl+" + k,
-      when: `leaderkeyState && !config.leaderkey.disabled.C-${toDesc(k)}`,
-      command: "leaderkey.onkey",
-      args: normalizeKey("C-" + k),
-    },
-    {
-      key: "shift+" + k,
-      when: `leaderkeyState && !config.leaderkey.disabled.S-${toDesc(k)}`,
-      command: "leaderkey.onkey",
-      args: normalizeKey("S-" + k),
-    },
+  const allKeyCharBindings = allVSCodeKeys().flatMap((vscode) => [
+    ...vscodeModifiers.map((vscodeModifier) => {
+      const vscodeKey = vscodeModifier + vscode;
+      const emacsKey = toEmacsKey(vscodeKey);
+      const desc = toEmacsKeyDesc(emacsKey);
+      return {
+        key: vscodeKey,
+        when: `leaderkeyState && !config.leaderkey.disabled.${desc}`,
+        command: "leaderkey.onkey",
+        args: emacsKey,
+      };
+    }),
   ]);
 
   const COMMON_OUTSIDE_EDITOR_WHEN =
@@ -137,8 +98,6 @@ function patch(packageJson: any) {
     ...specialKeyBindings,
     ...diredKeyBindings,
   ];
-
-  packageJson.contributes.languages = [{ id: "leaderkey.dired" }];
 }
 
 test("package.json", () => {

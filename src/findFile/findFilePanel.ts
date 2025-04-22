@@ -1,9 +1,14 @@
 // init: check if remote extension is available
 
 import { dirname, normalize } from "path-browserify";
-import { commands, TextEditor, TextEditorDecorationType, window } from "vscode";
+import { TextEditor, TextEditorDecorationType, window } from "vscode";
+import {
+  disableLeaderKey,
+  enableLeaderKeyAndDisableVim,
+  enableVim,
+} from "../common/context";
 import { Decoration, renderDecorations } from "../common/decoration";
-import { assert, commonPrefix, log, WHICHKEY_STATE } from "../common/global";
+import { assert, commonPrefix, log } from "../common/global";
 import { ENV_HOME, openFile, runProcess } from "../common/remote";
 import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
 import { OneLineEditor as SingleLineEditor } from "../common/singleLineEditor";
@@ -89,6 +94,8 @@ export class FindFilePanel {
   }
 
   setDir(dir: string) {
+    // TODO lifetime management refactor
+    enableLeaderKeyAndDisableVim(":findFile");
     this.dir = normalize(dir.endsWith("/") ? dir : dir + "/");
     this.editor.reset("");
     this.lastSelection = { type: "none" };
@@ -485,8 +492,6 @@ export class FindFilePanel {
     this.isShowing = true;
     const oldDisposables = this.disposableDecos;
     try {
-      commands.executeCommand("_setContext", WHICHKEY_STATE, ":findFile");
-      commands.executeCommand("_setContext", "inDebugRepl", true);
       const editor = window.activeTextEditor;
       this.disposableDecos = editor === undefined ? [] : this.doRender(editor);
     } finally {
@@ -500,7 +505,7 @@ export class FindFilePanel {
     this.disposableDecos = [];
     this.isShowing = false;
     this.onReset();
-    await commands.executeCommand("_setContext", WHICHKEY_STATE, "");
-    await commands.executeCommand("_setContext", "inDebugRepl", false);
+    await disableLeaderKey();
+    await enableVim();
   }
 }
