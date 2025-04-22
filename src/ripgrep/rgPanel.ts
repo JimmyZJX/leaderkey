@@ -112,10 +112,16 @@ export class RgPanel {
       this.render();
       return;
     }
+    const oldValue = this.editor.value();
     if ((await this.editor.tryKey(key)) === "handled") {
-      this.query.query = this.editor.value();
-      this.spawn();
-      return;
+      if (oldValue === this.editor.value()) {
+        this.render();
+        return;
+      } else {
+        this.query.query = this.editor.value();
+        this.spawn();
+        return;
+      }
     }
     log(`[rgPanel] Key not handled: ${key}`);
   }
@@ -131,10 +137,8 @@ export class RgPanel {
     },
     "C-h": () => this.dirUp(),
     "M-h": () => this.dirUp(),
-    "<left>": () => this.dirUp(),
     "C-l": () => this.dirDown(),
     "M-l": () => this.dirDown(),
-    "<right>": () => this.dirDown(),
   };
 
   dirDown() {
