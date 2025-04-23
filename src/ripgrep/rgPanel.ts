@@ -50,6 +50,8 @@ function emptyRgMatchState(): RgMatchState {
 const PAD_INDICATOR_COUNT = 5;
 const INPUT_DEBOUNCE_TIMEOUT = 200;
 
+const MAX_NUM_MATCHES = 99999;
+
 function spcs(len: number) {
   return " ".repeat(len);
 }
@@ -334,7 +336,9 @@ export class RgPanel {
   private onUpdate(update: RipgrepStatusUpdate) {
     switch (update.type) {
       case "match":
-        this.matchState.matches.push(...update.lines);
+        this.matchState.matches.push(
+          ...update.lines.slice(0, MAX_NUM_MATCHES - this.matchState.matches.length),
+        );
         break;
       case "summary":
         {
