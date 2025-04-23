@@ -1,14 +1,10 @@
 import { dirname, join, normalize } from "path-browserify";
 import {
   commands,
-  DocumentSymbol,
-  DocumentSymbolProvider,
   EventEmitter,
   ExtensionContext,
   languages,
   Range,
-  SymbolKind,
-  TextDocument,
   TextDocumentChangeEvent,
   TextDocumentContentProvider,
   TextEditor,
@@ -151,22 +147,6 @@ function registerProviders() {
         updateDecoration(editor);
       }
     }),
-    languages.registerDocumentSymbolProvider(
-      [{ language }],
-      new (class implements DocumentSymbolProvider {
-        provideDocumentSymbols(document: TextDocument): DocumentSymbol[] {
-          const line0 = document.lineAt(0);
-          const dir = line0.text.replace(/:$/, "").trim();
-          const fullRange = new Range(
-            line0.range.start,
-            document.lineAt(document.lineCount - 1).range.end,
-          );
-          return [
-            new DocumentSymbol(dir, "dir", SymbolKind.File, fullRange, line0.range),
-          ];
-        }
-      })(),
-    ),
   ];
 }
 

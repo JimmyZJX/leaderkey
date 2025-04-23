@@ -32,16 +32,18 @@ interface GrepSummary {
 type GrepMessage = GrepBegin | GrepEnd | GrepMatch | GrepSummary;
 //#endregion
 
-export type RipGrepQuery = {
-  query: string;
-  cwd: string; // only affects how the results are rendered
-  dir: string[]; // a list of dirs to search for `query`
+export type RipGrepSearchMode = {
   case: "smart" | "strict" | "ignore"; // `--smart-case`, default or `--ignore-case`
-  // IDEA: indicate strictness with some decoration
   regex: "on" | "off"; // default or `--fixed-strings`
   word: "on" | "off"; // `--word-regexp` or default
   // IDEA: maybe render \b...\b around user query
 };
+
+export type RipGrepQuery = {
+  query: string;
+  cwd: string; // only affects how the results are rendered
+  dir: string[]; // a list of dirs to search for `query`
+} & RipGrepSearchMode;
 
 const RE_DASHDASH = /^(?<query>.+?)( +-- +(?<flags>.+))?$/;
 /** `query` returned must be a prefix of `rawQuery` */
@@ -58,12 +60,6 @@ export function normalizeQueryString(rawQuery: string) {
   );
   return { query, args };
 }
-
-export const defaultQueryMode: () => {
-  case: "smart";
-  regex: "on";
-  word: "off";
-} = () => ({ case: "smart", regex: "on", word: "off" });
 
 function toArgs(q: RipGrepQuery) {
   const rgOpts = ["--json"];
@@ -132,7 +128,7 @@ export async function doQuery(
                 grepLines.push({
                   file: normalizePath(data.path?.text ?? "<bad filename>"),
                   lineNo: data.line_number,
-                  line: text.trimEnd(),
+                  line: text.trimEnd().replaceAll("\t", " "),
                   match: data.submatches.map(({ start, end }) => ({ start, end })),
                 });
               }

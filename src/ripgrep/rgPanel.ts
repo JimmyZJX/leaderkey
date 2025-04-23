@@ -22,10 +22,10 @@ import {
 import { OneLineEditor } from "../common/singleLineEditor";
 import { eagerDebouncer } from "../common/throttle";
 import {
-  defaultQueryMode,
   doQuery,
   GrepLine,
   RipGrepQuery,
+  RipGrepSearchMode,
   RipgrepStatusUpdate,
 } from "./rg";
 import { RgEditor } from "./rgEditor";
@@ -62,6 +62,13 @@ type Query = RipGrepQuery & {
 };
 
 let lastRgQuery: Query | undefined;
+
+function getSearchMode(): RipGrepSearchMode {
+  if (lastRgQuery) {
+    return { case: lastRgQuery.case, regex: lastRgQuery.regex, word: lastRgQuery.word };
+  }
+  return { case: "smart", regex: "on", word: "off" };
+}
 
 export class RgPanel {
   private editor: OneLineEditor;
@@ -145,6 +152,23 @@ export class RgPanel {
     "M-h": () => this.dirUp(),
     "C-l": () => this.dirDown(),
     "M-l": () => this.dirDown(),
+    "M-r": async () => {
+      this.query.regex = this.query.regex === "on" ? "off" : "on";
+      this.spawn();
+    },
+    "M-w": async () => {
+      this.query.word = this.query.word === "on" ? "off" : "on";
+      this.spawn();
+    },
+    "M-c": async () => {
+      this.query.case =
+        this.query.case === "smart"
+          ? "strict"
+          : this.query.case === "strict"
+            ? "ignore"
+            : "smart";
+      this.spawn();
+    },
   };
 
   dirDown() {
@@ -185,6 +209,8 @@ export class RgPanel {
     "C-d": () => this.moveSelection(8),
     "<pagedown>": () => this.moveSelection(15),
     "<pageup>": () => this.moveSelection(-15),
+    "C-<home>": () => this.moveSelection(-MAX_NUM_MATCHES),
+    "C-<end>": () => this.moveSelection(MAX_NUM_MATCHES),
   };
 
   moveSelection(delta: number) {
@@ -205,6 +231,48 @@ export class RgPanel {
     } finally {
       for (const dsp of lastDecorations) dsp.dispose();
     }
+  }
+
+  private getModeHint() {
+    const hints: string[] = [];
+    const q = this.query;
+    switch (q.case) {
+      case "smart":
+        const isLower = q.query.toLowerCase() === q.query;
+        if (isLower) {
+          hints.push("case: smart (ignore)");
+        } else {
+          hints.push("case: smart (strict)");
+        }
+        break;
+      case "strict":
+        hints.push("case: strict");
+        break;
+      case "ignore":
+        hints.push("case: ignore");
+        break;
+      default:
+        const _: never = q.case;
+    }
+    switch (q.word) {
+      case "off":
+        break;
+      case "on":
+        hints.push("word: on");
+        break;
+      default:
+        const _: never = q.word;
+    }
+    switch (q.regex) {
+      case "on":
+        break;
+      case "off":
+        hints.push("regex: off");
+        break;
+      default:
+        const _: never = q.regex;
+    }
+    return hints.join(" | ");
   }
 
   doRender(editor: TextEditor) {
@@ -284,7 +352,19 @@ export class RgPanel {
       (ms.isDone || ms.matches.length > 0 ? ms.matches.length.toString() : "").padEnd(
         PAD_INDICATOR_COUNT,
       ) + " rg: ";
-    const editorDecos = this.editor.render({ char: rgIndicator.length });
+
+    const modeHint = this.getModeHint();
+    const modeHintMinPos = rgIndicator.length + this.editor.value().length + 4;
+    const modeHintPos = Math.max(modeHintMinPos, 80 - modeHint.length);
+    const editorDecos: Decoration[] = [
+      ...this.editor.render({ char: rgIndicator.length }),
+      {
+        type: "text",
+        text: modeHint,
+        foreground: "dim",
+        charOffset: modeHintPos,
+      },
+    ];
 
     const decos: Decoration[] = [
       { type: "background", lines: bgSize },
@@ -447,7 +527,7 @@ export async function createRgPanel(
       dir,
       query,
       cwd: commonPrefix(dir),
-      ...defaultQueryMode(),
+      ...getSearchMode(),
     };
   }
 

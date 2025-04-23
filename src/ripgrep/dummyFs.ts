@@ -1,5 +1,7 @@
 import {
   Disposable,
+  DocumentSymbol,
+  DocumentSymbolProvider,
   Event,
   EventEmitter,
   ExtensionContext,
@@ -7,9 +9,14 @@ import {
   FileStat,
   FileSystemProvider,
   FileType,
+  languages,
+  Range,
+  SymbolKind,
+  TextDocument,
   Uri,
   workspace,
 } from "vscode";
+import { RIPGREP_LANGID } from "./rgEditor";
 
 export const scheme = "leaderkey.ripgrep.dummy";
 
@@ -50,5 +57,27 @@ export function register(context: ExtensionContext) {
     workspace.registerFileSystemProvider(scheme, new DummyFs(), {
       isReadonly: true,
     }),
+
+    languages.registerDocumentSymbolProvider(
+      [{ language: RIPGREP_LANGID }],
+      new (class implements DocumentSymbolProvider {
+        provideDocumentSymbols(document: TextDocument): DocumentSymbol[] {
+          const line0 = document.lineAt(0);
+          const fullRange = new Range(
+            line0.range.start,
+            document.lineAt(document.lineCount - 1).range.end,
+          );
+          return [
+            new DocumentSymbol(
+              "rg (Leaderkey) | C-{l,r} → change dir | C-{j,k,d,u} → move selection | M-c (case) | M-w (word) | M-r (regex)",
+              "",
+              SymbolKind.Property,
+              fullRange,
+              line0.range,
+            ),
+          ];
+        }
+      })(),
+    ),
   );
 }

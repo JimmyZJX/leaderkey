@@ -16,7 +16,7 @@ import { getNumTotal } from "../common/renderRange";
 import { eagerDebouncer } from "../common/throttle";
 import { scheme } from "./dummyFs";
 
-const RIPGREP_LANGID = "leaderkey-ripgrep-panel";
+export const RIPGREP_LANGID = "leaderkey-ripgrep-panel";
 
 interface EditorGroupSubLayout {
   groups?: EditorGroupSubLayout[];
