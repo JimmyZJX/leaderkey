@@ -150,33 +150,31 @@ const RipGrepKeys: { [key: string]: Bindings | Command } = {
     name: "Search current dir (rg)",
     command: "leaderkey.ripgrep",
     args: {
-      query: "selection-only",
-      dir: "current",
+      query: { type: "selection-only" },
+      dir: { type: "current" },
     },
   },
   D: {
     name: "Search current dir (rg)",
     command: "leaderkey.ripgrep",
     args: {
-      query: "expand",
-      dir: "current",
+      query: { type: "expand" },
+      dir: { type: "current" },
     },
   },
   f: {
     name: "Search selected dir (rg)",
     command: "leaderkey.ripgrep",
     args: {
-      query: "selection-only",
-      dir: "current",
+      query: { type: "selection-only" },
       selectDir: true,
     },
   },
   F: {
-    name: "Search current dir (rg)",
+    name: "Search selected dir (rg)",
     command: "leaderkey.ripgrep",
     args: {
-      query: "selection-only",
-      dir: "current",
+      query: { type: "expand" },
       selectDir: true,
     },
   },
@@ -185,16 +183,16 @@ const RipGrepKeys: { [key: string]: Bindings | Command } = {
     name: "Search workspace (rg)",
     command: "leaderkey.ripgrep",
     args: {
-      query: "selection-only",
-      dir: "workspace",
+      query: { type: "selection-only" },
+      dir: { type: "workspace" },
     },
   },
   P: {
     name: "Search workspace (rg)",
     command: "leaderkey.ripgrep",
     args: {
-      query: "expand",
-      dir: "workspace",
+      query: { type: "expand" },
+      dir: { type: "workspace" },
     },
   },
 };

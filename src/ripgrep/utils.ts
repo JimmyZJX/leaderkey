@@ -1,21 +1,31 @@
 import { Range, TextEditor } from "vscode";
 
-export function getCurrentSelectionFromDoc(
+export type GetQueryFromSelectionOptions =
+  | { type: "selection-only" }
+  | { type: "expand" }
+  | { type: "raw"; query: string };
+
+export function getQueryFromSelection(
   reqSrcEditor: TextEditor,
-  mode: "expand" | "selection-only",
+  mode: GetQueryFromSelectionOptions,
   regex: "regex" | "plain",
 ) {
-  const reqDoc = reqSrcEditor.document;
-  const sel = reqSrcEditor.selection;
-  let initQuery = reqDoc.getText(new Range(sel.start, sel.end));
-  if (initQuery === "" && mode === "expand") {
-    const range = reqDoc.getWordRangeAtPosition(sel.start);
-    if (range !== undefined) {
-      initQuery = reqDoc.getText(range);
+  let query: string;
+  if (mode.type === "raw") {
+    query = mode.query;
+  } else {
+    const reqDoc = reqSrcEditor.document;
+    const sel = reqSrcEditor.selection;
+    query = reqDoc.getText(new Range(sel.start, sel.end));
+    if (query === "" && mode.type === "expand") {
+      const range = reqDoc.getWordRangeAtPosition(sel.start);
+      if (range !== undefined) {
+        query = reqDoc.getText(range);
+      }
     }
   }
   if (regex === "regex") {
-    initQuery = initQuery.replaceAll(/[\/\\^$+?.()\|\*[\]{}]/g, "\\$&");
+    query = query.replaceAll(/[\/\\^$+?.()\|\*[\]{}]/g, "\\$&");
   }
-  return initQuery;
+  return query;
 }

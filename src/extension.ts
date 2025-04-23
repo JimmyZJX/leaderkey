@@ -19,6 +19,7 @@ import {
   scheme as ripgrepFsScheme,
 } from "./ripgrep/dummyFs";
 import { createRgPanel, CreateRgPanelOptions, RgPanel } from "./ripgrep/rgPanel";
+import { getQueryFromSelection } from "./ripgrep/utils";
 
 class PanelManager {
   currentPanel:
@@ -89,16 +90,26 @@ class PanelManager {
       }),
       commands.registerCommand(
         "leaderkey.ripgrep",
-        async (mode: (CreateRgPanelOptions & { selectDir?: boolean }) | undefined) => {
+        async (mode?: (CreateRgPanelOptions & { selectDir?: boolean }) | undefined) => {
+          mode = structuredClone(mode ?? {});
           if (mode?.selectDir) {
+            let query: string | undefined = undefined;
+            if (window.activeTextEditor) {
+              query = getQueryFromSelection(
+                window.activeTextEditor,
+                mode.query ?? { type: "selection-only" },
+                "regex",
+              );
+              mode.query = { type: "raw", query };
+            }
             const dir = await this.findFile({
-              title: "Select dir to ripgrep from...",
+              title: "Select dir to rg" + (query ? ` [${query}]` : ""),
               dirOnly: true,
               returnOnly: true,
             });
             if (dir === undefined) return;
             mode ??= {};
-            mode.dir = dir;
+            mode.dir = { type: "path", path: dir };
           }
           const rgPanel = await createRgPanel(mode, () => this.resetCurrent());
           this.currentPanel = { type: "ripgrep", panel: rgPanel };

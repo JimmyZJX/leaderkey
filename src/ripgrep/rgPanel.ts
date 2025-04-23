@@ -29,7 +29,7 @@ import {
   RipgrepStatusUpdate,
 } from "./rg";
 import { RgEditor } from "./rgEditor";
-import { getCurrentSelectionFromDoc } from "./utils";
+import { getQueryFromSelection, GetQueryFromSelectionOptions } from "./utils";
 
 type RgMatchState = {
   matches: GrepLine[];
@@ -396,8 +396,8 @@ export class RgPanel {
 }
 
 export type CreateRgPanelOptions = {
-  query?: "selection-only" | "expand";
-  dir?: "current" | "workspace" | string;
+  query?: GetQueryFromSelectionOptions;
+  dir?: { type: "current" } | { type: "workspace" } | { type: "path"; path: string };
   resume?: true;
 };
 
@@ -415,14 +415,14 @@ export async function createRgPanel(
   if (mode?.resume && lastRgQuery) {
     rgQuery = structuredClone(lastRgQuery);
   } else {
-    const queryMode = mode?.query ?? "selection-only";
-    const dirMode = mode?.dir ?? "current";
+    const queryMode = mode?.query ?? { type: "selection-only" };
+    const dirMode = mode?.dir ?? { type: "current" };
 
     let dir: string[];
     // TODO synchronously show and then set dir
-    if (dirMode === "current") {
+    if (dirMode.type === "current") {
       dir = [await pickPathFromUri(editor.document.uri, "dirname")];
-    } else if (dirMode === "workspace") {
+    } else if (dirMode.type === "workspace") {
       dir = (workspace.workspaceFolders ?? []).flatMap((folder) => {
         const uri = folder.uri;
         if (["file", "vscode-remote"].includes(uri.scheme)) {
@@ -431,13 +431,13 @@ export async function createRgPanel(
         return [];
       });
       if (dir.length === 0) dir = [ENV_HOME];
-    } else if (dirMode.startsWith("/")) {
-      dir = [dirMode];
+    } else if (dirMode.type === "path" && dirMode.path.startsWith("/")) {
+      dir = [dirMode.path];
     } else {
       dir = [ENV_HOME];
     }
 
-    const query = getCurrentSelectionFromDoc(editor, queryMode, "regex");
+    const query = getQueryFromSelection(editor, queryMode, "regex");
 
     rgQuery = {
       dir,

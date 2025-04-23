@@ -20,7 +20,7 @@ function stripSlash(basename: string) {
   return basename.replace(RE_TRAILING_SLASH, "");
 }
 
-async function ls(dir: string) {
+async function ls(dir: string, dirOnly: boolean) {
   // a: all, p: append slash, H: follow link for input
   const result = await runProcess("/bin/ls", ["-apH", "--file-type", dir]);
   if (result.error) {
@@ -43,6 +43,7 @@ async function ls(dir: string) {
           files.push(e.replace(/[=>|*]$/, ""));
       }
     }
+    if (dirOnly) return dirs;
     return [...dirs, ...files];
   }
 }
@@ -75,6 +76,12 @@ export type FindFileOptions = {
   returnOnly?: boolean;
 };
 
+type TabCompletionAction =
+  | { type: "selection"; value: string }
+  | { type: "input" }
+  | { type: "edit"; edit: () => void }
+  | { type: "none" };
+
 export class FindFilePanel {
   disposableDecos: TextEditorDecorationType[] = [];
 
@@ -102,11 +109,10 @@ export class FindFilePanel {
     this.isQuit = false;
     this.editor = new SingleLineEditor("");
     this.dirOnly = options.dirOnly ?? false;
-    // TODO dirOnly mode
     this.returnOnly = options.returnOnly ?? false;
     this.title = options.title ?? "Find File";
-    this.setDir(options.init ?? ENV_HOME);
     this.isSelectionManuallyChanged = false;
+    this.setDir(options.init ?? ENV_HOME);
   }
 
   setDir(dir: string) {
@@ -114,7 +120,8 @@ export class FindFilePanel {
     this.editor.reset("");
     this.lastSelection = { type: "none" };
     this.isSelectionManuallyChanged = false;
-    const promise = ls(dir);
+    this.lastKey = undefined;
+    const promise = ls(dir, this.dirOnly);
     this.files = undefined;
     this.filesPromise = promise;
     promise.then((files) => {
@@ -126,6 +133,47 @@ export class FindFilePanel {
   }
 
   lastKey: string | undefined;
+
+  private tabCompletion(last: string | undefined): TabCompletionAction {
+    if (this.lastSelection.type === "file") {
+      const file = this.lastSelection.file;
+      if (last === "TAB" || this.isSelectionManuallyChanged) {
+        return file !== "./" ? { type: "selection", value: file } : { type: "none" };
+      }
+      if (this.lastFzfResults.length === 1 && file.endsWith("/")) {
+        // the only result is a directory
+        return { type: "selection", value: file };
+      }
+      if (this.lastFzfResults.length > 0) {
+        // extend text to the common prefix starting from end of last match
+        assert(this.lastFzfResults.length > 0);
+        const subStrs = this.lastFzfResults.map((r) => ({
+          item: r.item,
+          subStr: r.item.slice(Math.max(...r.positions) + 1),
+        }));
+        const common = commonPrefix(subStrs.map(({ subStr }) => subStr));
+        if ((common === "" || common === "/") && this.lastFzfResults.length === 1) {
+          // only one candidate and text matches to the end
+          return { type: "selection", value: file };
+        } else {
+          const toAppend = stripSlash(common);
+          return {
+            type: "edit",
+            edit: () => {
+              this.editor.edit((lr) => {
+                lr.l = lr.l + lr.r + toAppend;
+                lr.r = "";
+              });
+            },
+          };
+        }
+      }
+    }
+    if (this.lastSelection.type === "input") {
+      return { type: "input" };
+    }
+    return { type: "none" };
+  }
 
   private async open(basename: string, mode?: "forceCreate" | "ret") {
     if (mode === undefined && basename.endsWith("/")) {
@@ -206,33 +254,21 @@ export class FindFilePanel {
     RET: async () => this.keyActionRET(),
     "C-l": async () => this.keyActionRET(),
     TAB: async (last) => {
-      // TODO immediately select if selection has changed?
-      if (this.lastSelection.type === "file") {
-        const file = this.lastSelection.file;
-        if (last === "TAB") {
-          if (file !== "./") {
-            await this.open(file);
-          }
-        } else if (this.lastFzfResults.length === 1 && file.endsWith("/")) {
-          // the only result is a directory
-          await this.open(file);
-        } else if (this.lastFzfResults.length > 0) {
-          // extend text to the common prefix starting from end of last match
-          assert(this.lastFzfResults.length > 0);
-          const subStrs = this.lastFzfResults.map((r) => ({
-            item: r.item,
-            subStr: r.item.slice(Math.max(...r.positions) + 1),
-          }));
-          const common = commonPrefix(subStrs.map(({ subStr }) => subStr));
-          if ((common === "" || common === "/") && this.lastFzfResults.length === 1) {
-            // only one candidate and text matches to the end
-            await this.open(file);
-          } else {
-            this.editor.insert(stripSlash(common));
-          }
-        }
-      } else if (this.lastSelection.type === "input") {
-        await this.open(this.editor.value());
+      const r = this.tabCompletion(last);
+      switch (r.type) {
+        case "edit":
+          r.edit();
+          break;
+        case "selection":
+          await this.open(r.value);
+          break;
+        case "input":
+          await this.open(this.editor.value());
+          break;
+        case "none":
+          break;
+        default:
+          const _: never = r;
       }
     },
     "C-j": () => this.moveSelection(1),
@@ -358,16 +394,30 @@ export class FindFilePanel {
           (this.editor.value().slice(1, -1).includes("/") ? "dir and " : "") +
           "file)"
         : "";
-    const inputDeco = this.editor.render({
-      char: this.dir.length,
-      line: 1,
-      postfix: inputPostfix,
-    });
+
+    const tabCompletion = this.tabCompletion(this.lastKey);
+    const tabCompletionIndicator =
+      tabCompletion.type === "selection" ? `→ ${tabCompletion.value}` : "";
+    const inputLen = this.editor.value().length;
+    const inputDecos: Decoration[] = [
+      ...this.editor.render({
+        char: this.dir.length,
+        line: 1,
+        postfix: inputPostfix,
+      }),
+      {
+        type: "text",
+        text: tabCompletionIndicator,
+        lineOffset: 1,
+        foreground: "dim",
+        charOffset: this.dir.length + inputLen + 2,
+      },
+    ];
 
     /* layout:
        -------- top border --------
        header
-       dir + input█
+       dir + input + tabCompletion preview
        selections
        ... (highlighted selection)
        bottom border
@@ -399,7 +449,7 @@ export class FindFilePanel {
       // dir
       { type: "text", foreground: "binding", text: this.dir, lineOffset: 1 },
       // input
-      ...inputDeco,
+      ...inputDecos,
       // selections
       { type: "text", foreground: "dir", text: fileListDirs, lineOffset: 2 },
       { type: "text", foreground: "command", text: fileListFiles, lineOffset: 2 },
