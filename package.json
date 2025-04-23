@@ -85,6 +85,11 @@
         "command": "leaderkey.ripgrep",
         "title": "Show ripgrep panel",
         "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.dired",
+        "title": "Show dired buffer",
+        "category": "Leaderkey"
       }
     ],
     "configuration": {

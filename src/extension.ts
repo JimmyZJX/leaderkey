@@ -7,8 +7,8 @@ import {
 } from "vscode";
 import { updateGlobalThemeType, updateStickyScrollConf } from "./common/decoration";
 import { init as initGlobal } from "./common/global";
-import { init as initRemote, pickPathFromUri } from "./common/remote";
-import { register as registerDired } from "./findFile/dired";
+import { ENV_HOME, init as initRemote, pickPathFromUri } from "./common/remote";
+import { register as registerDired, showDir } from "./findFile/dired";
 import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
@@ -77,6 +77,16 @@ class PanelManager {
         "leaderkey.findFile",
         async (options: FindFileOptions) => await this.findFile(options),
       ),
+      commands.registerCommand("leaderkey.dired", async () => {
+        const editor = window.activeTextEditor;
+        let dir: string;
+        if (editor) {
+          dir = await pickPathFromUri(editor.document.uri, "dirname");
+        } else {
+          dir = workspace.workspaceFolders?.[0]?.uri.fsPath ?? ENV_HOME;
+        }
+        await showDir(dir);
+      }),
       commands.registerCommand(
         "leaderkey.ripgrep",
         async (mode: (CreateRgPanelOptions & { selectDir?: boolean }) | undefined) => {

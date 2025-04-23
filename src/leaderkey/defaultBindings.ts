@@ -702,6 +702,10 @@ const SpaceRoot: Bindings = {
           name: "Open file/folder (find-file)",
           command: "leaderkey.findFile",
         },
+        j: {
+          name: "Jump to dired",
+          command: "leaderkey.dired",
+        },
         l: {
           name: "Change file language",
           command: "workbench.action.editor.changeLanguageMode",
