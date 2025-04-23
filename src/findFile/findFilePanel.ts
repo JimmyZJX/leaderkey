@@ -179,7 +179,6 @@ export class FindFilePanel {
     if (mode === undefined && basename.endsWith("/")) {
       this.setDir(this.dir + basename);
     } else {
-      // TODO return value to promise
       const path = normalize(this.dir + basename);
       if (path.endsWith("/")) {
         await this.quit(path);
@@ -200,8 +199,6 @@ export class FindFilePanel {
       }
     }
   }
-
-  // TODO left/right arrow
 
   private async keyActionRET() {
     switch (this.lastSelection.type) {
