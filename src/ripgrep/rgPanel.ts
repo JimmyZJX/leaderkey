@@ -51,6 +51,7 @@ const PAD_INDICATOR_COUNT = 5;
 const INPUT_DEBOUNCE_TIMEOUT = 200;
 
 const MAX_NUM_MATCHES = 99999;
+const MAX_RENDER_LEN = 400;
 
 function spcs(len: number) {
   return " ".repeat(len);
@@ -247,12 +248,15 @@ export class RgPanel {
     const matchText = matches
       .slice(renderedLines.start, renderedLines.start + renderedLines.len)
       .map((grepLine) => {
-        const normalChars = [...grepLine.line];
-        let highlightChars = Array(grepLine.line.length).fill(" ");
+        const line = grepLine.line.slice(0, MAX_RENDER_LEN);
+        const normalChars = [...line];
+        let highlightChars = Array(line.length).fill(" ");
         for (const { start, end } of grepLine.match) {
           for (let i = start; i < end; i++) {
-            highlightChars[i] = normalChars[i];
-            normalChars[i] = " ";
+            if (i < line.length) {
+              highlightChars[i] = normalChars[i];
+              normalChars[i] = " ";
+            }
           }
         }
         const lineNormal = normalChars.join("");
