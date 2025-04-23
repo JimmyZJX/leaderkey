@@ -21,6 +21,7 @@ import {
 } from "../common/renderRange";
 import { OneLineEditor } from "../common/singleLineEditor";
 import { eagerDebouncer } from "../common/throttle";
+import { panelManager } from "../extension";
 import {
   doQuery,
   GrepLine,
@@ -85,7 +86,7 @@ export class RgPanel {
   private onReset: () => void;
 
   constructor(query: RipGrepQuery, activeTextEditor: TextEditor, onReset: () => void) {
-    enableLeaderKeyAndDisableVim(":ripgrep");
+    RgPanel.enterContext();
     this.editor = new OneLineEditor(query.query);
     this.query = { ...query, dirHistory: [] };
     lastRgQuery = this.query;
@@ -94,6 +95,15 @@ export class RgPanel {
     this.rgEditor = new RgEditor(activeTextEditor, () => this.render());
     this.spawnDebouncer = eagerDebouncer(() => this.doSpawn(), INPUT_DEBOUNCE_TIMEOUT);
     this.spawn();
+  }
+
+  private static enterContext() {
+    enableLeaderKeyAndDisableVim(":ripgrep");
+  }
+
+  private clearDecos() {
+    for (const d of this.disposableDecos) d.dispose();
+    this.disposableDecos = [];
   }
 
   public async quit(mode: "interrupt" | "normal" | { file: string; lineNo: number }) {
@@ -107,10 +117,28 @@ export class RgPanel {
       await this.rgEditor?.enter(mode.file, mode.lineNo);
     }
     this.rgEditor = undefined;
-    for (const d of this.disposableDecos) d.dispose();
-    this.disposableDecos = [];
+    this.clearDecos();
     this.onReset();
     await disableLeaderKey();
+  }
+
+  async changeDirViaFindFile() {
+    this.clearDecos();
+    const dir = await panelManager.findFile({
+      init: this.query.cwd,
+      dirOnly: true,
+      returnOnly: true,
+    });
+    RgPanel.enterContext();
+    panelManager.setRgPanel(this);
+    if (dir === undefined) {
+      this.render();
+    } else {
+      this.query.dir = [dir];
+      this.query.cwd = dir;
+      this.query.dirHistory = [];
+      this.spawn();
+    }
   }
 
   public async onKey(key: string) {
@@ -152,6 +180,7 @@ export class RgPanel {
     "M-h": () => this.dirUp(),
     "C-l": () => this.dirDown(),
     "M-l": () => this.dirDown(),
+    "C-.": async () => await this.changeDirViaFindFile(),
     "M-r": async () => {
       this.query.regex = this.query.regex === "on" ? "off" : "on";
       this.spawn();

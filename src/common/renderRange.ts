@@ -1,4 +1,5 @@
 import { Range, TextEditor } from "vscode";
+import { scheme as rgScheme } from "../ripgrep/dummyFs";
 import { stickyScrollMaxRows } from "./decoration";
 
 export function getRenderRangeFromTop(
@@ -6,14 +7,19 @@ export function getRenderRangeFromTop(
   totalLines: number,
   mode?: "ignore-sticky-scroll",
 ) {
-  const visibleRange = editor.visibleRanges[0];
-  const toSkip = mode === "ignore-sticky-scroll" ? 0 : stickyScrollMaxRows;
-  let lnHeader =
-    visibleRange.start.line +
-    Math.min(toSkip, (visibleRange.end.line - visibleRange.start.line) >> 1);
   const doc = editor.document;
   const docLines = doc.lineCount;
+  let lnHeader: number;
 
+  if (doc.uri.scheme === rgScheme) {
+    lnHeader = 0;
+  } else {
+    const visibleRange = editor.visibleRanges[0];
+    const toSkip = mode === "ignore-sticky-scroll" ? 0 : stickyScrollMaxRows;
+    lnHeader =
+      visibleRange.start.line +
+      Math.min(toSkip, (visibleRange.end.line - visibleRange.start.line) >> 1);
+  }
   // header should be at least on the 2nd last line
   lnHeader = Math.max(0, Math.min(docLines - 2, lnHeader));
 

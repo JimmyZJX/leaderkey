@@ -539,8 +539,8 @@ export class FindFilePanel {
     this.isQuit = true;
     for (const dsp of this.disposableDecos) dsp.dispose();
     this.disposableDecos = [];
-    this.onQuit(path);
     await disableLeaderKey();
     await enableVim();
+    this.onQuit(path);
   }
 }

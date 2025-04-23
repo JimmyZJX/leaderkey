@@ -21,6 +21,8 @@ import {
 import { createRgPanel, CreateRgPanelOptions, RgPanel } from "./ripgrep/rgPanel";
 import { getQueryFromSelection } from "./ripgrep/utils";
 
+type RipGrepCreateOption = CreateRgPanelOptions & { selectDir?: boolean };
+
 class PanelManager {
   currentPanel:
     | { type: "leaderkey" }
@@ -63,6 +65,35 @@ class PanelManager {
     });
   }
 
+  async ripgrep(mode?: RipGrepCreateOption) {
+    mode = structuredClone(mode ?? {});
+    if (mode?.selectDir) {
+      let query: string | undefined = undefined;
+      if (window.activeTextEditor) {
+        query = getQueryFromSelection(
+          window.activeTextEditor,
+          mode.query ?? { type: "selection-only" },
+          "regex",
+        );
+        mode.query = { type: "raw", query };
+      }
+      const dir = await this.findFile({
+        title: "Select dir to rg" + (query ? ` [${query}]` : ""),
+        dirOnly: true,
+        returnOnly: true,
+      });
+      if (dir === undefined) return;
+      mode ??= {};
+      mode.dir = { type: "path", path: dir };
+    }
+    const rgPanel = await createRgPanel(mode, () => this.resetCurrent());
+    this.currentPanel = { type: "ripgrep", panel: rgPanel };
+  }
+
+  setRgPanel(panel: RgPanel) {
+    this.currentPanel = { type: "ripgrep", panel };
+  }
+
   async activate(context: ExtensionContext) {
     await this.leaderKeyPanel.activate(context);
     context.subscriptions.push(
@@ -88,36 +119,16 @@ class PanelManager {
         }
         await showDir(dir);
       }),
-      commands.registerCommand(
-        "leaderkey.ripgrep",
-        async (mode?: (CreateRgPanelOptions & { selectDir?: boolean }) | undefined) => {
-          mode = structuredClone(mode ?? {});
-          if (mode?.selectDir) {
-            let query: string | undefined = undefined;
-            if (window.activeTextEditor) {
-              query = getQueryFromSelection(
-                window.activeTextEditor,
-                mode.query ?? { type: "selection-only" },
-                "regex",
-              );
-              mode.query = { type: "raw", query };
-            }
-            const dir = await this.findFile({
-              title: "Select dir to rg" + (query ? ` [${query}]` : ""),
-              dirOnly: true,
-              returnOnly: true,
-            });
-            if (dir === undefined) return;
-            mode ??= {};
-            mode.dir = { type: "path", path: dir };
-          }
-          const rgPanel = await createRgPanel(mode, () => this.resetCurrent());
-          this.currentPanel = { type: "ripgrep", panel: rgPanel };
-        },
+      commands.registerCommand("leaderkey.ripgrep", (mode?: RipGrepCreateOption) =>
+        this.ripgrep(mode),
       ),
       commands.registerCommand(
         "leaderkey.onkey",
         async (keyOrObj: string | { key: string; when: string }) => {
+          if (keyOrObj === "ESC") {
+            this.forceReset();
+            return;
+          }
           if (this.currentPanel === undefined) {
             this.currentPanel = { type: "leaderkey" };
           }
@@ -163,6 +174,7 @@ class PanelManager {
     );
   }
 }
+export const panelManager = new PanelManager();
 
 export async function activate(context: ExtensionContext) {
   initGlobal();
@@ -170,7 +182,6 @@ export async function activate(context: ExtensionContext) {
   registerDired(context);
   registerRipgrepFs(context);
 
-  const panelManager = new PanelManager();
   await panelManager.activate(context);
 
   context.subscriptions.push(

@@ -38,24 +38,6 @@ function patch(packageJson: any) {
       command: "leaderkey.onkey",
       args: { key: "f", when: "explorerVisible" },
     },
-    {
-      // `ESC`
-      key: "escape",
-      when: "leaderkeyState",
-      command: "runCommands",
-      args: {
-        commands: [
-          {
-            command: "_setContext",
-            args: ["leaderkeyState", ""],
-          },
-          {
-            command: "leaderkey.render",
-            args: "",
-          },
-        ],
-      },
-    },
     // space keys to trigger the leaderkey panel outside the editor
     {
       key: "space",
