@@ -17,8 +17,6 @@ function ppWinPaths(args: string[]) {
   return args.map(ppWinPath);
 }
 
-// TODO determine platform first
-
 const RE_WINDOWS_NATIVE_PATH = /^(?<drive>[A-Z]):\\(?<rest>.+)$/;
 export function normalizePath(path: string) {
   const m = RE_WINDOWS_NATIVE_PATH.exec(path);
@@ -28,6 +26,27 @@ export function normalizePath(path: string) {
     );
   }
   return path.replaceAll("\\", "/");
+}
+
+export async function readDirFilesAndDirs(
+  path: string,
+): Promise<{ files: string[]; dirs: string[] }> {
+  return await commands.executeCommand(
+    "remote-commons.fs.readDirFilesAndDirs",
+    ppWinPath(path),
+  );
+}
+
+export async function createFile(
+  path: string,
+): Promise<{ files: string[]; dirs: string[] }> {
+  return await commands.executeCommand("remote-commons.fs.createFile", ppWinPath(path));
+}
+
+export async function fileExists(
+  path: string,
+): Promise<{ files: string[]; dirs: string[] }> {
+  return await commands.executeCommand("remote-commons.fs.fileExists", ppWinPath(path));
 }
 
 export type ProcessRunResult = {
@@ -164,16 +183,29 @@ export async function openFile(file: string, options?: TextDocumentShowOptions) 
   await commands.executeCommand("remote-commons.openFile", file, options);
 }
 
+let platform: string | undefined = undefined;
 export let ENV_HOME = "/";
 
 export async function init() {
-  const result: ProcessRunResult = await runProcess("/bin/bash", ["-c", "echo ~"]);
+  platform = await commands.executeCommand("remote-commons.platform");
+  log(`Remote platform = [${platform}]`);
+
+  let result: ProcessRunResult;
+  if (isWin()) {
+    result = await runProcess("cmd", ["echo %USERPROFILE%"]);
+  } else {
+    result = await runProcess("/bin/bash", ["-c", "echo ~"]);
+  }
   if (result.error) {
-    window.showErrorMessage(`Failed to run bash? ${JSON.stringify(result)}`);
+    window.showErrorMessage(`Failed to run bash/cmd? ${JSON.stringify(result)}`);
   } else {
     ENV_HOME = result.stdout.trim();
-    log(`Got ENV_HOME=${ENV_HOME}`);
+    log(`Got home directory = [${ENV_HOME}]`);
   }
+}
+
+export function isWin() {
+  return platform?.startsWith("win");
 }
 
 const COMMON_PATH_PREFIX = ["/tmp/", "/home/", "/usr/local/home/"];
@@ -205,11 +237,8 @@ export async function pickPathFromUri(uri: Uri, mode?: "dirname") {
   } else if (uri.path === "/" || !uri.path.startsWith("/")) {
     return defaultPath();
   } else {
-    const r = await runProcess("/bin/realpath", ["--no-symlinks", uri.path]);
-    if (!r.error) {
-      return modeOf(r.stdout.trimEnd());
-    } else {
-      log(`realpath failed: ${JSON.stringify(r)}`);
+    if (await fileExists(uri.path)) {
+      return modeOf(uri.path);
     }
     return defaultPath();
   }

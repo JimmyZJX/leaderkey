@@ -17,16 +17,35 @@ import {
   window,
   workspace,
 } from "vscode";
-import { runAndParseAnsi } from "../common/ansi";
+import { DecoratedPage, runAndParseAnsi } from "../common/ansi";
 import { assert } from "../common/global";
-import { openFile } from "../common/remote";
+import { isWin, openFile, readDirFilesAndDirs } from "../common/remote";
 
 export const scheme = "leaderkey.dired";
 export const language = "leaderkey-dired";
 
 const RE_DIRED_FOOTER = /\/\/DIRED\/\/(?<dired>[0-9 ]+)\n\/\/DIRED-OPTIONS\/\/.+\n$/;
 
-async function loadContent(uri: Uri) {
+const DIRECTORY_HIGHLIGHT_ANSI = "\x1b[38;5;45m";
+
+type DiredMetadata =
+  | { type: "linux"; data: number[] }
+  | { type: "win"; data: ("dir" | "file")[] };
+
+async function loadContent(uri: Uri): Promise<DecoratedPage<DiredMetadata>> {
+  if (isWin()) {
+    const { dirs, files } = await readDirFilesAndDirs(uri.path);
+    return {
+      text: [...dirs.map((d) => `${DIRECTORY_HIGHLIGHT_ANSI}${d}\x1b[0m`), ...files].join(
+        "\n",
+      ),
+      decorations: [],
+      metadata: {
+        type: "win",
+        data: [...dirs.map<"dir">((_) => "dir"), ...files.map<"file">((_) => "file")],
+      },
+    };
+  }
   return await runAndParseAnsi(
     "/bin/ls",
     // l: long details, A: all but . and .., h: human readable, H: follow link for input
@@ -58,8 +77,14 @@ async function loadContent(uri: Uri) {
         const indexOffset = newHeaderLength - firstNewLine;
 
         // tweak color: remove background on public dir (and change foreground to normal dir)
-        text = text.replaceAll("\x1b[48;5;10;38;5;21m", "\x1b[0m\x1b[38;5;45m");
-        return { text, metadata: indices.map((i) => i + indexOffset) };
+        text = text.replaceAll(
+          "\x1b[48;5;10;38;5;21m",
+          "\x1b[0m" + DIRECTORY_HIGHLIGHT_ANSI,
+        );
+        return {
+          text,
+          metadata: { type: "linux", data: indices.map((i) => i + indexOffset) },
+        };
       },
     },
   );
@@ -83,7 +108,7 @@ export async function showDir(path: string) {
 // TODO init here and mock for jest
 let onDidChangeEmitter: EventEmitter<Uri>;
 const contentCache: { [uri: string]: string } = {};
-const metadataCache: { [uri: string]: number[] } = {};
+const metadataCache: { [uri: string]: DiredMetadata } = {};
 const decorationCache: { [uri: string]: [TextEditorDecorationType, Range[]][] } = {};
 const oldDecorations: { [uri: string]: TextEditorDecorationType[] } = {};
 
@@ -171,34 +196,53 @@ export const keys: { [key: string]: Command } = {
     name: "enter",
     f: withEditor(async (editor) => {
       const doc = editor.document;
-      const indices = metadataCache[doc.uri.toString()];
+      const metadata = metadataCache[doc.uri.toString()];
       const activeLineNo = editor.selection.active.line;
       const activeLine = doc.lineAt(activeLineNo);
-      if (activeLineNo <= 0 || activeLine.range.isEmpty || !indices) {
+
+      if (activeLineNo <= 0 || activeLine.range.isEmpty || !metadata) {
         window.showErrorMessage("No file/dir on this line");
         return;
       }
       const i = activeLineNo - 1;
-      assert(
-        i * 2 + 1 < indices.length,
-        `index out of bound (i=${i}, len=${indices.length})`,
-      );
-      const from = doc.positionAt(indices[i * 2]),
-        to = doc.positionAt(indices[i * 2 + 1]);
-      const basename = doc.getText(new Range(from, to));
-      const fullPath = join(doc.uri.path, basename);
-      const type_ = activeLine.text[2];
-      switch (type_) {
-        case "-":
-          // file
-          await openFile(fullPath, { preview: false });
-          break;
-        case "l":
-        case "d": // dir
-          await showDir(normalize(fullPath));
-          break;
-        default:
-          window.showErrorMessage(`Unknown header [${type_}]`);
+
+      if (metadata.type === "win") {
+        const basename = activeLine.text;
+        const fullPath = join(doc.uri.path, basename);
+        const type_ = metadata.data[i];
+        switch (type_) {
+          case "file":
+            await openFile(fullPath, { preview: false });
+            break;
+          case "dir":
+            await showDir(normalize(fullPath));
+            break;
+          default:
+            window.showErrorMessage(`Unknown header [${type_}]`);
+        }
+      } else {
+        const indices = metadata.data;
+        assert(
+          i * 2 + 1 < indices.length,
+          `index out of bound (i=${i}, len=${indices.length})`,
+        );
+        const from = doc.positionAt(indices[i * 2]),
+          to = doc.positionAt(indices[i * 2 + 1]);
+        const basename = doc.getText(new Range(from, to));
+        const fullPath = join(doc.uri.path, basename);
+        const type_ = activeLine.text[2];
+        switch (type_) {
+          case "-":
+            // file
+            await openFile(fullPath, { preview: false });
+            break;
+          case "l":
+          case "d": // dir
+            await showDir(normalize(fullPath));
+            break;
+          default:
+            window.showErrorMessage(`Unknown header [${type_}]`);
+        }
       }
     }),
   },

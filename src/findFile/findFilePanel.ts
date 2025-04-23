@@ -9,7 +9,7 @@ import {
 } from "../common/context";
 import { Decoration, renderDecorations } from "../common/decoration";
 import { assert, commonPrefix, log } from "../common/global";
-import { ENV_HOME, openFile, runProcess } from "../common/remote";
+import { createFile, ENV_HOME, openFile, readDirFilesAndDirs } from "../common/remote";
 import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
 import { OneLineEditor as SingleLineEditor } from "../common/singleLineEditor";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
@@ -21,31 +21,11 @@ function stripSlash(basename: string) {
 }
 
 async function ls(dir: string, dirOnly: boolean) {
-  // a: all, p: append slash, H: follow link for input
-  const result = await runProcess("/bin/ls", ["-apH", "--file-type", dir]);
-  if (result.error) {
-    window.showErrorMessage(`Failed to ls: ${JSON.stringify(result)}`);
-    // TODO consider quit?
-    return [];
-  } else {
-    const all = result.stdout.trim().split("\n");
-    const dirs: string[] = [],
-      files: string[] = [];
-    for (const e of all) {
-      switch (e.at(-1)) {
-        case "@":
-          dirs.push(e.slice(0, -1) + "/");
-          break;
-        case "/":
-          dirs.push(e);
-          break;
-        default:
-          files.push(e.replace(/[=>|*]$/, ""));
-      }
-    }
-    if (dirOnly) return dirs;
-    return [...dirs, ...files];
-  }
+  let { files, dirs } = await readDirFilesAndDirs(dir);
+  const dotAndDotDot = ["./", ...(dir.length > 1 ? ["../"] : [])];
+  dirs = [...dotAndDotDot, ...dirs.map((dir) => dir + "/")];
+  if (dirOnly) return dirs;
+  return [...dirs, ...files];
 }
 
 function dummyFzfResultItem(item: string): FzfResultItem {
@@ -185,13 +165,7 @@ export class FindFilePanel {
         if (!this.returnOnly) await showDir(path);
       } else {
         if (mode === "forceCreate") {
-          await Promise.allSettled([
-            (async () => {
-              await runProcess("/bin/mkdir", ["-p", dirname(path)]);
-              await runProcess("/bin/touch", ["-a", path]);
-            })(),
-            this.quit(path),
-          ]);
+          await Promise.allSettled([createFile(path), this.quit(path)]);
         } else {
           await this.quit(path);
         }
