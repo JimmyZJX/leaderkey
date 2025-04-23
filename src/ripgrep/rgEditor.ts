@@ -148,6 +148,8 @@ async function vimEsc(goToLine?: number) {
   } catch {}
 }
 
+const PREVIEW_DEBOUNCE_TIMEOUT = 300;
+
 export class RgEditor {
   // undefined when being initialized
   private rgPanelEditor: TextEditor | undefined;
@@ -171,7 +173,10 @@ export class RgEditor {
       onInit();
     });
 
-    this.previewDebouncer = eagerDebouncer(async () => await this.doPreview(), 100);
+    this.previewDebouncer = eagerDebouncer(
+      async () => await this.doPreview(),
+      PREVIEW_DEBOUNCE_TIMEOUT,
+    );
   }
 
   public getEditor() {
