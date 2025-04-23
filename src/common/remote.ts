@@ -183,10 +183,79 @@ export async function openFile(file: string, options?: TextDocumentShowOptions) 
   await commands.executeCommand("remote-commons.openFile", file, options);
 }
 
+async function checkRemoteCommonsVersion(
+  workspaceExtensions: { id: string; version: string }[],
+) {
+  const extension = workspaceExtensions.find(
+    ({ id }) => id.toLowerCase() === REMOTE_COMMONS_EXTENSION_ID,
+  );
+  if (!extension) {
+    window.showErrorMessage("Unexpected error: Remote Commons extension not installed?");
+  } else {
+    log(`Remote Commons extension version = [${extension.version}]`);
+    const parsedVersion = extension.version.split(".");
+    if (parsedVersion.length < 2) {
+      window.showErrorMessage(
+        "Unexpected error: Remote Commons version not in expected format: " +
+          extension.version,
+      );
+    } else {
+      const major = Number.parseInt(parsedVersion[0]);
+      const minor = Number.parseInt(parsedVersion[1]);
+      if (
+        major < EXPECTED_VERSION.major ||
+        (major == EXPECTED_VERSION.major && minor < EXPECTED_VERSION.minor)
+      ) {
+        if (
+          (await window.showErrorMessage(
+            `Remote Commons extension version too old: expected ${EXPECTED_VERSION.major}.${EXPECTED_VERSION.minor}.*, got ${extension.version}`,
+            "Update",
+          )) === "Update"
+        )
+          await commands.executeCommand(
+            "workbench.extensions.search",
+            REMOTE_COMMONS_EXTENSION_ID,
+          );
+      } else if (major > EXPECTED_VERSION.major) {
+        window.showWarningMessage(
+          `Remote Commons extension version is higher than expected ${EXPECTED_VERSION.major}.${EXPECTED_VERSION.minor}.*, got ${extension.version}`,
+        );
+      }
+    }
+  }
+}
+
+const REMOTE_COMMONS_EXTENSION_ID = "jimmyzjx.remote-commons";
+const EXPECTED_VERSION = { major: 0, minor: 3 };
+
+let workspaceExtensions: { id: string; version: string }[] | undefined = undefined;
 let platform: string | undefined = undefined;
 export let ENV_HOME = "/";
 
 export async function init() {
+  try {
+    workspaceExtensions = await commands.executeCommand(
+      "remote-commons.extensions.getAll",
+    );
+  } catch (e) {
+    log(`Failed to get extensions: ${e}`);
+    if (
+      (await window.showErrorMessage(
+        "Remote Commons extension not installed. It is needed for rg and find-file to work",
+        "Install",
+      )) === "Install"
+    ) {
+      await commands.executeCommand(
+        "workbench.extensions.search",
+        REMOTE_COMMONS_EXTENSION_ID,
+      );
+    }
+  }
+
+  if (workspaceExtensions) {
+    checkRemoteCommonsVersion(workspaceExtensions);
+  }
+
   platform = await commands.executeCommand("remote-commons.platform");
   log(`Remote platform = [${platform}]`);
 

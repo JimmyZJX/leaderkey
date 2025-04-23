@@ -173,15 +173,6 @@ export async function activate(context: ExtensionContext) {
   const panelManager = new PanelManager();
   await panelManager.activate(context);
 
-  // check if remote-commons is registered
-  // TODO go to gallery page
-  // TODO check version
-  try {
-    await commands.executeCommand("remote-commons.ping");
-  } catch {
-    window.showErrorMessage("Remote Commons extension not registered :(");
-  }
-
   context.subscriptions.push(
     commands.registerCommand("leaderkey.migrateFromVSpaceCode", migrateFromVSpaceCode),
     commands.registerCommand("leaderkey.pushGotoStack", pushGotoStack),
