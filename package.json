@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "0.7.7",
+  "version": "1.0.0",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -1584,26 +1584,6 @@
         "args": {
           "key": "f",
           "when": "explorerVisible"
-        }
-      },
-      {
-        "key": "escape",
-        "when": "leaderkeyState",
-        "command": "runCommands",
-        "args": {
-          "commands": [
-            {
-              "command": "_setContext",
-              "args": [
-                "leaderkeyState",
-                ""
-              ]
-            },
-            {
-              "command": "leaderkey.render",
-              "args": ""
-            }
-          ]
         }
       },
       {

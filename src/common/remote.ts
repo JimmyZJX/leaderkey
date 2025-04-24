@@ -7,9 +7,13 @@ import { throttler } from "./throttle";
 
 const RE_WINDOWS_URL_PATH = /^\/(?<drive>[a-z]):\/(?<rest>.+)$/;
 function ppWinPath(arg: string) {
-  const m = RE_WINDOWS_URL_PATH.exec(arg);
-  if (m) {
-    return m.groups!.drive!.toUpperCase() + ":\\" + m.groups!.rest!.replaceAll("/", "\\");
+  if (isWin()) {
+    const m = RE_WINDOWS_URL_PATH.exec(arg);
+    if (m) {
+      return (
+        m.groups!.drive!.toUpperCase() + ":\\" + m.groups!.rest!.replaceAll("/", "\\")
+      );
+    }
   }
   return arg;
 }
@@ -19,11 +23,16 @@ function ppWinPaths(args: string[]) {
 
 const RE_WINDOWS_NATIVE_PATH = /^(?<drive>[A-Z]):\\(?<rest>.+)$/;
 export function normalizePath(path: string) {
-  const m = RE_WINDOWS_NATIVE_PATH.exec(path);
-  if (m) {
-    return (
-      "/" + m.groups!.drive!.toLowerCase() + ":/" + m.groups!.rest!.replaceAll("\\", "/")
-    );
+  if (isWin()) {
+    const m = RE_WINDOWS_NATIVE_PATH.exec(path);
+    if (m) {
+      return (
+        "/" +
+        m.groups!.drive!.toLowerCase() +
+        ":/" +
+        m.groups!.rest!.replaceAll("\\", "/")
+      );
+    }
   }
   return path.replaceAll("\\", "/");
 }
@@ -183,50 +192,60 @@ export async function openFile(file: string, options?: TextDocumentShowOptions) 
   await commands.executeCommand("remote-commons.openFile", file, options);
 }
 
-async function checkRemoteCommonsVersion(
+async function checkExtensionVersion(
   workspaceExtensions: { id: string; version: string }[],
+  target: { id: string; name: string; major: number; minor: number },
 ) {
+  const strExpectedVer = `${target.major}.${target.minor}.*`;
+  async function goToSearchView() {
+    await commands.executeCommand("workbench.extensions.search", target.id);
+  }
+
   const extension = workspaceExtensions.find(
-    ({ id }) => id.toLowerCase() === REMOTE_COMMONS_EXTENSION_ID,
+    ({ id }) => id.toLowerCase() === target.id.toLowerCase(),
   );
   if (!extension) {
-    window.showErrorMessage("Unexpected error: Remote Commons extension not installed?");
+    if (
+      (await window.showErrorMessage(
+        `"${target.name}" extension not installed`,
+        "Install",
+      )) === "Install"
+    )
+      await goToSearchView();
   } else {
-    log(`Remote Commons extension version = [${extension.version}]`);
+    log(`"${target.name}" version = [${extension.version}]`);
     const parsedVersion = extension.version.split(".");
     if (parsedVersion.length < 2) {
       window.showErrorMessage(
-        "Unexpected error: Remote Commons version not in expected format: " +
+        `Unexpected: version of "${target.name}" extension is not in expected format: ` +
           extension.version,
       );
     } else {
       const major = Number.parseInt(parsedVersion[0]);
       const minor = Number.parseInt(parsedVersion[1]);
-      if (
-        major < EXPECTED_VERSION.major ||
-        (major == EXPECTED_VERSION.major && minor < EXPECTED_VERSION.minor)
-      ) {
+      if (major < target.major || (major == target.major && minor < target.minor)) {
         if (
           (await window.showErrorMessage(
-            `Remote Commons extension version too old: expected ${EXPECTED_VERSION.major}.${EXPECTED_VERSION.minor}.*, got ${extension.version}`,
+            `"${target.name}" extension too old: expected ${strExpectedVer}, got ${extension.version}`,
             "Update",
           )) === "Update"
         )
-          await commands.executeCommand(
-            "workbench.extensions.search",
-            REMOTE_COMMONS_EXTENSION_ID,
-          );
-      } else if (major > EXPECTED_VERSION.major) {
-        window.showWarningMessage(
-          `Remote Commons extension version is higher than expected ${EXPECTED_VERSION.major}.${EXPECTED_VERSION.minor}.*, got ${extension.version}`,
-        );
+          await goToSearchView();
+      } else if (major > target.major) {
+        if (
+          (await window.showWarningMessage(
+            `"${target.name}" extension is newer than expected ${strExpectedVer} (got ${extension.version}). There might be some breaking changes.`,
+            "Go to gallery",
+          )) === "Go to gallery"
+        )
+          await goToSearchView();
       }
     }
   }
 }
 
 const REMOTE_COMMONS_EXTENSION_ID = "jimmyzjx.remote-commons";
-const EXPECTED_VERSION = { major: 0, minor: 3 };
+const REMOTE_COMMONS_EXPECTED_VERSION = { major: 0, minor: 3 };
 
 let workspaceExtensions: { id: string; version: string }[] | undefined = undefined;
 let platform: string | undefined = undefined;
@@ -253,7 +272,11 @@ export async function init() {
   }
 
   if (workspaceExtensions) {
-    checkRemoteCommonsVersion(workspaceExtensions);
+    checkExtensionVersion(workspaceExtensions, {
+      id: REMOTE_COMMONS_EXTENSION_ID,
+      name: "Remote Commons",
+      ...REMOTE_COMMONS_EXPECTED_VERSION,
+    });
   }
 
   platform = await commands.executeCommand("remote-commons.platform");
