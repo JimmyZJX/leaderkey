@@ -13,7 +13,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { DecoratedPage, runAndParseAnsi } from "../common/ansi";
+import { DecoratedPage, parseAnsi, runAndParseAnsi } from "../common/ansi";
 import { assert } from "../common/global";
 import { isWin, openFile, readDirFilesAndDirs } from "../common/remote";
 
@@ -31,11 +31,12 @@ type DiredMetadata =
 async function loadContent(uri: Uri): Promise<DecoratedPage<DiredMetadata>> {
   if (isWin()) {
     const { dirs, files } = await readDirFilesAndDirs(uri.path);
+    const ansiText = [
+      ...dirs.map((d) => `${DIRECTORY_HIGHLIGHT_ANSI}${d}\x1b[0m`),
+      ...files,
+    ].join("\n");
     return {
-      text: [...dirs.map((d) => `${DIRECTORY_HIGHLIGHT_ANSI}${d}\x1b[0m`), ...files].join(
-        "\n",
-      ),
-      decorations: [],
+      ...parseAnsi(ansiText),
       metadata: {
         type: "win",
         data: [...dirs.map<"dir">((_) => "dir"), ...files.map<"file">((_) => "file")],
@@ -180,13 +181,13 @@ export const keys: { [key: string]: Command } = {
       const activeLineNo = editor.selection.active.line;
       const activeLine = doc.lineAt(activeLineNo);
 
-      if (activeLineNo <= 0 || activeLine.range.isEmpty || !metadata) {
+      if (activeLine.range.isEmpty || !metadata) {
         window.showErrorMessage("No file/dir on this line");
         return;
       }
-      const i = activeLineNo - 1;
 
       if (metadata.type === "win") {
+        const i = activeLineNo;
         const basename = activeLine.text;
         const fullPath = join(doc.uri.path, basename);
         const type_ = metadata.data[i];
@@ -201,6 +202,11 @@ export const keys: { [key: string]: Command } = {
             window.showErrorMessage(`Unknown header [${type_}]`);
         }
       } else {
+        const i = activeLineNo - 1;
+        if (i < 0) {
+          window.showErrorMessage("No file/dir on this line");
+          return;
+        }
         const indices = metadata.data;
         assert(
           i * 2 + 1 < indices.length,

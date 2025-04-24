@@ -124,7 +124,7 @@ export function ansiToRaw(ansi: string): string {
     .join("");
 }
 
-function parseAnsi(text: string): DecoratedPage<undefined> {
+export function parseAnsi(text: string): DecoratedPage<undefined> {
   const tokens = createAnsiSequenceParser().parse(text);
   const keyedDecorations: { [key: string]: Range[] } = {};
   // [Range, TextEditorDecorationType][] = [];
