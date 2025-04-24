@@ -250,7 +250,7 @@ async function checkExtensionVersion(
   }
 }
 
-const REMOTE_COMMONS_EXTENSION_ID = "jimmyzjx.remote-commons";
+const REMOTE_COMMONS_EXTENSION_ID = "JimmyZJX.remote-commons";
 const REMOTE_COMMONS_EXPECTED_VERSION = { major: 0, minor: 3 };
 
 let workspaceExtensions: { id: string; version: string }[] | undefined = undefined;
