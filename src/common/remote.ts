@@ -283,14 +283,14 @@ export async function init() {
 
   let result: ProcessRunResult;
   if (isWin()) {
-    result = await runProcess("cmd", ["echo %USERPROFILE%"]);
+    result = await runProcess("cmd", ["/c", "echo %USERPROFILE%"]);
   } else {
     result = await runProcess("/bin/bash", ["-c", "echo ~"]);
   }
   if (result.error) {
     window.showErrorMessage(`Failed to run bash/cmd? ${JSON.stringify(result)}`);
   } else {
-    ENV_HOME = result.stdout.trim();
+    ENV_HOME = normalizePath(result.stdout.trim());
     log(`Got home directory = [${ENV_HOME}]`);
   }
 }
