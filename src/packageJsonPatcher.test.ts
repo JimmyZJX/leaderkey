@@ -85,10 +85,10 @@ function patch(packageJson: any) {
 test("package.json", () => {
   const packageJsonRaw = readFileSync("package.json", { encoding: "utf-8" });
   const packageJson = JSON.parse(packageJsonRaw);
-  patch(packageJson);
-  const patched = JSON.stringify(packageJson, null, 2) + "\n";
+  const packageJsonPatched = structuredClone(packageJson);
+  patch(packageJsonPatched);
   try {
-    expect(patched).toEqual(packageJsonRaw);
+    expect(packageJson).toEqual(packageJsonPatched);
     try {
       // remove or clear contents on success
       unlinkSync("package.json.corrected");
@@ -96,6 +96,7 @@ test("package.json", () => {
       writeFileSync("package.json.corrected", "");
     }
   } catch (e) {
+    const patched = JSON.stringify(packageJson, null, 2) + "\n";
     writeFileSync("package.json.corrected", patched);
     throw e;
   }
