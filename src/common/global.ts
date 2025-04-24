@@ -1,7 +1,5 @@
 import { OutputChannel, StatusBarItem, ThemeColor, window } from "vscode";
 
-export const WHICHKEY_STATE = "leaderkeyState";
-
 let statusBar: StatusBarItem | undefined = undefined;
 let statusBarTimeout: NodeJS.Timeout | undefined = undefined;
 let outputChannel: OutputChannel | undefined = undefined;
@@ -40,4 +38,11 @@ export function assert(condition: any, msg?: string): asserts condition {
   if (!condition) {
     throw new Error("Assertion error: " + msg);
   }
+}
+
+export function commonPrefix(strs: string[]) {
+  if (!strs[0] || strs.length === 1) return strs[0] || "";
+  let i = 0;
+  while (strs[0][i] && strs.every((w) => w[i] === strs[0][i])) i++;
+  return strs[0].slice(0, i);
 }

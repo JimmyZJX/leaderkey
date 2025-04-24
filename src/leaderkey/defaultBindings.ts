@@ -1,4 +1,4 @@
-import { Bindings, normalize } from "./command";
+import { Bindings, Command, normalize } from "./command";
 
 const selectWindow0To8: Bindings["keys"] = {
   "0": {
@@ -134,6 +134,66 @@ const SpcWTransientKeysExcluding0To8: Bindings["keys"] = {
     name: "Quit",
     command: "leaderkey.render",
     args: "",
+  },
+};
+
+const RipGrepResume: Command = {
+  name: "Redo last search (rg)",
+  command: "leaderkey.ripgrep",
+  args: {
+    resume: true,
+  },
+};
+
+const RipGrepKeys: { [key: string]: Bindings | Command } = {
+  d: {
+    name: "Search current dir (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: { type: "selection-only" },
+      dir: { type: "current" },
+    },
+  },
+  D: {
+    name: "Search current dir (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: { type: "expand" },
+      dir: { type: "current" },
+    },
+  },
+  f: {
+    name: "Search selected dir (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: { type: "selection-only" },
+      selectDir: true,
+    },
+  },
+  F: {
+    name: "Search selected dir (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: { type: "expand" },
+      selectDir: true,
+    },
+  },
+  l: RipGrepResume,
+  p: {
+    name: "Search workspace (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: { type: "selection-only" },
+      dir: { type: "workspace" },
+    },
+  },
+  P: {
+    name: "Search workspace (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: { type: "expand" },
+      dir: { type: "workspace" },
+    },
   },
 };
 
@@ -637,8 +697,12 @@ const SpaceRoot: Bindings = {
       name: "+File",
       keys: {
         f: {
-          name: "Open file/folder",
-          command: "file-browser.open",
+          name: "Open file/folder (find-file)",
+          command: "leaderkey.findFile",
+        },
+        j: {
+          name: "Jump to dired",
+          command: "leaderkey.dired",
         },
         l: {
           name: "Change file language",
@@ -1039,6 +1103,7 @@ const SpaceRoot: Bindings = {
         //   command: "whichkey.repeatRecent",
         //   args: "vspacecode.bindings",
         // },
+        l: RipGrepResume,
         b: {
           name: "Recent buffers",
           command: "workbench.action.showAllEditorsByMostRecentlyUsed",
@@ -1052,6 +1117,11 @@ const SpaceRoot: Bindings = {
     s: {
       name: "+Search/Symbol",
       keys: {
+        ...RipGrepKeys,
+        r: {
+          name: "+RipGrep",
+          keys: RipGrepKeys,
+        },
         c: {
           name: "Clear highlight",
           command: "vim.remap",
@@ -1096,14 +1166,6 @@ const SpaceRoot: Bindings = {
           name: "Jump to symbol in buffer",
           command: "workbench.action.gotoSymbol",
         },
-        p: {
-          name: "Search in project",
-          command: "workbench.action.findInFiles",
-        },
-        r: {
-          name: "Search all references",
-          command: "editor.action.referenceSearch.trigger",
-        },
         s: {
           name: "Fuzzy search in current buffer",
           command: "fuzzySearch.activeTextEditorWithCurrentSelection",
@@ -1111,13 +1173,6 @@ const SpaceRoot: Bindings = {
         J: {
           name: "Jump to symbol in project",
           command: "workbench.action.showAllSymbols",
-        },
-        P: {
-          name: "Search in project with selection",
-          commands: [
-            "editor.action.addSelectionToNextFindMatch",
-            "workbench.action.findInFiles",
-          ],
         },
         R: {
           name: "Search all references in side bar",

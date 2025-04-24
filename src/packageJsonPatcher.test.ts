@@ -1,54 +1,30 @@
 import { readFileSync, unlinkSync, writeFileSync } from "fs";
-import { normalizeKey, unshiftChars } from "./leaderkey/command";
+import { keys as diredKeys, scheme as diredScheme } from "./findFile/dired";
+import { allVSCodeKeys, toEmacsKey, toEmacsKeyDesc } from "./leaderkey/key";
+
+const IN_DIRED_EDITOR_WHEN = `editorTextFocus && resourceScheme == '${diredScheme}' && !leaderkeyState && (!vim.active || vim.mode == 'Normal')`;
+const diredKeyBindings = Object.entries(diredKeys).map(([key, { name, f: _ }]) => ({
+  key,
+  when: IN_DIRED_EDITOR_WHEN,
+  command: `leaderkey.dired.${name}`,
+}));
+
+const vscodeModifiers = ["", "alt+", "ctrl+", "shift+"];
 
 function patch(packageJson: any) {
-  const ALL_KEY_CHARS = [
-    ...unshiftChars,
-    ..."abcdefghijklmnopqrstuvwxyz",
-    "tab",
-    "escape",
-    "enter",
-    "space",
-  ];
-
-  function toDesc(keyChar: string) {
-    return (
-      {
-        ["`"]: "backtick",
-        ["-"]: "dash",
-        ["="]: "equal",
-        [","]: "comma",
-        ["."]: "dot",
-        ["/"]: "slash",
-        ["["]: "openingbracket",
-        ["]"]: "closingbracket",
-        [";"]: "semicolon",
-        ["'"]: "singlequote",
-        ["\\"]: "forwardslash",
-      }[keyChar] ?? keyChar
-    );
-  }
-
   // patch all keys
-  const allKeyCharBindings = ALL_KEY_CHARS.flatMap((k) => [
-    {
-      key: k,
-      when: `leaderkeyState && !config.leaderkey.disabled.${toDesc(k)}`,
-      command: "leaderkey.onkey",
-      args: normalizeKey(k),
-    },
-    {
-      key: "ctrl+" + k,
-      when: `leaderkeyState && !config.leaderkey.disabled.C-${toDesc(k)}`,
-      command: "leaderkey.onkey",
-      args: normalizeKey("C-" + k),
-    },
-    {
-      key: "shift+" + k,
-      when: `leaderkeyState && !config.leaderkey.disabled.S-${toDesc(k)}`,
-      command: "leaderkey.onkey",
-      args: normalizeKey("S-" + k),
-    },
+  const allKeyCharBindings = allVSCodeKeys().flatMap((vscode) => [
+    ...vscodeModifiers.map((vscodeModifier) => {
+      const vscodeKey = vscodeModifier + vscode;
+      const emacsKey = toEmacsKey(vscodeKey);
+      const desc = toEmacsKeyDesc(emacsKey);
+      return {
+        key: vscodeKey,
+        when: `leaderkeyState && !config.leaderkey.disabled.${desc}`,
+        command: "leaderkey.onkey",
+        args: emacsKey,
+      };
+    }),
   ]);
 
   const COMMON_OUTSIDE_EDITOR_WHEN =
@@ -61,31 +37,6 @@ function patch(packageJson: any) {
       when: "leaderkeyState == 'SPC' && sideBarVisible && explorerViewletVisible",
       command: "leaderkey.onkey",
       args: { key: "f", when: "explorerVisible" },
-    },
-    {
-      // `ESC`
-      key: "escape",
-      when: "leaderkeyState",
-      command: "runCommands",
-      args: {
-        commands: [
-          {
-            command: "_setContext",
-            args: ["leaderkeyState", ""],
-          },
-          {
-            command: "leaderkey.render",
-            args: "",
-          },
-        ],
-      },
-    },
-    {
-      // `backspace`
-      key: "backspace",
-      when: "leaderkeyState",
-      command: "leaderkey.onkey",
-      args: "<back>",
     },
     // space keys to trigger the leaderkey panel outside the editor
     {
@@ -124,7 +75,11 @@ function patch(packageJson: any) {
     },
   ];
 
-  packageJson.contributes.keybindings = [...allKeyCharBindings, ...specialKeyBindings];
+  packageJson.contributes.keybindings = [
+    ...allKeyCharBindings,
+    ...specialKeyBindings,
+    ...diredKeyBindings,
+  ];
 }
 
 test("package.json", () => {

@@ -5,7 +5,8 @@ import {
   window,
   workspace,
 } from "vscode";
-import { log, setStatusBar, WHICHKEY_STATE } from "../global";
+import { enableLeaderKeyAndDisableVim } from "../common/context";
+import { log, setStatusBar } from "../common/global";
 import {
   Bindings,
   Command,
@@ -16,24 +17,30 @@ import {
   overrideExn,
   showAsQuickPickItems,
 } from "./command";
-import { renderBinding } from "./decoration";
 import { defaultBindings } from "./defaultBindings";
+import { renderBinding } from "./render";
 
+/** must be a global single instance */
 export class LeaderkeyPanel {
   root: Bindings;
   path: string;
   when: string | undefined;
-  stickyScrollMaxRows: number = 0;
   disposableDecos: TextEditorDecorationType[] = [];
 
-  constructor() {
+  onReset: () => void;
+
+  static isConstructed: boolean = false;
+
+  constructor(onReset: () => void) {
+    if (LeaderkeyPanel.isConstructed) throw new Error("LeaderkeyPanel is constructed");
+    LeaderkeyPanel.isConstructed = true;
+    this.onReset = onReset;
     this.root = structuredClone(defaultBindings);
     this.path = "";
     this.when = undefined;
   }
 
   public async activate(context: ExtensionContext) {
-    this.updateStickyScrollConf();
     this.confOverrideRefresh();
 
     context.subscriptions.push(
@@ -44,21 +51,9 @@ export class LeaderkeyPanel {
         if (event.affectsConfiguration("leaderkey")) {
           this.confOverrideRefresh();
         }
-        if (event.affectsConfiguration("editor.stickyScroll")) {
-          this.updateStickyScrollConf();
-        }
       }),
     );
-    await commands.executeCommand("_setContext", WHICHKEY_STATE, this.path);
-  }
-
-  private updateStickyScrollConf() {
-    const ss = workspace.getConfiguration("editor.stickyScroll");
-    if (ss.get("enabled") === true) {
-      this.stickyScrollMaxRows = ss.get("maxLineCount", 5);
-    } else {
-      this.stickyScrollMaxRows = 0;
-    }
+    await enableLeaderKeyAndDisableVim(this.path);
   }
 
   private confOverrideRefresh() {
@@ -98,24 +93,24 @@ export class LeaderkeyPanel {
   private async setAndRenderPath(path: string, binding: Bindings | undefined) {
     this.path = path;
     try {
-      commands.executeCommand("_setContext", WHICHKEY_STATE, this.path);
+      await enableLeaderKeyAndDisableVim(this.path);
       setStatusBar(path === "" ? "" : path + "-");
     } finally {
       const oldDisposables = this.disposableDecos;
       try {
-        if (path === "") {
-          this.when = undefined;
-        } else {
-          const bOrC = binding ?? go(this.root, path, this.when);
-          if (bOrC === undefined || isCommand(bOrC)) {
-            // skip rendering
+        this.disposableDecos = [];
+        const editor = window.activeTextEditor;
+        if (editor !== undefined) {
+          if (path === "") {
+            // reset
+            this.when = undefined;
           } else {
-            this.disposableDecos = renderBinding(
-              bOrC,
-              path,
-              this.when,
-              this.stickyScrollMaxRows,
-            );
+            const bOrC = binding ?? go(this.root, path, this.when);
+            if (bOrC === undefined || isCommand(bOrC)) {
+              // skip rendering
+            } else {
+              this.disposableDecos = renderBinding(editor, bOrC, path, this.when);
+            }
           }
         }
       } finally {
@@ -129,7 +124,7 @@ export class LeaderkeyPanel {
     return lastSpaceIndex === -1 ? "" : path.slice(0, lastSpaceIndex);
   }
 
-  public async onkey(keyOrObj: string | { key: string; when: string }) {
+  public async onKey(keyOrObj: string | { key: string; when: string }) {
     const [key, when] =
       typeof keyOrObj === "string"
         ? [keyOrObj, undefined]
@@ -137,17 +132,17 @@ export class LeaderkeyPanel {
     this.when = when ?? this.when;
 
     const newPath =
-      key === "<back>"
+      key === "<backspace>"
         ? this.pop(this.path)
         : (this.path === "" ? "" : this.path + " ") + key;
     const bOrC = go(this.root, newPath, this.when);
     if (bOrC === undefined) {
-      this.setAndRenderPath("", undefined);
+      await this.setAndRenderPath("", undefined);
       setStatusBar(`Unknown leaderkey: ${newPath}`, "error");
       return;
     }
     if (isBindings(bOrC)) {
-      this.setAndRenderPath(newPath, bOrC);
+      await this.setAndRenderPath(newPath, bOrC);
       return;
     }
     // command
@@ -179,6 +174,7 @@ export class LeaderkeyPanel {
     if (this.path) {
       this.setAndRenderPath("", undefined);
     }
+    this.onReset();
   }
 
   public async searchBindings() {

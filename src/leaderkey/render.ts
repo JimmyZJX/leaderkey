@@ -1,5 +1,7 @@
-import { workspace } from "vscode";
+import { TextEditor, workspace } from "vscode";
 import { Bindings, DispEntry, TokenType } from "./command";
+import { getRenderRangeFromTop } from "../common/renderRange";
+import { Decoration, renderDecorations } from "../common/decoration";
 
 export interface RenderedToken {
   type: TokenType;
@@ -88,11 +90,7 @@ function tokensToStrings(tokens: RenderedToken[]): {
   return { nLines, maxLen, decos };
 }
 
-export function render(
-  binding: Bindings,
-  targetLineLength: number,
-  when: string | undefined,
-) {
+function render(binding: Bindings, targetLineLength: number, when: string | undefined) {
   const dispEntries: DispEntry[] = binding.orderedKeys?.[when ?? ""] ??
     binding.orderedKeys?.[""] ?? [
       { key: "ERROR", name: "No item found", type: "command" },
@@ -107,4 +105,51 @@ export function render(
       return tokensToStrings(tokens);
     }
   }
+}
+
+function appendStringRightAligned(input: string, toAppend: string, right: number) {
+  return (
+    input + " ".repeat(Math.max(0, right - input.length - toAppend.length)) + toAppend
+  );
+}
+
+export function renderBinding(
+  editor: TextEditor,
+  binding: Bindings,
+  path: string,
+  when: string | undefined,
+) {
+  const rendered = render(binding, 100, when);
+
+  const headerWhen = when === undefined ? "" : `(${when})`;
+  let strHeader = `${path}-    `;
+  const transientMode = binding.transient ? `${binding.name}    ` : "";
+  strHeader = appendStringRightAligned(strHeader, transientMode, rendered.maxLen >> 1);
+  strHeader = appendStringRightAligned(strHeader, headerWhen, rendered.maxLen);
+  const header: Decoration = {
+    type: "text",
+    text: strHeader,
+    foreground: "command",
+    background: "header",
+  };
+  const background: Decoration = {
+    type: "background",
+    background: "default",
+    lines: rendered.nLines + 2,
+    lineOffset: -0.5,
+  };
+
+  const decos = [
+    header,
+    background,
+    ...rendered.decos.map<Decoration>(([tt, str]) => ({
+      type: "text",
+      text: str,
+      lineOffset: 1,
+      foreground: tt,
+    })),
+  ];
+
+  const range = getRenderRangeFromTop(editor, rendered.nLines + 1);
+  return renderDecorations(decos, editor, range);
 }

@@ -1,0 +1,7 @@
+[submodule "src/fzf-for-js"]
+	path = src/fzf-for-js
+	url = https://github.com/ajitid/fzf-for-js.git
+
+[submodule "src/ansi-sequence-parser"]
+	path = src/ansi-sequence-parser
+	url = https://github.com/JimmyZJX/ansi-sequence-parser.git
