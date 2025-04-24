@@ -25,7 +25,7 @@ export function getQueryFromSelection(
     }
   }
   if (regex === "regex") {
-    query = query.replaceAll(/[\/\\^$+?.()\|\*[\]{}]/g, "\\$&");
+    query = query.replaceAll(/[/\\^$+?.()|*[\]{}]/g, "\\$&");
   }
   return query;
 }

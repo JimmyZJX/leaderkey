@@ -225,7 +225,7 @@ async function checkExtensionVersion(
     } else {
       const major = Number.parseInt(parsedVersion[0]);
       const minor = Number.parseInt(parsedVersion[1]);
-      if (major < target.major || (major == target.major && minor < target.minor)) {
+      if (major < target.major || (major === target.major && minor < target.minor)) {
         if (
           (await window.showErrorMessage(
             `"${target.name}" extension too old: expected ${strExpectedVer}, got ${extension.version}`,

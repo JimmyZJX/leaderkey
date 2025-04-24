@@ -36,7 +36,9 @@ type Modifiers = { C: boolean; M: boolean; S: boolean };
 function parseModifier(key: string): { key: string; modifiers: Modifiers } {
   const modifiers = { C: false, M: false, S: false };
   // parse modifiers
-  while (true) {
+
+  // eslint is happier with this than `while (true)`
+  for (;;) {
     const match = key.match(/^[CMS]-|(alt|ctrl|shift)\+/);
     if (match) {
       const m = match[0];

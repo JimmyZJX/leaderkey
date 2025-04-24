@@ -21,11 +21,12 @@ function stripSlash(basename: string) {
 }
 
 async function ls(dir: string, dirOnly: boolean) {
-  let { files, dirs } = await readDirFilesAndDirs(dir);
+  const filesAndDirs = await readDirFilesAndDirs(dir);
+  let dirs = filesAndDirs.dirs;
   const dotAndDotDot = ["./", ...(dir.length > 1 ? ["../"] : [])];
   dirs = [...dotAndDotDot, ...dirs.map((dir) => dir + "/")];
   if (dirOnly) return dirs;
-  return [...dirs, ...files];
+  return [...dirs, ...filesAndDirs.files];
 }
 
 function dummyFzfResultItem(item: string): FzfResultItem {
@@ -238,8 +239,9 @@ export class FindFilePanel {
           break;
         case "none":
           break;
-        default:
+        default: {
           const _: never = r;
+        }
       }
     },
     "C-j": () => this.moveSelection(1),

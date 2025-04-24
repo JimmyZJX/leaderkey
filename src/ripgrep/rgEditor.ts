@@ -54,7 +54,7 @@ async function getRgPanelEditor(): Promise<{
   const layout = structuredClone(editorGroupLayout);
 
   const guessedHeight = guessGroupHeight();
-  if (editorGroupLayout.orientation == 1) {
+  if (editorGroupLayout.orientation === 1) {
     if (editorGroupLayout.groups === undefined) {
       throw "Unexpected editor layout (groups is undefined)";
     }
@@ -145,7 +145,9 @@ async function vimEsc(goToLine?: number) {
   }
   try {
     await commands.executeCommand("vim.remap", { after: vimCmds });
-  } catch {}
+  } catch {
+    /* ignore if vim does not exist */
+  }
 }
 
 const PREVIEW_DEBOUNCE_TIMEOUT = 300;

@@ -266,7 +266,7 @@ export class RgPanel {
     const hints: string[] = [];
     const q = this.query;
     switch (q.case) {
-      case "smart":
+      case "smart": {
         const isLower = q.query.toLowerCase() === q.query;
         if (isLower) {
           hints.push("case: smart (ignore)");
@@ -274,14 +274,16 @@ export class RgPanel {
           hints.push("case: smart (strict)");
         }
         break;
+      }
       case "strict":
         hints.push("case: strict");
         break;
       case "ignore":
         hints.push("case: ignore");
         break;
-      default:
+      default: {
         const _: never = q.case;
+      }
     }
     switch (q.word) {
       case "off":
@@ -289,8 +291,9 @@ export class RgPanel {
       case "on":
         hints.push("word: on");
         break;
-      default:
+      default: {
         const _: never = q.word;
+      }
     }
     switch (q.regex) {
       case "on":
@@ -298,8 +301,9 @@ export class RgPanel {
       case "off":
         hints.push("regex: off");
         break;
-      default:
+      default: {
         const _: never = q.regex;
+      }
     }
     return hints.join(" | ");
   }
@@ -347,7 +351,7 @@ export class RgPanel {
       .map((grepLine) => {
         const line = grepLine.line.slice(0, MAX_RENDER_LEN);
         const normalChars = [...line];
-        let highlightChars = Array(line.length).fill(" ");
+        const highlightChars = Array(line.length).fill(" ");
         for (const { start, end } of grepLine.match) {
           for (let i = start; i < end; i++) {
             if (i < line.length) {

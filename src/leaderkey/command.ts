@@ -78,9 +78,6 @@ export function overrideExn(
 
 export type TokenType = "key" | "arrow" | "command" | "binding";
 
-const shiftChars = '~!@#$%^&*()_+<>?{}:"|';
-export const unshiftChars = "`1234567890-=,./[];'\\";
-
 const RE_KEY_WHEN = /^((^:|\+:|[^:])+)(|:.+)$/;
 
 function _containsWhen(key: string) {
