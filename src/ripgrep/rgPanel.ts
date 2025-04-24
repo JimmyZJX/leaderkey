@@ -543,7 +543,7 @@ export async function createRgPanel(
       dir = (workspace.workspaceFolders ?? []).flatMap((folder) => {
         const uri = folder.uri;
         if (["file", "vscode-remote"].includes(uri.scheme)) {
-          return [uri.fsPath];
+          return [uri.path];
         }
         return [];
       });

@@ -5,7 +5,7 @@ import { scheme as diredScheme } from "../findFile/dired";
 import { commonPrefix, log } from "./global";
 import { throttler } from "./throttle";
 
-const RE_WINDOWS_URL_PATH = /^\/(?<drive>[a-z]):\/(?<rest>.+)$/;
+const RE_WINDOWS_URL_PATH = /^\/(?<drive>[a-zA-Z]):\/(?<rest>.+)$/;
 function ppWinPath(arg: string) {
   if (isWin()) {
     const m = RE_WINDOWS_URL_PATH.exec(arg);
@@ -21,7 +21,7 @@ function ppWinPaths(args: string[]) {
   return args.map(ppWinPath);
 }
 
-const RE_WINDOWS_NATIVE_PATH = /^(?<drive>[A-Z]):\\(?<rest>.+)$/;
+const RE_WINDOWS_NATIVE_PATH = /^(?<drive>[a-zA-Z]):\\(?<rest>.+)$/;
 export function normalizePath(path: string) {
   if (isWin()) {
     const m = RE_WINDOWS_NATIVE_PATH.exec(path);
@@ -70,7 +70,11 @@ export async function runProcess(
   execOpts?: ProcessEnvOptions,
 ) {
   args = ppWinPaths(args);
-  log(`Running command: ${prog} ${args}`);
+  execOpts ??= {};
+  if (typeof execOpts.cwd === "string") {
+    execOpts.cwd = ppWinPath(execOpts.cwd);
+  }
+  log(`Running command: [${prog}] [${args}] [${JSON.stringify(execOpts)}]`);
   const result: ProcessRunResult = await commands.executeCommand(
     "remote-commons.process.run",
     prog,
@@ -129,7 +133,7 @@ export class ProcessLineStreamer {
       );
     }
     log(
-      `Running command (ProcessLineStreamer): ${this.prog} ${this.args} ${JSON.stringify(this.execOpts)}`,
+      `Running command (ProcessLineStreamer): [${this.prog}] [${this.args}] [${JSON.stringify(this.execOpts)}]`,
     );
     const resultPromise: Thenable<ProcessLineStreamerSpawnResult> =
       commands.executeCommand(
