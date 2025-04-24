@@ -35,6 +35,7 @@
     "dired"
   ],
   "extensionPack": [
+    "jimmyzjx.remote-commons",
     "vscodevim.vim",
     "kahole.magit",
     "jacobdufault.fuzzy-search"
@@ -112,7 +113,7 @@
         },
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": {},
+          "default": { },
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         },
         "leaderkey.ripgrep.exe": {
@@ -1672,7 +1673,7 @@
           "comments": "off",
           "strings": "off"
         },
-        "editor.rulers": [],
+        "editor.rulers": [ ],
         "editor.stickyScroll.enabled": true,
         "editor.stickyScroll.maxLineCount": 2,
         "editor.occurrencesHighlight": "off",
@@ -1689,7 +1690,7 @@
           "comments": "off",
           "strings": "off"
         },
-        "editor.rulers": [],
+        "editor.rulers": [ ],
         "editor.stickyScroll.enabled": true,
         "editor.stickyScroll.maxLineCount": 2,
         "editor.occurrencesHighlight": "off",
