@@ -1,6 +1,7 @@
 import {
   commands,
   ExtensionContext,
+  extensions,
   TextEditorSelectionChangeKind,
   window,
   workspace,
@@ -188,6 +189,12 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand("leaderkey.migrateFromVSpaceCode", migrateFromVSpaceCode),
     commands.registerCommand("leaderkey.pushGotoStack", pushGotoStack),
     commands.registerCommand("leaderkey.popGotoStack", popGotoStack),
+    commands.registerCommand("leaderkey.extensions.getAll", () =>
+      extensions.all.map((extension) => ({
+        id: extension.id,
+        version: extension.packageJSON.version,
+      })),
+    ),
 
     workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration("editor.stickyScroll")) {

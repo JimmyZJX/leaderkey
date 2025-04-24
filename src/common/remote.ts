@@ -192,14 +192,16 @@ export async function openFile(file: string, options?: TextDocumentShowOptions) 
   await commands.executeCommand("remote-commons.openFile", file, options);
 }
 
+async function goToExtensionSearchView(id: string) {
+  await commands.executeCommand("workbench.extensions.search", id);
+}
+
 async function checkExtensionVersion(
   workspaceExtensions: { id: string; version: string }[],
   target: { id: string; name: string; major: number; minor: number },
 ) {
   const strExpectedVer = `${target.major}.${target.minor}.*`;
-  async function goToSearchView() {
-    await commands.executeCommand("workbench.extensions.search", target.id);
-  }
+  const goToSearchView = async () => await goToExtensionSearchView(target.id);
 
   const extension = workspaceExtensions.find(
     ({ id }) => id.toLowerCase() === target.id.toLowerCase(),
@@ -213,7 +215,7 @@ async function checkExtensionVersion(
     )
       await goToSearchView();
   } else {
-    log(`"${target.name}" version = [${extension.version}]`);
+    log(`[${target.id}] version = [${extension.version}]`);
     const parsedVersion = extension.version.split(".");
     if (parsedVersion.length < 2) {
       window.showErrorMessage(
@@ -264,10 +266,7 @@ export async function init() {
         "Install",
       )) === "Install"
     ) {
-      await commands.executeCommand(
-        "workbench.extensions.search",
-        REMOTE_COMMONS_EXTENSION_ID,
-      );
+      await goToExtensionSearchView(REMOTE_COMMONS_EXTENSION_ID);
     }
   }
 

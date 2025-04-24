@@ -24,15 +24,20 @@
   ],
   "keywords": [
     "spacemacs",
+    "emacs",
     "vscode",
     "vim",
-    "VSCodeVim"
+    "VSCodeVim",
+    "ripgrep",
+    "rg",
+    "find-file",
+    "findfile",
+    "dired"
   ],
   "extensionPack": [
     "vscodevim.vim",
     "kahole.magit",
-    "jacobdufault.fuzzy-search",
-    "bodil.file-browser"
+    "jacobdufault.fuzzy-search"
   ],
   "activationEvents": [
     "*"
@@ -41,6 +46,11 @@
   "browser": "dist/extension.js",
   "contributes": {
     "commands": [
+      {
+        "command": "leaderkey.extensions.getAll",
+        "title": "Get Installed (ui) Extensions (id and version)",
+        "category": "Leaderkey"
+      },
       {
         "command": "leaderkey.render",
         "title": "Render leaderkey menu",
