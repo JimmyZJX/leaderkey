@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -124,7 +124,7 @@
         "leaderkey.find-file.RETisTAB": {
           "type": "boolean",
           "default": false,
-          "description": "To disable `RET` in find-file (for non-selection mode). `RET` behaves like `TAB`. Use `C-l` to revert to the `RET` behavior (`C-RET` and `S-RET` are reserved for force creation)."
+          "description": "Turn `RET` into `TAB` in find-file. Use `C-l` to revert to the `RET` behavior e.g. when selecting directory."
         }
       }
     },

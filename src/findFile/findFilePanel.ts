@@ -251,13 +251,7 @@ export class FindFilePanel {
     },
     "S-RET": async () => await this.open(this.editor.value(), "forceCreate"),
     "C-RET": async () => await this.open(this.editor.value(), "forceCreate"),
-    RET: async (last) => {
-      if (this.RETisTAB) {
-        await this.keyActionTAB(last);
-      } else {
-        await this.keyActionRET();
-      }
-    },
+    RET: async () => await this.keyActionRET(),
     "C-l": async () => await this.keyActionRET(),
     TAB: async (last) => await this.keyActionTAB(last),
     "C-j": () => this.moveSelection(1),
@@ -287,6 +281,9 @@ export class FindFilePanel {
 
   public async onKey(key: string) {
     const last = this.lastKey;
+    if (key === "RET" && this.RETisTAB) {
+      key = "TAB";
+    }
     this.lastKey = key;
 
     const keyAction = this.keyActions[key];
@@ -379,7 +376,9 @@ export class FindFilePanel {
       newSelection.type === "input" ||
       (this.files !== undefined &&
         (this.files.length === 0 || this.lastFzfResults.length === 0))
-        ? "   (RET to create " +
+        ? "   (" +
+          (this.RETisTAB ? "C-l" : "RET") +
+          " to create " +
           (this.editor.value().slice(1, -1).includes("/") ? "dir and " : "") +
           "file)"
         : "";
