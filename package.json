@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -113,13 +113,18 @@
         },
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": { },
+          "default": {},
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         },
         "leaderkey.ripgrep.exe": {
           "type": "string",
           "default": "rg",
           "description": "path to the ripgrep executable"
+        },
+        "leaderkey.find-file.RETisTAB": {
+          "type": "boolean",
+          "default": false,
+          "description": "To disable `RET` in find-file (for non-selection mode). `RET` behaves like `TAB`. Use `C-l` to revert to the `RET` behavior (`C-RET` and `S-RET` are reserved for force creation)."
         }
       }
     },
@@ -1673,7 +1678,7 @@
           "comments": "off",
           "strings": "off"
         },
-        "editor.rulers": [ ],
+        "editor.rulers": [],
         "editor.stickyScroll.enabled": true,
         "editor.stickyScroll.maxLineCount": 2,
         "editor.occurrencesHighlight": "off",
@@ -1690,7 +1695,7 @@
           "comments": "off",
           "strings": "off"
         },
-        "editor.rulers": [ ],
+        "editor.rulers": [],
         "editor.stickyScroll.enabled": true,
         "editor.stickyScroll.maxLineCount": 2,
         "editor.occurrencesHighlight": "off",

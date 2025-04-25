@@ -1,5 +1,6 @@
 import {
   commands,
+  env,
   ExtensionContext,
   TextEditorDecorationType,
   window,
@@ -179,9 +180,13 @@ export class LeaderkeyPanel {
 
   public async searchBindings() {
     const items = showAsQuickPickItems(this.root);
-    window.showQuickPick(items, {
+    const item = await window.showQuickPick(items, {
       title: "All bindings of leaderkey",
+      placeHolder: "Select to copy details",
       matchOnDescription: true,
     });
+    if (item?.detail !== undefined) {
+      await env.clipboard.writeText(item.detail);
+    }
   }
 }

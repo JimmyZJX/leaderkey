@@ -192,11 +192,15 @@ export function showAsQuickPickItems(bindings: Bindings): QuickPickItem[] {
       if (isBindings(entry)) {
         loop(entry, curKeyChord, curWhens);
       } else {
-        const detail =
-          curWhens.length === 0 ? undefined : "when: " + curWhens.join(" && ");
+        const when = curWhens.length === 0 ? "" : " when: " + curWhens.join(" && ");
+        const detail = JSON.stringify({
+          ...(entry.args === undefined ? undefined : { args: entry.args }),
+          ...(entry.command === undefined ? undefined : { command: entry.command }),
+          ...(entry.commands === undefined ? undefined : { commands: entry.commands }),
+        });
         items.push({
           label: entry.name,
-          description: curKeyChord.join(" "),
+          description: curKeyChord.join(" ") + when,
           detail,
         });
       }

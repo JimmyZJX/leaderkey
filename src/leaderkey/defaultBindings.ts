@@ -228,14 +228,7 @@ const SpaceRoot: Bindings = {
       name: "Show terminal",
       command: "workbench.action.terminal.focus",
     },
-    "*": {
-      name: "Search in project with selection",
-      commands: [
-        "editor.action.addSelectionToNextFindMatch",
-        "workbench.action.findInFiles",
-        "search.action.focusSearchList",
-      ],
-    },
+    "*": RipGrepKeys["D"],
     // ".": {
     //   name: "Repeat most recent action",
     //   command: "whichkey.repeatMostRecent",

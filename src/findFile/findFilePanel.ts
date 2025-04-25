@@ -1,7 +1,7 @@
 // init: check if remote extension is available
 
 import { dirname, normalize } from "path-browserify";
-import { TextEditor, TextEditorDecorationType, window } from "vscode";
+import { TextEditor, TextEditorDecorationType, window, workspace } from "vscode";
 import {
   disableLeaderKey,
   enableLeaderKeyAndDisableVim,
@@ -18,6 +18,11 @@ import { showDir } from "./dired";
 const RE_TRAILING_SLASH = /\/$/;
 function stripSlash(basename: string) {
   return basename.replace(RE_TRAILING_SLASH, "");
+}
+
+function RETisTAB() {
+  const config = workspace.getConfiguration("leaderkey.find-file");
+  return config.get("RETisTAB", false);
 }
 
 async function ls(dir: string, dirOnly: boolean) {
@@ -84,8 +89,11 @@ export class FindFilePanel {
   isQuit: boolean;
   onQuit: (path: string | undefined) => void;
 
+  RETisTAB: boolean;
+
   constructor(options: FindFileOptions, onQuit: (path: string | undefined) => void) {
     enableLeaderKeyAndDisableVim(":findFile");
+    this.RETisTAB = RETisTAB();
     this.onQuit = onQuit;
     this.isQuit = false;
     this.editor = new SingleLineEditor("");
@@ -175,6 +183,26 @@ export class FindFilePanel {
     }
   }
 
+  private async keyActionTAB(last: string | undefined) {
+    const r = this.tabCompletion(last);
+    switch (r.type) {
+      case "edit":
+        r.edit();
+        break;
+      case "selection":
+        await this.open(r.value);
+        break;
+      case "input":
+        await this.open(this.editor.value());
+        break;
+      case "none":
+        break;
+      default: {
+        const _: never = r;
+      }
+    }
+  }
+
   private async keyActionRET() {
     switch (this.lastSelection.type) {
       case "file":
@@ -223,27 +251,15 @@ export class FindFilePanel {
     },
     "S-RET": async () => await this.open(this.editor.value(), "forceCreate"),
     "C-RET": async () => await this.open(this.editor.value(), "forceCreate"),
-    RET: async () => this.keyActionRET(),
-    "C-l": async () => this.keyActionRET(),
-    TAB: async (last) => {
-      const r = this.tabCompletion(last);
-      switch (r.type) {
-        case "edit":
-          r.edit();
-          break;
-        case "selection":
-          await this.open(r.value);
-          break;
-        case "input":
-          await this.open(this.editor.value());
-          break;
-        case "none":
-          break;
-        default: {
-          const _: never = r;
-        }
+    RET: async (last) => {
+      if (this.RETisTAB) {
+        await this.keyActionTAB(last);
+      } else {
+        await this.keyActionRET();
       }
     },
+    "C-l": async () => await this.keyActionRET(),
+    TAB: async (last) => await this.keyActionTAB(last),
     "C-j": () => this.moveSelection(1),
     "<down>": () => this.moveSelection(1),
     "C-k": () => this.moveSelection(-1),
