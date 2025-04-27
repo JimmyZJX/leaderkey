@@ -120,7 +120,7 @@ function escapeTextForBeforeContentText(text: string) {
     .replaceAll("\\", "\\\\")
     .replaceAll("'", "\\'")
     .replaceAll(" ", "\\00a0 ")
-    .replaceAll("\n", " \\A ");
+    .replace(/(\r\n|\r|\n)/g, " \\A ");
 }
 
 export function renderDecorations(

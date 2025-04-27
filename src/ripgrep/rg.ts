@@ -128,7 +128,7 @@ export async function doQuery(
                 grepLines.push({
                   file: normalizePath(data.path?.text ?? "<bad filename>"),
                   lineNo: data.line_number,
-                  line: text.trimEnd().replaceAll("\t", " "),
+                  line: text.trimEnd().replace(/\s/g, " "),
                   match: data.submatches.map(({ start, end }) => ({ start, end })),
                 });
               }
