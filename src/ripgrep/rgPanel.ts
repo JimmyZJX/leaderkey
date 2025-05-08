@@ -22,6 +22,7 @@ import {
 import { OneLineEditor } from "../common/singleLineEditor";
 import { eagerDebouncer } from "../common/throttle";
 import { panelManager } from "../extension";
+import { parseMagicQuery } from "./magicQuery";
 import {
   doQuery,
   GrepLine,
@@ -386,18 +387,46 @@ export class RgPanel {
         PAD_INDICATOR_COUNT,
       ) + " rg: ";
 
-    const modeHint = this.getModeHint();
-    const modeHintMinPos = rgIndicator.length + this.editor.value().length + 4;
-    const modeHintPos = Math.max(modeHintMinPos, 80 - modeHint.length);
+    const query = this.editor.value();
+    const { magicSpaces, flagAreaLen } = parseMagicQuery(
+      query,
+      this.query.regex === "on",
+    );
     const editorDecos: Decoration[] = [
       ...this.editor.render({ char: rgIndicator.length }),
+      // add a line of magic spaces text
       {
         type: "text",
-        text: modeHint,
-        foreground: "dim",
-        charOffset: modeHintPos,
+        text: Array(query.length)
+          .fill(" ")
+          .map((_, index) => (magicSpaces.includes(index) ? "|" : " "))
+          .join(""),
+        foreground: "dimdim",
+        charOffset: rgIndicator.length,
+        lineOffset: 0,
+        zOffset: -1,
+      },
+      // dim the flag area
+      {
+        type: "background",
+        background: "gray",
+        lines: 1,
+        width: flagAreaLen,
+        charOffset: rgIndicator.length + query.length - flagAreaLen,
+        lineOffset: 0,
+        zOffset: 1,
       },
     ];
+
+    const modeHint = this.getModeHint();
+    const modeHintMinPos = rgIndicator.length + query.length + 4;
+    const modeHintPos = Math.max(modeHintMinPos, 80 - modeHint.length);
+    const modeDeco: Decoration = {
+      type: "text",
+      text: modeHint,
+      foreground: "dim",
+      charOffset: modeHintPos,
+    };
 
     const decos: Decoration[] = [
       { type: "background", lines: bgSize },
@@ -414,6 +443,7 @@ export class RgPanel {
         foreground: ms.isDone ? "arrow-bold" : "binding",
       },
       ...editorDecos,
+      modeDeco,
       { type: "text", text: status, foreground: "command", lineOffset: 1 },
       { type: "text", text: statusDim, foreground: "dim", lineOffset: 1 },
       ...selectedBg,

@@ -40,7 +40,7 @@ export function updateStickyScrollConf() {
 }
 updateStickyScrollConf();
 
-type BackgroundType = "default" | "header" | "border" | "cursor";
+type BackgroundType = "default" | "header" | "border" | "cursor" | "gray";
 
 const decoRenderOpts: {
   [themeType in ThemeType]: { [decoType in BackgroundType]: string };
@@ -50,12 +50,14 @@ const decoRenderOpts: {
     header: "#5d4d7a",
     border: "#68217A",
     cursor: "#BBB",
+    gray: "#88888833",
   },
   light: {
     default: "#FAF7EC",
     header: "#E6E6EA",
     border: "#E7E5EB",
     cursor: "#444",
+    gray: "#88888833",
   },
 };
 
@@ -65,7 +67,8 @@ export type TextType =
   | "highlight"
   | "arrow-bold"
   | "error-bold"
-  | "dim";
+  | "dim"
+  | "dimdim";
 
 const themeRenderOpts: {
   [themeType in ThemeType]: {
@@ -81,6 +84,7 @@ const themeRenderOpts: {
     highlight: { color: "#4190d8", fontWeight: "bold" },
     command: { color: "#ccc" },
     dim: { color: "#ccc8" },
+    dimdim: { color: "#ccc3" },
     "error-bold": { color: new ThemeColor("errorForeground"), fontWeight: "bold" },
   },
   light: {
@@ -92,6 +96,7 @@ const themeRenderOpts: {
     highlight: { color: "#3781C2", fontWeight: "bold" },
     command: { color: "#67537A" },
     dim: { color: "#67537A80" },
+    dimdim: { color: "#67537A30" },
     "error-bold": { color: new ThemeColor("errorForeground"), fontWeight: "bold" },
   },
 };
@@ -113,6 +118,7 @@ export type Decoration =
       lineOffset?: number;
       charOffset?: number;
       text: string;
+      zOffset?: number;
     };
 
 function escapeTextForBeforeContentText(text: string) {
@@ -154,7 +160,7 @@ export function renderDecorations(
               : { backgroundColor: decoRenderOpts[globalThemeType][deco.background] }),
             height: "100%",
             width: "200ch",
-            margin: `0 -1ch 0 ${deco.charOffset ?? 0}ch; position: absolute; z-index: 110; padding-left: 0.5ch; white-space: pre;
+            margin: `0 -1ch 0 ${deco.charOffset ?? 0}ch; position: absolute; z-index: ${110 + (deco.zOffset ?? 0)}; padding-left: 0.5ch; white-space: pre;
                ${deco.lineOffset === undefined ? "" : `top: ${deco.lineOffset * 100}%;`}
                content: '${escapeTextForBeforeContentText(deco.text)}'`,
           },

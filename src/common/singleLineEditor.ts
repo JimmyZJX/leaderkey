@@ -3,6 +3,20 @@ import { Decoration, TextType } from "./decoration";
 
 const CURSOR_WIDTH = 0.2;
 
+function findWordBoundary(text: string, direction: "left" | "right"): number {
+  if (text.length === 0) return 0;
+
+  if (direction === "left") {
+    const match = text.match(/(^|\s)\S+\s*$/);
+    if (!match) return 0;
+    return (match.index ?? 0) + match[1].length;
+  } else {
+    const match = text.match(/^(\s*)($|\S+)(\s|$)/);
+    if (!match) return 0;
+    return match[1].length + match[2].length;
+  }
+}
+
 export class OneLineEditor {
   private input: string;
   private cursor: number; // cursor at i => insert to i (0 <= cursor <= input.length)
@@ -50,15 +64,14 @@ export class OneLineEditor {
     // cursor movement
     "<left>": () => this.moveCursor(-1),
     "<right>": () => this.moveCursor(1),
-    // TODO implement by word jump
     "C-<left>": () => {
-      this.cursor = 0;
+      this.cursor = this.edit((lr) => findWordBoundary(lr.l, "left"));
+    },
+    "C-<right>": () => {
+      this.cursor += this.edit((lr) => findWordBoundary(lr.r, "right"));
     },
     "<home>": () => {
       this.cursor = 0;
-    },
-    "C-<right>": () => {
-      this.cursor = this.input.length;
     },
     "<end>": () => {
       this.cursor = this.input.length;
@@ -69,15 +82,14 @@ export class OneLineEditor {
     "<backspace>": () => {
       this.edit((lr) => (lr.l = lr.l.slice(0, -1)));
     },
-    // TODO by word jump
-    "C-<backspace>": () => {
-      this.edit((lr) => (lr.l = ""));
-    },
     "<delete>": () => {
       this.edit((lr) => (lr.r = lr.r.slice(1)));
     },
+    "C-<backspace>": () => {
+      this.edit((lr) => (lr.l = lr.l.slice(0, findWordBoundary(lr.l, "left"))));
+    },
     "C-<delete>": () => {
-      this.edit((lr) => (lr.r = ""));
+      this.edit((lr) => (lr.r = lr.r.slice(findWordBoundary(lr.r, "right"))));
     },
 
     "C-v": async () => this.pasteClipboard(),

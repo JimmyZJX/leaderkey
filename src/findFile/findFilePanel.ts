@@ -269,7 +269,7 @@ export class FindFilePanel {
     "C-h": () => this.setDir(dirname(this.dir)),
     "C-<backspace>": () => {
       if (this.editor.value().length > 0) {
-        this.editor.reset("");
+        this.editor.tryKey("C-<backspace>");
       } else {
         this.setDir(dirname(this.dir));
       }

@@ -2,6 +2,7 @@ import { relative } from "path-browserify";
 import { CancellationToken, workspace } from "vscode";
 import { log } from "../common/global";
 import { normalizePath, ProcessLineStreamer } from "../common/remote";
+import { magicSpace, matchMagic, parseMagicQuery } from "./magicQuery";
 
 //#region ripgrep message format (incomplete)
 interface GrepBegin {
@@ -45,22 +46,6 @@ export type RipGrepQuery = {
   dir: string[]; // a list of dirs to search for `query`
 } & RipGrepSearchMode;
 
-const RE_DASHDASH = /^(?<query>.+?)( +-- +(?<flags>.+))?$/;
-/** `query` returned must be a prefix of `rawQuery` */
-export function normalizeQueryString(rawQuery: string) {
-  const match = RE_DASHDASH.exec(rawQuery);
-  if (!match) {
-    throw new Error("RE_DASHDASH unexpectedly not matched on [" + rawQuery + "]");
-  }
-  const { query, flags } = match.groups!;
-
-  const RE_QUOTED = /(?<=\s|^)'[^']+'|[^'\s]+(?=\s|$)/g;
-  const args = Array.from((flags ?? "").matchAll(RE_QUOTED), (m) =>
-    m[0].startsWith("'") ? m[0].slice(1, -1) : m[0],
-  );
-  return { query, args };
-}
-
 function toArgs(q: RipGrepQuery) {
   const rgOpts = ["--json"];
   if (q.case === "smart") {
@@ -80,8 +65,16 @@ function toArgs(q: RipGrepQuery) {
     dirs = [];
   }
   const prog = workspace.getConfiguration("leaderkey").get("ripgrep.exe", "rg");
-  const { query, args: additionalArgs } = normalizeQueryString(q.query);
-  return { prog, args: [query, ...dirs, ...rgOpts, ...additionalArgs], cwd: q.cwd };
+
+  const { queries, args: additionalArgs } = parseMagicQuery(q.query, q.regex === "on");
+  const { rg, js } = magicSpace(queries);
+
+  return {
+    prog,
+    args: [rg, ...dirs, ...rgOpts, ...additionalArgs],
+    cwd: q.cwd,
+    magicSpaceRegExp: js,
+  };
 }
 
 export interface GrepLine {
@@ -106,7 +99,7 @@ export async function doQuery(
   onUpdate: (update: RipgrepStatusUpdate) => void,
   cancellationToken: CancellationToken,
 ) {
-  const { prog, args, cwd } = toArgs(query);
+  const { prog, args, cwd, magicSpaceRegExp } = toArgs(query);
   const proc = new ProcessLineStreamer(prog, args, { cwd });
 
   cancellationToken.onCancellationRequested(() => proc.kill());
@@ -129,7 +122,9 @@ export async function doQuery(
                   file: normalizePath(data.path?.text ?? "<bad filename>"),
                   lineNo: data.line_number,
                   line: text.trimEnd().replace(/\s/g, " "),
-                  match: data.submatches.map(({ start, end }) => ({ start, end })),
+                  match:
+                    matchMagic(text, magicSpaceRegExp) ??
+                    data.submatches.map(({ start, end }) => ({ start, end })),
                 });
               }
             } else if (msg.type === "summary") {
