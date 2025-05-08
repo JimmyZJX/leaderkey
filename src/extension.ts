@@ -67,7 +67,7 @@ class PanelManager {
   }
 
   async ripgrep(mode?: RipGrepCreateOption) {
-    mode = structuredClone(mode ?? {});
+    mode = JSON.parse(JSON.stringify(mode ?? {}));
     if (mode?.selectDir) {
       let query: string | undefined = undefined;
       if (window.activeTextEditor) {
