@@ -13,7 +13,7 @@ import {
 } from "../common/context";
 import { Decoration, renderDecorations } from "../common/decoration";
 import { commonPrefix, log } from "../common/global";
-import { ENV_HOME, pickPathFromUri } from "../common/remote";
+import { ENV_HOME, pickPathFromUri, runProcess } from "../common/remote";
 import {
   getNumTotal,
   getRenderRangeFromTop,
@@ -514,7 +514,11 @@ export class RgPanel {
 
 export type CreateRgPanelOptions = {
   query?: GetQueryFromSelectionOptions;
-  dir?: { type: "current" } | { type: "workspace" } | { type: "path"; path: string };
+  dir?:
+    | { type: "current" }
+    | { type: "workspace" }
+    | { type: "path"; path: string }
+    | { type: "bash"; bash: string };
   resume?: true;
 };
 
@@ -537,21 +541,57 @@ export async function createRgPanel(
 
     let dir: string[];
     // TODO synchronously show and then set dir
-    if (dirMode.type === "current") {
-      dir = [await pickPathFromUri(editor.document.uri, "dirname")];
-    } else if (dirMode.type === "workspace") {
-      dir = (workspace.workspaceFolders ?? []).flatMap((folder) => {
-        const uri = folder.uri;
-        if (["file", "vscode-remote"].includes(uri.scheme)) {
-          return [uri.path];
+
+    let workspaceOrFallback = (workspace.workspaceFolders ?? []).flatMap((folder) => {
+      const uri = folder.uri;
+      if (["file", "vscode-remote"].includes(uri.scheme)) {
+        return [uri.path];
+      }
+      return [];
+    });
+    if (workspaceOrFallback.length === 0) workspaceOrFallback = [ENV_HOME];
+
+    switch (dirMode.type) {
+      case "current":
+        dir = [await pickPathFromUri(editor.document.uri, "dirname")];
+        break;
+      case "bash": {
+        const result = await runProcess("/bin/bash", ["-c", dirMode.bash], {
+          cwd: await pickPathFromUri(editor.document.uri, "dirname"),
+        });
+        if (result.error !== null) {
+          window.showErrorMessage(
+            "Failed to run bash: " + dirMode.bash + "\n" + JSON.stringify(result),
+            { modal: true },
+          );
+          dir = workspaceOrFallback;
+        } else {
+          const dirs = result.stdout.trim().split("\n");
+          if (dirs.length > 0 && dirs.every((d) => d.startsWith("/"))) {
+            dir = dirs;
+          } else {
+            window.showWarningMessage(
+              "Bash output is empty or is not a static path: " + dirs,
+            );
+            dir = workspaceOrFallback;
+          }
         }
-        return [];
-      });
-      if (dir.length === 0) dir = [ENV_HOME];
-    } else if (dirMode.type === "path" && dirMode.path.startsWith("/")) {
-      dir = [dirMode.path];
-    } else {
-      dir = [ENV_HOME];
+        break;
+      }
+      case "workspace":
+        dir = workspaceOrFallback;
+        break;
+      case "path":
+        if (dirMode.path.startsWith("/")) {
+          dir = [dirMode.path];
+        } else {
+          dir = [ENV_HOME];
+        }
+        break;
+      default: {
+        const _dirMode: never = dirMode;
+        throw new Error("Unexpected dirMode: " + JSON.stringify(_dirMode));
+      }
     }
 
     const query = getQueryFromSelection(editor, queryMode, "regex");
