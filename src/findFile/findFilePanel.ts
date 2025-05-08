@@ -206,7 +206,11 @@ export class FindFilePanel {
   private async keyActionRET() {
     switch (this.lastSelection.type) {
       case "file":
-        await this.open(this.lastSelection.file, "ret");
+        if (this.RETisTAB) {
+          await this.keyActionTAB("TAB");
+        } else {
+          await this.open(this.lastSelection.file, "ret");
+        }
         break;
       case "input":
       case "none":
@@ -281,9 +285,6 @@ export class FindFilePanel {
 
   public async onKey(key: string) {
     const last = this.lastKey;
-    if (key === "RET" && this.RETisTAB) {
-      key = "TAB";
-    }
     this.lastKey = key;
 
     const keyAction = this.keyActions[key];
@@ -377,7 +378,7 @@ export class FindFilePanel {
       (this.files !== undefined &&
         (this.files.length === 0 || this.lastFzfResults.length === 0))
         ? "   (" +
-          (this.RETisTAB ? "C-l" : "RET") +
+          "RET" +
           " to create " +
           (this.editor.value().slice(1, -1).includes("/") ? "dir and " : "") +
           "file)"
