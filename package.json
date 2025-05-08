@@ -1763,17 +1763,17 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile-web",
+    "vscode:prepublish": "pnpm run compile-web",
     "watch": "webpack --mode development --watch",
-    "compile-web": "npm run compile && webpack",
+    "compile-web": "pnpm run compile && webpack",
     "compile": "tsc -p ./",
-    "pretest": "npm run compile && npm run lint",
+    "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "jest",
     "testw": "jest --watchAll",
     "prettier": "prettier",
     "prettier-check": "prettier \"src/**/*.ts\" --check --log-level warn",
-    "vsce": "vsce package --allow-star-activation --out dist/leaderkey.vsix"
+    "vsce": "vsce package --no-dependencies --allow-star-activation --out dist/leaderkey.vsix"
   },
   "devDependencies": {
     "@types/jest": "^29.1.2",
