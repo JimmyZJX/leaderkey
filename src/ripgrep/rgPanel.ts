@@ -125,11 +125,14 @@ export class RgPanel {
 
   async changeDirViaFindFile() {
     this.clearDecos();
-    const dir = await panelManager.findFile({
-      init: this.query.cwd,
-      dirOnly: true,
-      returnOnly: true,
-    });
+    const dir = await panelManager.withInner(
+      async () =>
+        await panelManager.findFile({
+          init: this.query.cwd,
+          dirOnly: true,
+          returnOnly: true,
+        }),
+    );
     RgPanel.enterContext();
     panelManager.setRgPanel(this);
     if (dir === undefined) {

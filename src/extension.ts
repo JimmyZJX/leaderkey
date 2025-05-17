@@ -53,6 +53,15 @@ class PanelManager {
     }
   }
 
+  public async withInner<T>(f: () => Promise<T>) {
+    const old = this.currentPanel;
+    try {
+      return await f();
+    } finally {
+      this.currentPanel = old;
+    }
+  }
+
   async findFile(options?: FindFileOptions) {
     let editor = window.activeTextEditor;
     if (!editor) {
