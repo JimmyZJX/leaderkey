@@ -1,4 +1,4 @@
-import { ExecException, ProcessEnvOptions } from "child_process";
+import { ExecException, ProcessEnvOptions, SpawnOptions } from "child_process";
 import { dirname } from "path-browserify";
 import { commands, TextDocumentShowOptions, Uri, window, workspace } from "vscode";
 import { scheme as diredScheme } from "../findFile/dired";
@@ -60,15 +60,11 @@ export async function fileExists(
 
 export type ProcessRunResult = {
   error: ExecException | null;
-  stdout: string;
-  stderr: string;
+  stdout: string | undefined;
+  stderr: string | undefined;
 };
 
-export async function runProcess(
-  prog: string,
-  args: string[],
-  execOpts?: ProcessEnvOptions,
-) {
+export async function runProcess(prog: string, args: string[], execOpts?: SpawnOptions) {
   args = ppWinPaths(args);
   execOpts ??= {};
   if (typeof execOpts.cwd === "string") {
@@ -294,7 +290,7 @@ export async function init() {
   if (result.error) {
     window.showErrorMessage(`Failed to run bash/cmd? ${JSON.stringify(result)}`);
   } else {
-    ENV_HOME = normalizePath(result.stdout.trim());
+    ENV_HOME = normalizePath(result.stdout!.trim());
     log(`Got home directory = [${ENV_HOME}]`);
   }
 }
