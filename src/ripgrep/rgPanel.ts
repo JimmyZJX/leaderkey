@@ -603,7 +603,7 @@ export async function createRgPanel(
           );
           dir = workspaceOrFallback;
         } else {
-          const dirs = result.stdout.trim().split("\n");
+          const dirs = (result.stdout ?? "").trim().split("\n");
           if (dirs.length > 0 && dirs.every((d) => d.startsWith("/"))) {
             dir = dirs;
           } else {
