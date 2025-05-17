@@ -85,6 +85,7 @@ export class RgPanel {
   private rgEditor: RgEditor | undefined;
 
   private onReset: () => void;
+  private pauseRender: boolean = false;
 
   constructor(query: RipGrepQuery, activeTextEditor: TextEditor, onReset: () => void) {
     RgPanel.enterContext();
@@ -125,6 +126,7 @@ export class RgPanel {
 
   async changeDirViaFindFile() {
     this.clearDecos();
+    this.pauseRender = true;
     const dir = await panelManager.withInner(
       async () =>
         await panelManager.findFile({
@@ -133,6 +135,7 @@ export class RgPanel {
           returnOnly: true,
         }),
     );
+    this.pauseRender = false;
     RgPanel.enterContext();
     panelManager.setRgPanel(this);
     if (dir === undefined) {
@@ -257,6 +260,7 @@ export class RgPanel {
   }
 
   render() {
+    if (this.pauseRender) return;
     const lastDecorations = this.disposableDecos;
     try {
       const editor = this.rgEditor?.getEditor();
