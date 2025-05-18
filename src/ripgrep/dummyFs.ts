@@ -69,7 +69,7 @@ export function register(context: ExtensionContext) {
           );
           return [
             new DocumentSymbol(
-              "(Leaderkey) | C-{l,h,.} → change dir | C-{j,k,d,u} → move selection | M(alt) → toggle (C)ase/(W)ord/(R)egex",
+              "(Leaderkey) | C-{h,l,.} → change dir | C-{j,k,d,u} → move selection | M(alt) → toggle (C)ase/(W)ord/(R)egex",
               "",
               SymbolKind.Property,
               fullRange,
