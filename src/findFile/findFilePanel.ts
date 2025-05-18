@@ -1,5 +1,3 @@
-// init: check if remote extension is available
-
 import { dirname, normalize } from "path-browserify";
 import { TextEditor, TextEditorDecorationType, window, workspace } from "vscode";
 import {
@@ -14,35 +12,19 @@ import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
 import { OneLineEditor as SingleLineEditor } from "../common/singleLineEditor";
 import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
 import { showDir } from "./dired";
-
-const RE_TRAILING_SLASH = /\/$/;
-function stripSlash(basename: string) {
-  return basename.replace(RE_TRAILING_SLASH, "");
-}
+import {
+  dummyFzfResultItem,
+  FindFileData,
+  FindFileDataProvider,
+  getFileFromDataIdx,
+} from "./findFileDataProvider";
+import { stripSlash } from "../common/stripSlash";
 
 function RETisTAB() {
   const config = workspace.getConfiguration("leaderkey.find-file");
   return config.get("RETisTAB", false);
 }
 
-async function ls(dir: string, dirOnly: boolean) {
-  const filesAndDirs = await readDirFilesAndDirs(dir);
-  let dirs = filesAndDirs.dirs;
-  const dotAndDotDot = ["./", ...(dir.length > 1 ? ["../"] : [])];
-  dirs = [...dotAndDotDot, ...dirs.map((dir) => dir + "/")];
-  if (dirOnly) return dirs;
-  return [...dirs, ...filesAndDirs.files];
-}
-
-function dummyFzfResultItem(item: string): FzfResultItem {
-  return {
-    item,
-    positions: new Set(),
-    start: 0,
-    end: 0,
-    score: 0,
-  };
-}
 function nonHighlightChars(r: FzfResultItem<string>) {
   return [...r.item].map((c, i) => (r.positions.has(i) ? " " : c)).join("");
 }
@@ -52,7 +34,7 @@ function highlightChars(r: FzfResultItem<string>) {
 
 type FindFileSelection =
   | { type: "none" }
-  | { type: "file"; file: string; idx: number }
+  | { type: "file"; file: string; idx: number; data: FindFileData }
   | { type: "input" };
 
 export type FindFileOptions = {
@@ -74,9 +56,9 @@ export class FindFilePanel {
   dir!: string;
   dirOnly: boolean;
   editor: SingleLineEditor;
-  filesPromise!: Promise<any>;
-  files!: string[] | undefined;
-  lastFzfResults: FzfResultItem<string>[] = [];
+
+  dataProvider: FindFileDataProvider;
+
   lastSelection: FindFileSelection = {
     type: "none",
   };
@@ -101,47 +83,52 @@ export class FindFilePanel {
     this.returnOnly = options.returnOnly ?? false;
     this.title = options.title ?? "Find File";
     this.isSelectionManuallyChanged = false;
+    this.dataProvider = undefined!; // initialized in setDir
     this.setDir(options.init ?? ENV_HOME);
   }
 
-  setDir(dir: string) {
+  setDir(dir: string, editor: "keep" | "reset" = "reset") {
     this.dir = normalize(dir.endsWith("/") ? dir : dir + "/");
-    this.editor.reset("");
+    if (editor === "reset") {
+      this.editor.reset("");
+    }
     this.lastSelection = { type: "none" };
     this.isSelectionManuallyChanged = false;
     this.lastKey = undefined;
-    const promise = ls(dir, this.dirOnly);
-    this.files = undefined;
-    this.filesPromise = promise;
-    promise.then((files) => {
-      if (this.filesPromise === promise) {
-        this.files = files;
-        this.render();
-      }
-    });
-  }
 
-  lastKey: string | undefined;
+    if (this.dataProvider) {
+      this.dataProvider.quit();
+    }
+    this.dataProvider = new FindFileDataProvider(
+      this.dir,
+      this.dirOnly ? "ls-only" : "ls-and-fzf",
+      (_) => this.render(),
+    );
+    if (this.editor.value() !== "") {
+      this.dataProvider.setQuery(this.editor.value());
+    }
+    this.render();
+  }
 
   private tabCompletion(last: string | undefined): TabCompletionAction {
     if (this.lastSelection.type === "file") {
-      const file = this.lastSelection.file;
-      if (last === "TAB" || this.isSelectionManuallyChanged) {
+      const { file, data } = this.lastSelection;
+      const length = data.items.length;
+      if (last === "TAB" || this.isSelectionManuallyChanged || data.mode === "fzf") {
         return file !== "./" ? { type: "selection", value: file } : { type: "none" };
       }
-      if (this.lastFzfResults.length === 1 && file.endsWith("/")) {
+      if (length === 1 && file.endsWith("/")) {
         // the only result is a directory
         return { type: "selection", value: file };
       }
-      if (this.lastFzfResults.length > 0) {
+      if (length > 0) {
         // extend text to the common prefix starting from end of last match
-        assert(this.lastFzfResults.length > 0);
-        const subStrs = this.lastFzfResults.map((r) => ({
+        const subStrs = data.items.map((r) => ({
           item: r.item,
           subStr: r.item.slice(Math.max(...r.positions) + 1),
         }));
         const common = commonPrefix(subStrs.map(({ subStr }) => subStr));
-        if ((common === "" || common === "/") && this.lastFzfResults.length === 1) {
+        if ((common === "" || common === "/") && length === 1) {
           // only one candidate and text matches to the end
           return { type: "selection", value: file };
         } else {
@@ -266,7 +253,7 @@ export class FindFilePanel {
     "C-u": () => this.moveSelection(-8),
     "<pagedown>": () => this.moveSelection(15),
     "<pageup>": () => this.moveSelection(-15),
-    "C-h": () => this.setDir(dirname(this.dir)),
+    "C-h": () => this.setDir(dirname(this.dir), "keep"),
     "C-<backspace>": () => {
       if (this.editor.value().length > 0) {
         this.editor.tryKey("C-<backspace>");
@@ -283,9 +270,13 @@ export class FindFilePanel {
     },
   };
 
+  lastKey: string | undefined;
+
   public async onKey(key: string) {
     const last = this.lastKey;
     this.lastKey = key;
+
+    const lastInput = this.editor.value();
 
     const keyAction = this.keyActions[key];
     if (keyAction) {
@@ -295,7 +286,14 @@ export class FindFilePanel {
     } else {
       log(`find-file: unknown key ${key} (last=${last})`);
     }
+    if (this.editor.value() !== lastInput) {
+      this.dataProvider.setQuery(this.editor.value());
+    }
     this.render();
+  }
+
+  private getCurResults() {
+    return this.dataProvider.getCurResults();
   }
 
   private moveSelection(delta: number) {
@@ -308,57 +306,108 @@ export class FindFilePanel {
       // move upward to select input
       this.lastSelection = { type: "input" };
     } else if ((delta === 1 && type === "input") || type === "none") {
-      // move downward from input; same when no selections was selected before somehow
-      if (this.lastFzfResults.length > 0) {
-        this.lastSelection = { type: "file", file: this.lastFzfResults[0].item, idx: 0 };
-      } else {
+      // move downward from input; same when no selections was selected before
+      // somehow
+      const curResults = this.getCurResults();
+      if (curResults === undefined || curResults.items.length === 0) {
         this.lastSelection = { type: "none" };
+      } else {
+        const file = getFileFromDataIdx(curResults, 0);
+        this.lastSelection = { type: "file", file, idx: 0, data: curResults };
       }
     } else if (type === "file") {
       const { idx, file: _ } = this.lastSelection;
-      const newIdx =
-        delta > 0
-          ? Math.min(this.lastFzfResults.length - 1, idx + delta)
-          : Math.max(0, idx + delta);
-      this.lastSelection = {
-        type: "file",
-        file: this.lastFzfResults[newIdx].item,
-        idx: newIdx,
+      const curResults = this.getCurResults();
+      if (curResults === undefined || curResults.items.length === 0) {
+        this.lastSelection = { type: "none" };
+      } else {
+        const newIdx =
+          delta > 0
+            ? Math.min(curResults.items.length - 1, idx + delta)
+            : Math.max(0, idx + delta);
+        const file = getFileFromDataIdx(curResults, newIdx);
+        this.lastSelection = { type: "file", file, idx: newIdx, data: curResults };
+      }
+    }
+    this.render();
+  }
+
+  private static renderLogic({
+    curResults,
+    isSelectionManuallyChanged,
+    lastSelection,
+  }: {
+    curResults: FindFileData | undefined;
+    isSelectionManuallyChanged: boolean;
+    lastSelection: FindFileSelection;
+  }): {
+    newSelection: FindFileSelection;
+    renderStart: number;
+    toRender: FzfResultItem<string>[];
+  } {
+    if (curResults === undefined || curResults.items.length === 0) {
+      return {
+        newSelection: lastSelection.type === "input" ? lastSelection : { type: "none" },
+        renderStart: 0,
+        toRender: curResults === undefined ? [dummyFzfResultItem("<loading...>")] : [],
       };
     }
-    if (this.lastSelection) {
-      this.render();
+
+    let focusIdx: number;
+    let newSelection: FindFileSelection;
+    if (lastSelection.type === "none") {
+      newSelection = {
+        type: "file",
+        file: getFileFromDataIdx(curResults, 0),
+        idx: 0,
+        data: curResults,
+      };
+      focusIdx = 0;
+    } else if (lastSelection.type === "file") {
+      if (curResults.mode === "ls" && isSelectionManuallyChanged) {
+        // follow user selection
+        const file = lastSelection.file;
+        focusIdx = Math.max(
+          0,
+          curResults.items.findIndex(
+            (_r, i) => getFileFromDataIdx(curResults, i) === file,
+          ),
+        );
+      } else {
+        // don't move selection if never manually changed, or is fzf mode
+        focusIdx = lastSelection.idx;
+      }
+      newSelection = {
+        type: "file",
+        file: getFileFromDataIdx(curResults, focusIdx),
+        idx: focusIdx,
+        data: curResults,
+      };
+    } else {
+      assert(lastSelection.type === "input");
+      newSelection = lastSelection;
+      focusIdx = 0;
     }
+
+    const { start, len } = indicesToRender({
+      length: curResults.items.length,
+      focus: focusIdx,
+    });
+    const toRender = // identical for fzf and ls, just to make type checker happy
+      curResults.mode === "fzf"
+        ? curResults.items.slice(start, start + len).map(curResults.render)
+        : curResults.items.slice(start, start + len).map(curResults.render);
+    return { newSelection, renderStart: start, toRender };
   }
 
   private doRender(editor: TextEditor) {
-    const {
-      renderedLines,
-      newSelection,
-      fzfResults,
-    }: {
-      renderedLines: { start: number; len: number };
-      newSelection: FindFileSelection;
-      fzfResults: FzfResultItem<string>[];
-    } =
-      this.files !== undefined
-        ? FindFilePanel.recompute({
-            ...this,
-            input: this.editor.value(),
-            files: this.files,
-          })
-        : {
-            renderedLines: { start: 0, len: 1 },
-            newSelection: { type: "none" },
-            fzfResults: [dummyFzfResultItem("<loading...>")],
-          };
-    this.lastFzfResults = fzfResults;
+    const curResults = this.getCurResults();
+    const { newSelection, renderStart, toRender } = FindFilePanel.renderLogic({
+      curResults,
+      lastSelection: this.lastSelection,
+      isSelectionManuallyChanged: this.isSelectionManuallyChanged,
+    });
     this.lastSelection = newSelection;
-
-    const toRender = fzfResults.slice(
-      renderedLines.start,
-      renderedLines.start + renderedLines.len,
-    );
 
     const fileListFiles = toRender
       .map((r) => (r.item.endsWith("/") ? "" : nonHighlightChars(r)))
@@ -368,15 +417,10 @@ export class FindFilePanel {
       .join("\n");
     const fileListHighlight = toRender.map(highlightChars).join("\n");
 
-    const counterInfo =
-      this.files === undefined
-        ? "0/0"
-        : `${this.lastFzfResults.length}/${this.files.length}`;
+    const counterInfo = `${curResults?.filtered ?? 0}/${curResults?.total ?? 0}`;
 
     const inputPostfix =
-      newSelection.type === "input" ||
-      (this.files !== undefined &&
-        (this.files.length === 0 || this.lastFzfResults.length === 0))
+      newSelection.type === "input" || curResults?.filtered === 0
         ? "   (" +
           "RET" +
           " to create " +
@@ -386,7 +430,11 @@ export class FindFilePanel {
 
     const tabCompletion = this.tabCompletion(this.lastKey);
     const tabCompletionIndicator =
-      tabCompletion.type === "selection" ? `→ ${tabCompletion.value}` : "";
+      tabCompletion.type === "selection"
+        ? curResults?.mode === "fzf"
+          ? "[fzf mode]"
+          : `→ ${tabCompletion.value}`
+        : "";
     const inputLen = this.editor.value().length;
     const inputDecos: Decoration[] = [
       ...this.editor.render({
@@ -414,11 +462,11 @@ export class FindFilePanel {
 
     const decos: Decoration[] = [
       // overall background
-      { type: "background", lines: renderedLines.len + 2 },
+      { type: "background", lines: toRender.length + 2 },
       // header
       {
         type: "text",
-        text: `${counterInfo.padEnd(7)} ${this.title}`,
+        text: `${counterInfo.padEnd(10)} ${this.title}`,
         foreground: "binding",
       },
       // top border
@@ -433,7 +481,7 @@ export class FindFilePanel {
         type: "background",
         background: "border",
         lines: 0.5,
-        lineOffset: renderedLines.len + 2,
+        lineOffset: toRender.length + 2,
       },
       // dir
       { type: "text", foreground: "binding", text: this.dir, lineOffset: 1 },
@@ -452,7 +500,7 @@ export class FindFilePanel {
           type: "background",
           background: "header",
           lines: 1,
-          lineOffset: newSelection.idx - renderedLines.start + 2,
+          lineOffset: newSelection.idx - renderStart + 2,
           zOffset: 1,
         });
         break;
@@ -466,79 +514,8 @@ export class FindFilePanel {
         });
     }
 
-    const range = getRenderRangeFromTop(editor, renderedLines.len + 2);
+    const range = getRenderRangeFromTop(editor, toRender.length + 2);
     return renderDecorations(decos, editor, range);
-  }
-
-  private static recompute(args: {
-    files: string[];
-    input: string;
-    isSelectionManuallyChanged: boolean;
-    lastSelection: FindFileSelection;
-  }): {
-    fzfResults: FzfResultItem<string>[];
-    newSelection: FindFileSelection;
-    renderedLines: { start: number; len: number };
-  } {
-    const { files, input, isSelectionManuallyChanged, lastSelection } = args;
-
-    let fzfResults: FzfResultItem<string>[] = [];
-    if (input === "") {
-      fzfResults = files.map(dummyFzfResultItem);
-    } else {
-      const dirs = new Set(files.filter((f) => f.endsWith("/")).map(stripSlash));
-      fzfResults = new Fzf(files.map(stripSlash), {
-        tiebreakers: [byStartAsc, byLengthAsc],
-      })
-        .find(input)
-        .map((r) => (dirs.has(r.item) ? { ...r, item: r.item + "/" } : r));
-    }
-
-    if (fzfResults.length === 0) {
-      return {
-        fzfResults,
-        renderedLines: { start: 0, len: 0 },
-        newSelection: lastSelection.type === "input" ? lastSelection : { type: "none" },
-      };
-    } else {
-      let focusIdx: number;
-      let newSelection: FindFileSelection;
-      if (lastSelection.type === "none") {
-        newSelection = {
-          type: "file",
-          file: fzfResults[0].item,
-          idx: 0,
-        };
-        focusIdx = 0;
-      } else if (lastSelection.type === "file") {
-        if (isSelectionManuallyChanged) {
-          // follow user selection
-          const file = lastSelection.file;
-          focusIdx = Math.max(
-            0,
-            fzfResults.findIndex((r) => r.item === file),
-          );
-        } else {
-          // use the best fzf match if selection is never manually changed
-          focusIdx = 0;
-        }
-        newSelection = {
-          type: "file",
-          file: fzfResults[focusIdx].item,
-          idx: focusIdx,
-        };
-      } else {
-        assert(lastSelection.type === "input");
-        newSelection = lastSelection;
-        focusIdx = 0;
-      }
-
-      const renderedLines = indicesToRender({
-        length: fzfResults.length,
-        focus: focusIdx,
-      });
-      return { fzfResults, newSelection, renderedLines };
-    }
   }
 
   public render() {
@@ -555,6 +532,7 @@ export class FindFilePanel {
   public async quit(path?: string) {
     if (this.isQuit) return;
     this.isQuit = true;
+    this.dataProvider.quit();
     for (const dsp of this.disposableDecos) dsp.dispose();
     this.disposableDecos = [];
     await disableLeaderKey();
