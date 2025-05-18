@@ -8,9 +8,11 @@ configurations and UI.
 ... with some helpful keyboard-friendly file navigation utilities, including
 
 - find-file (emacs-like)
+  
   <img src="img/find-file.png" width="75%">
 
 - ripgrep (Spacemacs-like)
+  
   <img src="img/ripgrep.png" width="75%">
 
 It can be considered an alternative implementation to
