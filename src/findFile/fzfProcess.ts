@@ -1,6 +1,6 @@
-import { workspace, window } from "vscode";
-import { fetchText, runProcess } from "../common/remote";
+import { window, workspace } from "vscode";
 import { log } from "../common/global";
+import { fetchText, runProcess } from "../common/remote";
 import { stripSlash } from "../common/stripSlash";
 
 type FzfState =
@@ -98,7 +98,7 @@ export class FzfProcess {
         const proc = runProcess(fzfExe, ["--listen", port.toString()], {
           cwd,
           pty: true,
-          stdio: ["pipe", "ignore", "ignore"],
+          stdio: ["pipe", "ignore", "pipe"],
         }).then<FzfState>((r) => {
           if (r.error) {
             return {

@@ -7,10 +7,11 @@ import {
 } from "../common/context";
 import { Decoration, renderDecorations } from "../common/decoration";
 import { assert, commonPrefix, log } from "../common/global";
-import { createFile, ENV_HOME, openFile, readDirFilesAndDirs } from "../common/remote";
+import { createFile, ENV_HOME, openFile } from "../common/remote";
 import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
 import { OneLineEditor as SingleLineEditor } from "../common/singleLineEditor";
-import { byLengthAsc, byStartAsc, Fzf, FzfResultItem } from "../fzf-for-js/src/lib/main";
+import { stripSlash } from "../common/stripSlash";
+import { FzfResultItem } from "../fzf-for-js/src/lib/main";
 import { showDir } from "./dired";
 import {
   dummyFzfResultItem,
@@ -18,7 +19,6 @@ import {
   FindFileDataProvider,
   getFileFromDataIdx,
 } from "./findFileDataProvider";
-import { stripSlash } from "../common/stripSlash";
 
 function RETisTAB() {
   const config = workspace.getConfiguration("leaderkey.find-file");
@@ -346,10 +346,17 @@ export class FindFilePanel {
     toRender: FzfResultItem<string>[];
   } {
     if (curResults === undefined || curResults.items.length === 0) {
+      let toRender: FzfResultItem<string>[] = [];
+      if (curResults === undefined) {
+        toRender = [dummyFzfResultItem("<loading...>")];
+      } else if (curResults.mode === "fzf" && curResults.reading === true) {
+        toRender = [dummyFzfResultItem("<fzf loading...>")];
+      }
+
       return {
         newSelection: lastSelection.type === "input" ? lastSelection : { type: "none" },
         renderStart: 0,
-        toRender: curResults === undefined ? [dummyFzfResultItem("<loading...>")] : [],
+        toRender,
       };
     }
 

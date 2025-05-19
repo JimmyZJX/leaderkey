@@ -13,7 +13,7 @@ type FindFileItems<T> = {
 
 export type FindFileData =
   | ({ mode: "ls" } & FindFileItems<FzfResultItem<string>>)
-  | ({ mode: "fzf" } & FindFileItems<string>);
+  | ({ mode: "fzf"; reading: boolean } & FindFileItems<string>);
 
 export function getFileFromDataIdx(data: FindFileData, idx: number) {
   if (data.mode === "ls") {
@@ -113,6 +113,7 @@ export class FindFileDataProvider {
     };
     this.setResults({
       mode: "fzf",
+      reading: r.reading,
       items: r.matches.map((m) => m.text),
       render,
       filtered: r.matchCount,
