@@ -154,6 +154,7 @@ export function renderDecorations(
         return window.createTextEditorDecorationType({
           color: "transparent",
           before: {
+            fontWeight: "normal",
             ...themeRenderOpts[globalThemeType][deco.foreground],
             ...(deco.background === undefined
               ? {}

@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.3.1
+
+- Fix font weight being bold when the underlying text is bold.
+
 ## v1.3.0
 
 - Support fzf when query in find-file contains space. Use `leaderkey.fzf.exe` to
