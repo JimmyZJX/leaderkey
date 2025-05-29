@@ -3,6 +3,13 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.0
+
+- Add `SPC = {a,b,c}` comparison commands
+  - `SPC = a` remembers the current selection
+  - `SPC = b` compares the current selection with last remembered `SPC = a`
+  - `SPC = c` compares clipboard to the current selection
+
 ## v1.3.1
 
 - Fix font weight being bold when the underlying text is bold.

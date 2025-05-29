@@ -246,6 +246,17 @@ const SpaceRoot: Bindings = {
       name: "Search keybindings",
       command: "leaderkey.searchBindings",
     },
+    "=": {
+      name: "+Compare",
+      keys: {
+        a: { name: "Compare from selection", command: "leaderkey.compare-from" },
+        b: { name: "Compare to selection", command: "leaderkey.compare-to" },
+        c: {
+          name: "Compare from clipboard",
+          command: "leaderkey.compare-from-clipboard",
+        },
+      },
+    },
     "v:transient": {
       name: "Smart expand transient",
       transient: true,
