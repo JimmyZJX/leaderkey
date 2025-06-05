@@ -41,6 +41,22 @@ const selectWindow0To8: Bindings["keys"] = {
 
 const SpcWTransientKeysExcluding0To8: Bindings["keys"] = {
   // Select
+  "<left>": {
+    name: "Focus window left",
+    command: "workbench.action.navigateLeft",
+  },
+  "<down>": {
+    name: "Focus window down",
+    command: "workbench.action.navigateDown",
+  },
+  "<up>": {
+    name: "Focus window up",
+    command: "workbench.action.navigateUp",
+  },
+  "<right>": {
+    name: "Focus window right",
+    command: "workbench.action.navigateRight",
+  },
   h: {
     name: "Focus window left",
     command: "workbench.action.navigateLeft",

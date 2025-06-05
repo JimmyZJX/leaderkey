@@ -3,6 +3,11 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.1
+
+- Add `SPC w {<left>,<up>,<down>,<right>}` bindings that are equivalent to
+  `SPC w {h,j,k,l}`
+
 ## v1.4.0
 
 - Add `SPC = {a,b,c}` comparison commands
