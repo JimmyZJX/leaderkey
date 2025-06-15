@@ -22,7 +22,7 @@ file.
 ## v1.3.0
 
 - Support fzf when query in find-file contains space. Use `leaderkey.fzf.exe` to
-  set path to the fzf executable.
+  set path to the fzf executable (recommend 0.62.0 or above).
   - Due to limitation of a headless mode in fzf, `script` (executable) is
     required on Linux/MacOS, and a background terminal window is used on
     Windows.
