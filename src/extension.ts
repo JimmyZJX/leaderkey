@@ -9,6 +9,7 @@ import {
 import { updateGlobalThemeType, updateStickyScrollConf } from "./common/decoration";
 import { init as initGlobal } from "./common/global";
 import { ENV_HOME, init as initRemote, pickPathFromUri } from "./common/remote";
+import { register as registerCompare } from "./compare/compare";
 import { register as registerDired, showDir } from "./findFile/dired";
 import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
@@ -106,6 +107,7 @@ class PanelManager {
 
   async activate(context: ExtensionContext) {
     await this.leaderKeyPanel.activate(context);
+    registerCompare(context);
     context.subscriptions.push(
       commands.registerCommand(
         "leaderkey.render",

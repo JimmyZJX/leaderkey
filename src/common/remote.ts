@@ -64,7 +64,13 @@ export type ProcessRunResult = {
   stderr: string | undefined;
 };
 
-export async function runProcess(prog: string, args: string[], execOpts?: SpawnOptions) {
+type RunProcessOptions = SpawnOptions & { pty?: boolean };
+
+export async function runProcess(
+  prog: string,
+  args: string[],
+  execOpts?: RunProcessOptions,
+) {
   args = ppWinPaths(args);
   execOpts ??= {};
   if (typeof execOpts.cwd === "string") {
@@ -192,6 +198,25 @@ export async function openFile(file: string, options?: TextDocumentShowOptions) 
   await commands.executeCommand("remote-commons.openFile", file, options);
 }
 
+type FetchInit = {
+  body?: BodyInit;
+  headers?: HeadersInit;
+  method?: string;
+  timeout?: number;
+};
+
+type FetchResult = {
+  ok: boolean;
+  status: number;
+  statusText: string;
+  headers: [string, string][];
+  bodyText: string;
+};
+
+export async function fetchText(url: string, init?: FetchInit): Promise<FetchResult> {
+  return await commands.executeCommand("remote-commons.fetch.fetchText", url, init);
+}
+
 async function goToExtensionSearchView(id: string) {
   await commands.executeCommand("workbench.extensions.search", id);
 }
@@ -247,7 +272,7 @@ async function checkExtensionVersion(
 }
 
 const REMOTE_COMMONS_EXTENSION_ID = "JimmyZJX.remote-commons";
-const REMOTE_COMMONS_EXPECTED_VERSION = { major: 0, minor: 3 };
+const REMOTE_COMMONS_EXPECTED_VERSION = { major: 0, minor: 4 };
 
 let workspaceExtensions: { id: string; version: string }[] | undefined = undefined;
 let platform: string | undefined = undefined;
@@ -262,7 +287,7 @@ export async function init() {
     log(`Failed to get extensions: ${e}`);
     if (
       (await window.showErrorMessage(
-        "Remote Commons extension not installed. It is needed for rg and find-file to work",
+        "Remote Commons extension not installed. It is needed for rg, find-file and fzf to work",
         "Install",
       )) === "Install"
     ) {

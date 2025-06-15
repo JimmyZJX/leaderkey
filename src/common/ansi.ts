@@ -184,9 +184,9 @@ export async function runAndParseAnsi(
   const { textHook, ...execOpts } = opts ?? {};
   const r = await runProcess(prog, args, execOpts);
   if (r.error) {
-    return execErrorToPage(r.error, r.stdout, r.stderr);
+    return execErrorToPage(r.error, r.stdout ?? "", r.stderr ?? "");
   } else {
-    const afterHook = textHook ? await textHook(r.stdout) : r.stdout;
+    const afterHook = textHook ? await textHook(r.stdout ?? "") : r.stdout;
     let text: string;
     let metadata: any = undefined;
     if (typeof afterHook === "string") {

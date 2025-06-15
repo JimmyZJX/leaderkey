@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.2.3",
+  "version": "1.4.1",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -101,6 +101,21 @@
         "command": "leaderkey.dired",
         "title": "Show dired buffer",
         "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.compare-from",
+        "title": "Compare From Current Selection",
+        "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.compare-to",
+        "title": "Compare To Current Selection",
+        "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.compare-from-clipboard",
+        "title": "Compare From Clipboard To Current Selection",
+        "category": "Leaderkey"
       }
     ],
     "configuration": {
@@ -113,13 +128,18 @@
         },
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": { },
+          "default": {},
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         },
         "leaderkey.ripgrep.exe": {
           "type": "string",
           "default": "rg",
           "description": "path to the ripgrep executable"
+        },
+        "leaderkey.fzf.exe": {
+          "type": "string",
+          "default": "fzf",
+          "description": "path to the fzf executable (recommend 0.62.0 or above)"
         },
         "leaderkey.find-file.RETisTAB": {
           "type": "boolean",
@@ -1678,7 +1698,7 @@
           "comments": "off",
           "strings": "off"
         },
-        "editor.rulers": [ ],
+        "editor.rulers": [],
         "editor.stickyScroll.enabled": true,
         "editor.stickyScroll.maxLineCount": 2,
         "editor.occurrencesHighlight": "off",
@@ -1695,7 +1715,7 @@
           "comments": "off",
           "strings": "off"
         },
-        "editor.rulers": [ ],
+        "editor.rulers": [],
         "editor.stickyScroll.enabled": true,
         "editor.stickyScroll.maxLineCount": 2,
         "editor.occurrencesHighlight": "off",
