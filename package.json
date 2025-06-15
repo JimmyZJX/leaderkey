@@ -139,7 +139,7 @@
         "leaderkey.fzf.exe": {
           "type": "string",
           "default": "fzf",
-          "description": "path to the fzf executable"
+          "description": "path to the fzf executable (recommend 0.62.0 or above)"
         },
         "leaderkey.find-file.RETisTAB": {
           "type": "boolean",

@@ -15,6 +15,8 @@ configurations and UI.
 
   <img src="img/ripgrep.png" width="75%">
 
+(Make sure you set "leaderkey.fzf.exe" and "leaderkey.ripgrep.exe")
+
 It can be considered an alternative implementation to
 [VSpaceCode](https://github.com/VSpaceCode/VSpaceCode) +
 [vscode-which-key](https://github.com/VSpaceCode/vscode-which-key).
