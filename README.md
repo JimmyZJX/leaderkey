@@ -69,8 +69,23 @@ the customization you need:
 ],
 ```
 
-If you are not using vscodevim, you can use `shift+space` or `alt+space` (not on Windows)
-to trigger the `SPC` menu and `alt+,` to trigger the `,` menu.
+If you are not using vscodevim, you can use `alt+space` (unfortunately not working on
+Windows) to trigger the `SPC` menu and `alt+,` to trigger the `,` menu.
+
+Alternatively, bind to any key you want in `Preferences: Open Keyboard Shortcuts (JSON)`:
+
+```json
+  {
+    "key": "alt+space",
+    "command": "runCommands",
+    "args": {
+      "commands": [
+        { "command": "_setContext", "args": [ "leaderkeyState", "SPC" ] },
+        { "command": "leaderkey.render", "args": "SPC" }
+      ]
+    }
+  },
+```
 
 ## Documentation
 

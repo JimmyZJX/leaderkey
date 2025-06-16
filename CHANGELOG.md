@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.6
+
+- Remove `shift+space` keybinding
+
 ## v1.4.5
 
 - Fix `Tab` key behavior in find-file when the prefix typed does not have the same case as

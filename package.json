@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -1721,26 +1721,8 @@
               "args": "SPC"
             }
           ]
-        }
-      },
-      {
-        "key": "shift+space",
-        "command": "runCommands",
-        "args": {
-          "commands": [
-            {
-              "command": "_setContext",
-              "args": [
-                "leaderkeyState",
-                "SPC"
-              ]
-            },
-            {
-              "command": "leaderkey.render",
-              "args": "SPC"
-            }
-          ]
-        }
+        },
+        "when": "!leaderkeyState"
       },
       {
         "key": "alt+,",
@@ -1759,7 +1741,8 @@
               "args": ","
             }
           ]
-        }
+        },
+        "when": "!leaderkeyState"
       }
     ],
     "languages": [
