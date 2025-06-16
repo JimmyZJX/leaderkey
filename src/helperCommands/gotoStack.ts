@@ -29,7 +29,11 @@ function isGotoStackElementEqual(e1: gotoStackElement, e2: gotoStackElement) {
 }
 
 export async function pushGotoStack(
-  cmdOrOpts: string | { command: string; args?: any } | undefined,
+  cmdOrOpts:
+    | string
+    | { command: string; args?: any }
+    | { command: string; args?: any }[]
+    | undefined,
 ) {
   const editor = window.activeTextEditor;
   if (editor === undefined) {
@@ -41,16 +45,22 @@ export async function pushGotoStack(
     // push
     gotoStack.push(e);
   } else {
-    const { command, args } =
-      typeof cmdOrOpts === "string" ? { command: cmdOrOpts, args: undefined } : cmdOrOpts;
-    try {
-      if (Array.isArray(args)) {
-        await commands.executeCommand(command, ...args);
-      } else {
-        await commands.executeCommand(command, args);
+    const cmds =
+      typeof cmdOrOpts === "string"
+        ? [{ command: cmdOrOpts, args: undefined }]
+        : Array.isArray(cmdOrOpts)
+          ? cmdOrOpts
+          : [cmdOrOpts];
+    for (const { command, args } of cmds) {
+      try {
+        if (Array.isArray(args)) {
+          await commands.executeCommand(command, ...args);
+        } else {
+          await commands.executeCommand(command, args);
+        }
+      } catch (e) {
+        window.showErrorMessage(`Goto stack: fail to execute command [${command}]: ${e}`);
       }
-    } catch (e) {
-      window.showErrorMessage(`Goto stack: fail to execute command [${command}]: ${e}`);
     }
     const editor2 = window.activeTextEditor;
     if (editor2 === undefined) {
