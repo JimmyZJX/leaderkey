@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.3
+
+- `SPC p f` by default uses fzf
+
 ## v1.4.2
 
 - Add default bindings `{alt,shift}+space` and `alt+,` for non-vim users

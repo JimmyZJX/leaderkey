@@ -1062,7 +1062,11 @@ const SpaceRoot: Bindings = {
         },
         f: {
           name: "+Find file in project",
-          command: "workbench.action.quickOpen",
+          command: "leaderkey.findFile",
+          args: {
+            projectDir: true,
+            query: " ",
+          },
         },
         l: {
           name: "+Switch project",

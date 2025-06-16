@@ -38,10 +38,12 @@ type FindFileSelection =
   | { type: "input" };
 
 export type FindFileOptions = {
+  projectRoot?: boolean;
   init?: string;
   dirOnly?: boolean;
   title?: string;
   returnOnly?: boolean;
+  query?: string;
 };
 
 type TabCompletionAction =
@@ -78,13 +80,13 @@ export class FindFilePanel {
     this.RETisTAB = RETisTAB();
     this.onQuit = onQuit;
     this.isQuit = false;
-    this.editor = new SingleLineEditor("");
+    this.editor = new SingleLineEditor(options.query ?? "");
     this.dirOnly = options.dirOnly ?? false;
     this.returnOnly = options.returnOnly ?? false;
     this.title = options.title ?? "Find File";
     this.isSelectionManuallyChanged = false;
     this.dataProvider = undefined!; // initialized in setDir
-    this.setDir(options.init ?? ENV_HOME);
+    this.setDir(options.init ?? ENV_HOME, "keep");
   }
 
   setDir(dir: string, editor: "keep" | "reset" = "reset") {

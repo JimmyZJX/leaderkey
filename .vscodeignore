@@ -14,3 +14,4 @@ vsc-extension-quickstart.md
 **/*.ts
 **/.vscode-test.*
 **/*.corrected
+**/pnpm-lock.yaml

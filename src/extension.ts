@@ -7,7 +7,7 @@ import {
   workspace,
 } from "vscode";
 import { updateGlobalThemeType, updateStickyScrollConf } from "./common/decoration";
-import { init as initGlobal } from "./common/global";
+import { commonPrefix, init as initGlobal } from "./common/global";
 import { ENV_HOME, init as initRemote, pickPathFromUri } from "./common/remote";
 import { register as registerCompare } from "./compare/compare";
 import { register as registerDired, showDir } from "./findFile/dired";
@@ -63,13 +63,29 @@ class PanelManager {
     }
   }
 
+  static getWorkspaceRoot() {
+    const workspaceDirs = (workspace.workspaceFolders ?? []).flatMap((folder) => {
+      const uri = folder.uri;
+      if (["file", "vscode-remote"].includes(uri.scheme)) {
+        return [uri.path];
+      }
+      return [];
+    });
+    if (workspaceDirs.length === 0) return ENV_HOME;
+    return commonPrefix(workspaceDirs);
+  }
+
   async findFile(options?: FindFileOptions) {
     let editor = window.activeTextEditor;
     if (!editor) {
       const doc = await workspace.openTextDocument({ language: "text" });
       editor = await window.showTextDocument(doc, { preview: true });
     }
-    const init = options?.init ?? (await pickPathFromUri(editor.document.uri, "dirname"));
+    const init = options?.init
+      ? options.init
+      : options?.projectRoot
+        ? PanelManager.getWorkspaceRoot()
+        : await pickPathFromUri(editor.document.uri, "dirname");
     return new Promise<string | undefined>((resolve) => {
       const panel = new FindFilePanel({ ...options, init }, (path) => resolve(path));
       this.currentPanel = { type: "findfile", panel };
