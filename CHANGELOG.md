@@ -3,6 +3,12 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.5
+
+- Fix `Tab` key behavior in find-file when the prefix typed does not have the same case as
+  the first candidate. (E.g. input `re` matches `README.md`, `Tab` should replace the
+  input with `RE`)
+
 ## v1.4.4
 
 - find-file panel now renders the path with ellipsis when it is longer than 70 characters

@@ -127,6 +127,7 @@ export class FindFilePanel {
         // extend text to the common prefix starting from end of last match
         const subStrs = data.items.map((r) => ({
           item: r.item,
+          match: r.item.slice(0, Math.max(...r.positions) + 1),
           subStr: r.item.slice(Math.max(...r.positions) + 1),
         }));
         const common = commonPrefix(subStrs.map(({ subStr }) => subStr));
@@ -139,7 +140,7 @@ export class FindFilePanel {
             type: "edit",
             edit: () => {
               this.editor.edit((lr) => {
-                lr.l = lr.l + lr.r + toAppend;
+                lr.l = subStrs[0].match + toAppend;
                 lr.r = "";
               });
             },
