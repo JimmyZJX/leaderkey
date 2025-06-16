@@ -334,6 +334,25 @@ export class FindFilePanel {
     this.render();
   }
 
+  static RENDER_DIR_LEN = 70;
+
+  private static renderDir(dir: string) {
+    if (dir.length < this.RENDER_DIR_LEN || !dir.includes("/")) return dir;
+    const parts = dir.split("/");
+    // get minimum part suffix whose sum of lengths is shorter than this.RENDER_DIR_LEN
+    let sum = 0;
+    for (let i = parts.length - 1; i >= 0; i--) {
+      sum += parts[i].length + 1;
+      if (i < parts.length - 1 && sum > this.RENDER_DIR_LEN) {
+        return ".../" + parts.slice(i + 1).join("/");
+      }
+    }
+    window.showWarningMessage(
+      `Unexpected: failed to shorten dir: ${dir} with length limit ${this.RENDER_DIR_LEN}`,
+    );
+    return dir;
+  }
+
   private static renderLogic({
     curResults,
     isSelectionManuallyChanged,
@@ -437,6 +456,8 @@ export class FindFilePanel {
           "file)"
         : "";
 
+    const dirEllipsis = FindFilePanel.renderDir(this.dir);
+
     const tabCompletion = this.tabCompletion(this.lastKey);
     const tabCompletionIndicator =
       tabCompletion.type === "selection"
@@ -446,8 +467,9 @@ export class FindFilePanel {
         : "";
     const inputLen = this.editor.value().length;
     const inputDecos: Decoration[] = [
+      { type: "text", foreground: "binding", text: dirEllipsis, lineOffset: 1 },
       ...this.editor.render({
-        char: this.dir.length,
+        char: dirEllipsis.length,
         line: 1,
         postfix: inputPostfix,
       }),
@@ -456,7 +478,7 @@ export class FindFilePanel {
         text: tabCompletionIndicator,
         lineOffset: 1,
         foreground: "dim",
-        charOffset: this.dir.length + inputLen + 2,
+        charOffset: dirEllipsis.length + inputLen + 2,
       },
     ];
 
@@ -492,9 +514,7 @@ export class FindFilePanel {
         lines: 0.5,
         lineOffset: toRender.length + 2,
       },
-      // dir
-      { type: "text", foreground: "binding", text: this.dir, lineOffset: 1 },
-      // input
+      // dir and input
       ...inputDecos,
       // selections
       { type: "text", foreground: "dir", text: fileListDirs, lineOffset: 2 },

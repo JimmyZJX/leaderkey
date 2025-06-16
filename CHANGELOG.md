@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.4
+
+- find-file panel now renders the path with ellipsis when it is longer than 70 characters
+
 ## v1.4.3
 
 - `SPC p f` by default uses fzf
