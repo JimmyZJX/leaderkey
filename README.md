@@ -69,14 +69,8 @@ the customization you need:
 ],
 ```
 
-If you are not using vscodevim, the example keybinding
-
-```json
-{ "key": "ctrl+space", "command": "leaderkey.render", "args": "SPC" }
-```
-
-is all you need to bind `ctrl+space` to trigger the `SPC` menu.
-(The `_setContext` command is used to improve reliability but is totally optional)
+If you are not using vscodevim, you can use `shift+space` or `alt+space` (not on Windows)
+to trigger the `SPC` menu and `alt+,` to trigger the `,` menu.
 
 ## Documentation
 

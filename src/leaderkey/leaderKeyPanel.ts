@@ -106,6 +106,7 @@ export class LeaderkeyPanel {
             // reset
             this.when = undefined;
           } else {
+            commands.executeCommand("workbench.action.focusActiveEditorGroup");
             const bOrC = binding ?? go(this.root, path, this.when);
             if (bOrC === undefined || isCommand(bOrC)) {
               // skip rendering

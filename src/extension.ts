@@ -111,10 +111,10 @@ class PanelManager {
     context.subscriptions.push(
       commands.registerCommand(
         "leaderkey.render",
-        async (pathOrWithWhen: string | { path: string; when: string }) => {
+        async (pathOrWithWhen?: string | { path: string; when: string }) => {
           await this.forceReset();
           this.currentPanel = { type: "leaderkey" };
-          this.leaderKeyPanel.render(pathOrWithWhen);
+          this.leaderKeyPanel.render(pathOrWithWhen ?? "SPC");
         },
       ),
       commands.registerCommand(

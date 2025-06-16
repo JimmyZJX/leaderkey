@@ -3,6 +3,12 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.2
+
+- Add default bindings `{alt,shift}+space` and `alt+,` for non-vim users
+- Remove `vscodevim` dependency
+- Hide uninteresting commands in Command Palette
+
 ## v1.4.1
 
 - Add `SPC w {<left>,<up>,<down>,<right>}` bindings that are equivalent to

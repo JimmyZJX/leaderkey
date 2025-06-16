@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -36,7 +36,6 @@
   ],
   "extensionPack": [
     "jimmyzjx.remote-commons",
-    "vscodevim.vim",
     "kahole.magit",
     "jacobdufault.fuzzy-search"
   ],
@@ -118,6 +117,34 @@
         "category": "Leaderkey"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "leaderkey.refreshConfigs",
+          "when": "false"
+        },
+        {
+          "command": "leaderkey.extensions.getAll",
+          "when": "false"
+        },
+        {
+          "command": "leaderkey.render",
+          "when": "false"
+        },
+        {
+          "command": "leaderkey.onkey",
+          "when": "false"
+        },
+        {
+          "command": "leaderkey.pushGotoStack",
+          "when": "false"
+        },
+        {
+          "command": "leaderkey.popGotoStack",
+          "when": "false"
+        }
+      ]
+    },
     "configuration": {
       "title": "leaderkey",
       "properties": {
@@ -1676,6 +1703,63 @@
         "key": "enter",
         "when": "editorTextFocus && resourceScheme == 'leaderkey.dired' && !leaderkeyState && (!vim.active || vim.mode == 'Normal')",
         "command": "leaderkey.dired.enter"
+      },
+      {
+        "key": "alt+space",
+        "command": "runCommands",
+        "args": {
+          "commands": [
+            {
+              "command": "_setContext",
+              "args": [
+                "leaderkeyState",
+                "SPC"
+              ]
+            },
+            {
+              "command": "leaderkey.render",
+              "args": "SPC"
+            }
+          ]
+        }
+      },
+      {
+        "key": "shift+space",
+        "command": "runCommands",
+        "args": {
+          "commands": [
+            {
+              "command": "_setContext",
+              "args": [
+                "leaderkeyState",
+                "SPC"
+              ]
+            },
+            {
+              "command": "leaderkey.render",
+              "args": "SPC"
+            }
+          ]
+        }
+      },
+      {
+        "key": "alt+,",
+        "command": "runCommands",
+        "args": {
+          "commands": [
+            {
+              "command": "_setContext",
+              "args": [
+                "leaderkeyState",
+                ","
+              ]
+            },
+            {
+              "command": "leaderkey.render",
+              "args": ","
+            }
+          ]
+        }
       }
     ],
     "languages": [
