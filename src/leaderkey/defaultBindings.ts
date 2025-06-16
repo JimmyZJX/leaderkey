@@ -1064,7 +1064,7 @@ const SpaceRoot: Bindings = {
           name: "+Find file in project",
           command: "leaderkey.findFile",
           args: {
-            projectDir: true,
+            projectRoot: true,
             query: " ",
           },
         },
