@@ -55,6 +55,9 @@ export class FindFileDataProvider {
 
   private mode: "ls-only" | "ls-and-fzf";
 
+  private firstResult: Promise<FindFileData>;
+  private setFirstResult!: (data: FindFileData) => void;
+
   constructor(
     cwd: string,
     mode: "ls-only" | "ls-and-fzf",
@@ -63,6 +66,8 @@ export class FindFileDataProvider {
     this.cwd = cwd;
     this.mode = mode;
     this.onResults = onResults;
+
+    this.firstResult = new Promise((set) => (this.setFirstResult = set));
 
     this.lsPromise = (async () => {
       this.lsResult = await ls(cwd, false);
@@ -94,12 +99,18 @@ export class FindFileDataProvider {
   }
 
   private setResults(results: FindFileData) {
+    if (this.curResults === undefined) this.setFirstResult(results);
     this.curResults = results;
     this.onResults(this.curResults);
   }
 
   public getCurResults() {
     return this.curResults;
+  }
+
+  public async waitOne() {
+    if (this.curResults) return this.curResults;
+    return await this.firstResult;
   }
 
   private onFzfResult(r: FzfGetResponse) {

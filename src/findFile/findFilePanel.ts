@@ -203,8 +203,19 @@ export class FindFilePanel {
         }
         break;
       case "input":
-      case "none":
         await this.open(this.editor.value(), "forceCreate");
+        break;
+      case "none": {
+        const results = await this.dataProvider.waitOne();
+        if (results.items.length === 0) {
+          await this.open(this.editor.value(), "forceCreate");
+          break;
+        } else {
+          const result = results.mode === "ls" ? results.items[0].item : results.items[0];
+          await this.open(result, "ret");
+          break;
+        }
+      }
     }
   }
 
