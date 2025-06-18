@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.10
+
+- Leaderkey menu now only grabs focus if it's currently focused on the terminal
+
 ## v1.4.9
 
 - Fix `ctrl+.` in ripgrep panel
