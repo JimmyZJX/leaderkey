@@ -75,7 +75,7 @@ class PanelManager {
     return commonPrefix(workspaceDirs);
   }
 
-  async findFile(options?: FindFileOptions) {
+  async findFile(options?: FindFileOptions & { doNotResetPanel?: boolean }) {
     let editor = window.activeTextEditor;
     if (!editor) {
       const doc = await workspace.openTextDocument({ language: "text" });
@@ -87,7 +87,9 @@ class PanelManager {
         ? PanelManager.getWorkspaceRoot()
         : await pickPathFromUri(editor.document.uri, "dirname");
     return new Promise<string | undefined>(async (resolve) => {
-      await this.forceReset();
+      if (!options?.doNotResetPanel) {
+        await this.forceReset();
+      }
       const panel = new FindFilePanel({ ...options, init }, (path) => resolve(path));
       this.currentPanel = { type: "findfile", panel };
     });

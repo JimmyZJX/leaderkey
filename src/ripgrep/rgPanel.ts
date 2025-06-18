@@ -133,6 +133,7 @@ export class RgPanel {
           init: this.query.cwd,
           dirOnly: true,
           returnOnly: true,
+          doNotResetPanel: true,
         }),
     );
     this.pauseRender = false;

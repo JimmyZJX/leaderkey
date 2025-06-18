@@ -103,7 +103,7 @@ export class FindFilePanel {
     }
     this.dataProvider = new FindFileDataProvider(
       this.dir,
-      this.dirOnly ? "ls-only" : "ls-and-fzf",
+      this.dirOnly ? "ls-dir-only" : "ls-and-fzf",
       (_) => this.render(),
     );
     if (this.editor.value() !== "") {

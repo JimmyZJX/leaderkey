@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.9
+
+- Fix `ctrl+.` in ripgrep panel
+
 ## v1.4.8
 
 - Improve find-file when typing and hitting `RET` too fast. Now it waits for the result

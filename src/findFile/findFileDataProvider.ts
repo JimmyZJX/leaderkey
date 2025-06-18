@@ -53,14 +53,14 @@ export class FindFileDataProvider {
   private lsResult: string[] | undefined = undefined;
   private fzf: FzfProcess | undefined = undefined;
 
-  private mode: "ls-only" | "ls-and-fzf";
+  private mode: "ls-dir-only" | "ls-and-fzf";
 
   private firstResult: Promise<FindFileData>;
   private setFirstResult!: (data: FindFileData) => void;
 
   constructor(
     cwd: string,
-    mode: "ls-only" | "ls-and-fzf",
+    mode: "ls-dir-only" | "ls-and-fzf",
     onResults: (r: FindFileData | undefined) => void,
   ) {
     this.cwd = cwd;
@@ -70,7 +70,7 @@ export class FindFileDataProvider {
     this.firstResult = new Promise((set) => (this.setFirstResult = set));
 
     this.lsPromise = (async () => {
-      this.lsResult = await ls(cwd, false);
+      this.lsResult = await ls(cwd, mode === "ls-dir-only");
       return this.lsResult;
     })().then(() => {});
 
