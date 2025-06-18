@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.4.7
+
+- Fix `leaderkey.findFile` stack on each other when run multiple times
+
 ## v1.4.6
 
 - Remove `shift+space` keybinding

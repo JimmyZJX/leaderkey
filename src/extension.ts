@@ -86,7 +86,8 @@ class PanelManager {
       : options?.projectRoot
         ? PanelManager.getWorkspaceRoot()
         : await pickPathFromUri(editor.document.uri, "dirname");
-    return new Promise<string | undefined>((resolve) => {
+    return new Promise<string | undefined>(async (resolve) => {
+      await this.forceReset();
       const panel = new FindFilePanel({ ...options, init }, (path) => resolve(path));
       this.currentPanel = { type: "findfile", panel };
     });
@@ -114,6 +115,7 @@ class PanelManager {
       mode.dir = { type: "path", path: dir };
     }
     const rgPanel = await createRgPanel(mode, () => this.resetCurrent());
+    await this.forceReset();
     this.currentPanel = { type: "ripgrep", panel: rgPanel };
   }
 
