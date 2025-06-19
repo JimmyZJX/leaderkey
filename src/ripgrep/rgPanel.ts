@@ -1,8 +1,9 @@
-import { dirname, join } from "path-browserify";
+import { basename, dirname, join } from "path-browserify";
 import {
   CancellationTokenSource,
   TextEditor,
   TextEditorDecorationType,
+  Uri,
   window,
   workspace,
 } from "vscode";
@@ -13,7 +14,7 @@ import {
 } from "../common/context";
 import { Decoration, renderDecorations } from "../common/decoration";
 import { commonPrefix, log } from "../common/global";
-import { ENV_HOME, pickPathFromUri, runProcess } from "../common/remote";
+import { createTempFile, ENV_HOME, pickPathFromUri, runProcess } from "../common/remote";
 import {
   getNumTotal,
   getRenderRangeFromTop,
@@ -99,6 +100,11 @@ export class RgPanel {
     this.spawn();
   }
 
+  private joinWithCwd(basename: string): string | Uri {
+    const path = join(this.query.cwd, basename);
+    return this.query.fileMapping[path] ?? path;
+  }
+
   private static enterContext() {
     enableLeaderKeyAndDisableVim(":ripgrep");
   }
@@ -108,7 +114,9 @@ export class RgPanel {
     this.disposableDecos = [];
   }
 
-  public async quit(mode: "interrupt" | "normal" | { file: string; lineNo: number }) {
+  public async quit(
+    mode: "interrupt" | "normal" | { file: string | Uri; lineNo: number },
+  ) {
     this.cancellationToken.cancel();
     enableVim();
     if (mode === "interrupt") {
@@ -182,7 +190,10 @@ export class RgPanel {
       if (this.matchState.selection === undefined) return;
       const match = this.matchState.matches[this.matchState.selection];
       if (match === undefined) return;
-      await this.quit({ file: join(this.query.cwd, match.file), lineNo: match.lineNo });
+      await this.quit({
+        file: this.joinWithCwd(match.file),
+        lineNo: match.lineNo,
+      });
     },
     "C-h": () => this.dirUp(),
     "M-h": () => this.dirUp(),
@@ -327,7 +338,7 @@ export class RgPanel {
 
     const selected = ms.matches[ms.selection ?? 0];
     if (selected) {
-      this.rgEditor?.preview(join(this.query.cwd, selected.file), selected.lineNo);
+      this.rgEditor?.preview(this.joinWithCwd(selected.file), selected.lineNo);
     }
 
     // status line
@@ -554,6 +565,7 @@ export type CreateRgPanelOptions = {
   query?: GetQueryFromSelectionOptions;
   dir?:
     | { type: "current" }
+    | { type: "currentFile" }
     | { type: "workspace" }
     | { type: "path"; path: string }
     | { type: "bash"; bash: string };
@@ -578,6 +590,8 @@ export async function createRgPanel(
     const dirMode = mode?.dir ?? { type: "current" };
 
     let dir: string[];
+    let cwd: string | undefined;
+    let fileMapping: Record<string, Uri> = {};
     // TODO synchronously show and then set dir
 
     let workspaceOrFallback = (workspace.workspaceFolders ?? []).flatMap((folder) => {
@@ -593,6 +607,26 @@ export async function createRgPanel(
       case "current":
         dir = [await pickPathFromUri(editor.document.uri, "dirname")];
         break;
+      case "currentFile": {
+        const uri = window.activeTextEditor?.document?.uri;
+        if (uri) {
+          if (["file", "vscode-remote"].includes(uri.scheme)) {
+            const file = uri.path;
+            dir = [file];
+            cwd = dirname(file);
+          } else {
+            // write to a temp file
+            const tmpFile = basename(uri.path);
+            const file = await createTempFile(tmpFile, editor.document.getText());
+            dir = [file];
+            cwd = dirname(file);
+            fileMapping[file] = uri;
+          }
+        } else {
+          dir = workspaceOrFallback;
+        }
+        break;
+      }
       case "bash": {
         const result = await runProcess("/bin/bash", ["-c", dirMode.bash], {
           cwd: await pickPathFromUri(editor.document.uri, "dirname"),
@@ -637,7 +671,8 @@ export async function createRgPanel(
     rgQuery = {
       dir,
       query,
-      cwd: commonPrefix(dir),
+      cwd: cwd ?? commonPrefix(dir),
+      fileMapping,
       ...getSearchMode(),
     };
   }

@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.5.0
+
+- Implement `SPC s {s,S}` and remove dependency to `jacobdufault.fuzzy-search`
+
 ## v1.4.10
 
 - Leaderkey menu now only grabs focus if it's currently focused on the terminal

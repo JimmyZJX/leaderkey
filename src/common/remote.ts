@@ -46,10 +46,21 @@ export async function readDirFilesAndDirs(
   );
 }
 
-export async function createFile(
-  path: string,
-): Promise<{ files: string[]; dirs: string[] }> {
-  return await commands.executeCommand("remote-commons.fs.createFile", ppWinPath(path));
+export async function createFile(path: string, contents?: string): Promise<void> {
+  return await commands.executeCommand(
+    "remote-commons.fs.createFile",
+    ppWinPath(path),
+    contents,
+  );
+}
+
+export async function createTempFile(path: string, contents?: string): Promise<string> {
+  const file = (await commands.executeCommand(
+    "remote-commons.fs.createTempFile",
+    ppWinPath(path),
+    contents,
+  )) as string;
+  return normalizePath(file);
 }
 
 export async function fileExists(
@@ -194,7 +205,10 @@ export class ProcessLineStreamer {
   }
 }
 
-export async function openFile(file: string, options?: TextDocumentShowOptions) {
+export async function openFile(file: string | Uri, options?: TextDocumentShowOptions) {
+  if (file instanceof Uri) {
+    file = file.toString();
+  }
   await commands.executeCommand("remote-commons.openFile", file, options);
 }
 
@@ -272,7 +286,7 @@ async function checkExtensionVersion(
 }
 
 const REMOTE_COMMONS_EXTENSION_ID = "JimmyZJX.remote-commons";
-const REMOTE_COMMONS_EXPECTED_VERSION = { major: 0, minor: 4 };
+const REMOTE_COMMONS_EXPECTED_VERSION = { major: 0, minor: 5 };
 
 let workspaceExtensions: { id: string; version: string }[] | undefined = undefined;
 let platform: string | undefined = undefined;

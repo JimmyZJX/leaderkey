@@ -162,6 +162,22 @@ const RipGrepResume: Command = {
 };
 
 const RipGrepKeys: { [key: string]: Bindings | Command } = {
+  s: {
+    name: "Search current file (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: { type: "selection-only" },
+      dir: { type: "currentFile" },
+    },
+  },
+  S: {
+    name: "Search current file (rg)",
+    command: "leaderkey.ripgrep",
+    args: {
+      query: { type: "expand" },
+      dir: { type: "currentFile" },
+    },
+  },
   d: {
     name: "Search current dir (rg)",
     command: "leaderkey.ripgrep",
@@ -1190,10 +1206,6 @@ const SpaceRoot: Bindings = {
           name: "Jump to symbol in buffer",
           command: "workbench.action.gotoSymbol",
         },
-        s: {
-          name: "Fuzzy search in current buffer",
-          command: "fuzzySearch.activeTextEditorWithCurrentSelection",
-        },
         J: {
           name: "Jump to symbol in project",
           command: "workbench.action.showAllSymbols",
@@ -1201,13 +1213,6 @@ const SpaceRoot: Bindings = {
         R: {
           name: "Search all references in side bar",
           command: "references-view.find",
-        },
-        S: {
-          name: "Fuzzy search with selection in current buffer",
-          commands: [
-            "editor.action.addSelectionToNextFindMatch",
-            "fuzzySearch.activeTextEditorWithCurrentSelection",
-          ],
         },
       },
     },

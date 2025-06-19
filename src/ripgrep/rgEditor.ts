@@ -159,7 +159,7 @@ export class RgEditor {
   private reqViewColumn: number | undefined;
   private reqDoc: TextDocument;
 
-  private toPreview: { path: string; line: number } | undefined;
+  private toPreview: { path: string | Uri; line: number } | undefined;
   private previewDebouncer: () => void;
   private isQuit = false;
 
@@ -185,7 +185,7 @@ export class RgEditor {
     return this.rgPanelEditor;
   }
 
-  public preview(path: string, line: number) {
+  public preview(path: string | Uri, line: number) {
     this.toPreview = { path, line };
     this.previewDebouncer();
   }
@@ -207,7 +207,7 @@ export class RgEditor {
     }
   }
 
-  public async enter(path: string, line: number) {
+  public async enter(path: string | Uri, line: number) {
     await this.quit(false);
 
     const viewColumn = this.reqViewColumn ?? 1;

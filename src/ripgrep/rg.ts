@@ -1,5 +1,5 @@
 import { relative } from "path-browserify";
-import { CancellationToken, workspace } from "vscode";
+import { CancellationToken, Uri, workspace } from "vscode";
 import { log } from "../common/global";
 import { normalizePath, ProcessLineStreamer } from "../common/remote";
 import { magicSpace, matchMagic, parseMagicQuery } from "./magicQuery";
@@ -44,6 +44,7 @@ export type RipGrepQuery = {
   query: string;
   cwd: string; // only affects how the results are rendered
   dir: string[]; // a list of dirs to search for `query`
+  fileMapping: Record<string, Uri>; // maps from fake path to real path when jumping
 } & RipGrepSearchMode;
 
 function toArgs(q: RipGrepQuery) {
