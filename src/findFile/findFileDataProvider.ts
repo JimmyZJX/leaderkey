@@ -3,8 +3,9 @@ import { stripSlash } from "../common/stripSlash";
 import { byLengthAsc, byStartAsc, Fzf } from "../fzf-for-js/src/lib/main";
 import { FzfResultItem } from "../fzf-for-js/src/lib/types";
 import { FzfGetResponse, FzfProcess } from "./fzfProcess";
+import { fdExe, JsFzf, JsFzfResult } from "./jsFzf";
 
-type FindFileItems<T> = {
+export type FindFileItems<T> = {
   items: T[];
   render: (item: T) => FzfResultItem<string>;
   filtered: number;
@@ -13,10 +14,11 @@ type FindFileItems<T> = {
 
 export type FindFileData =
   | ({ mode: "ls" } & FindFileItems<FzfResultItem<string>>)
-  | ({ mode: "fzf"; reading: boolean } & FindFileItems<string>);
+  | ({ mode: "fzf"; reading: boolean } & FindFileItems<string>)
+  | ({ mode: "jsfzf" } & JsFzfResult);
 
 export function getFileFromDataIdx(data: FindFileData, idx: number) {
-  if (data.mode === "ls") {
+  if (data.mode === "ls" || data.mode === "jsfzf") {
     return data.items[idx].item;
   } else if (data.mode === "fzf") {
     return data.items[idx];
@@ -51,7 +53,7 @@ export class FindFileDataProvider {
 
   private lsPromise: Promise<void>;
   private lsResult: string[] | undefined = undefined;
-  private fzf: FzfProcess | undefined = undefined;
+  private fzf: FzfProcess | JsFzf | undefined = undefined;
 
   private mode: "ls-dir-only" | "ls-and-fzf";
 
@@ -85,7 +87,13 @@ export class FindFileDataProvider {
     if (this.mode === "ls-and-fzf" && query.includes(" ")) {
       // fzf mode
       if (this.fzf === undefined) {
-        this.fzf = new FzfProcess(this.cwd, query, (r) => this.onFzfResult(r));
+        if (fdExe) {
+          this.fzf = new JsFzf(this.cwd, query, fdExe, (r) =>
+            this.setResults({ ...r, mode: "jsfzf" }),
+          );
+        } else {
+          this.fzf = new FzfProcess(this.cwd, query, (r) => this.onFzfResult(r));
+        }
       }
       this.fzf.setQuery(query);
     } else {

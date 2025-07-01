@@ -211,7 +211,10 @@ export class FindFilePanel {
           await this.open(this.editor.value(), "forceCreate");
           break;
         } else {
-          const result = results.mode === "ls" ? results.items[0].item : results.items[0];
+          const result =
+            results.mode === "ls" || results.mode === "jsfzf"
+              ? results.items[0].item
+              : results.items[0];
           await this.open(result, "ret");
           break;
         }

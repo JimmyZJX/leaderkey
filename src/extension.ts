@@ -12,6 +12,7 @@ import { ENV_HOME, init as initRemote, pickPathFromUri } from "./common/remote";
 import { register as registerCompare } from "./compare/compare";
 import { register as registerDired, showDir } from "./findFile/dired";
 import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
+import { register as registerJsFzf } from "./findFile/jsFzf";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
@@ -213,6 +214,7 @@ export async function activate(context: ExtensionContext) {
   initRemote();
   registerDired(context);
   registerRipgrepFs(context);
+  registerJsFzf(context);
 
   await panelManager.activate(context);
 

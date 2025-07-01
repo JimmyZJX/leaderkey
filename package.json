@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -166,6 +166,10 @@
           "type": "string",
           "default": "fzf",
           "description": "path to the fzf executable (recommend 0.62.0 or above)"
+        },
+        "leaderkey.fzf.useFdWithExclude": {
+          "type": "boolean",
+          "description": "To filter out files according to VSCode `files.exclude`, but requires `fd` executable. By default, we'll try to detect it on Linux and macOS and use it if found."
         },
         "leaderkey.find-file.RETisTAB": {
           "type": "boolean",
