@@ -1,6 +1,6 @@
 import { window, workspace } from "vscode";
 import { log } from "../common/global";
-import { fetchText, runProcess } from "../common/remote";
+import { fetchText, isWin, runProcess } from "../common/remote";
 import { stripSlash } from "../common/stripSlash";
 
 type FzfState =
@@ -95,11 +95,17 @@ export class FzfProcess {
       for (let j = 0; j < 5; j++) {
         // try to spawn fzf up to 5 times
         const port = getRandomDynamicPort();
-        const proc = runProcess(fzfExe, ["--listen", port.toString()], {
-          cwd,
-          pty: true,
-          stdio: ["pipe", "ignore", "pipe"],
-        }).then<FzfState>((r) => {
+        const additionalArgs = isWin() ? [] : fzfLinuxAdditionalArg;
+        const proc = runProcess(
+          fzfExe,
+          ["--listen", port.toString(), ...additionalArgs],
+          {
+            cwd,
+            pty: true,
+            stdio: ["pipe", "ignore", "pipe"],
+            env: getFdEnv(),
+          },
+        ).then<FzfState>((r) => {
           if (r.error) {
             return {
               type: "error",
@@ -199,5 +205,41 @@ export class FzfProcess {
       await fzfAbort(this.stateResolved.port);
       this.stateResolved = null;
     }
+  }
+}
+
+function quoteArg(s: string) {
+  if (s === "") return `''`;
+  if (!/[^%+,-.\/:=@_0-9A-Za-z]/.test(s)) return s;
+  return `'` + s.replace(/'/g, `'"'`) + `'`;
+}
+
+const fzfLinuxAdditionalArg = ["--with-shell", quoteArg("/bin/bash -c")];
+
+function getFdEnv(): NodeJS.ProcessEnv {
+  if (!fdExe) return {};
+  const excluded_files = workspace.getConfiguration("files").get("exclude") || {};
+  if (typeof excluded_files !== "object") {
+    return { FZF_DEFAULT_COMMAND: `${fdExe} --type f` };
+  }
+  const exclude_opts = Object.entries(excluded_files).flatMap(([key, enabled]) => {
+    if (!enabled) return [];
+    return ["--exclude", quoteArg(key)];
+  });
+  return {
+    FZF_DEFAULT_COMMAND: `${fdExe} --type f ${exclude_opts.join(" ")}`,
+  };
+}
+
+export let fdExe: string | undefined;
+
+export async function detectFd() {
+  if (isWin()) {
+    return;
+  }
+  const config = workspace.getConfiguration("leaderkey").get("fd.exe", "fd");
+  const r = await runProcess(config, ["--version"]);
+  if (r.error === null && r.stdout !== undefined && r.stdout.startsWith("fd")) {
+    fdExe = config;
   }
 }
