@@ -214,7 +214,7 @@ function quoteArg(s: string) {
   return `'` + s.replace(/'/g, `'"'`) + `'`;
 }
 
-const fzfLinuxAdditionalArg = ["--with-shell", quoteArg("/bin/bash -c")];
+const fzfLinuxAdditionalArg = ["--with-shell", "/bin/bash -c"];
 
 function getFdEnv(): NodeJS.ProcessEnv {
   if (!fdExe) return {};
