@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -1741,7 +1741,7 @@
             }
           ]
         },
-        "when": "!leaderkeyState"
+        "when": "!leaderkeyState && !terminalFocus"
       }
     ],
     "languages": [

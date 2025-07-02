@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.5.2
+
+- Disable `alt+,` in terminal
+
 ## v1.5.1
 
 - `fzf` excludes files in `files.exclude` if `fd` is available
