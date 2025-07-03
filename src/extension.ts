@@ -237,6 +237,7 @@ export async function activate(context: ExtensionContext) {
 
     window.onDidChangeActiveColorTheme((_ct) => updateGlobalThemeType()),
   );
+  updateGlobalThemeType();
 
   registerCommands(context);
 }

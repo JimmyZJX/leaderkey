@@ -223,7 +223,7 @@ function getFdEnv(): NodeJS.ProcessEnv {
     return { FZF_DEFAULT_COMMAND: `${fdExe} --type f` };
   }
   const exclude_opts = Object.entries(excluded_files).flatMap(([key, enabled]) => {
-    if (!enabled) return [];
+    if (!enabled || !key) return [];
     return ["--exclude", quoteArg(key)];
   });
   return {

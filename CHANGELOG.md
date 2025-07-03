@@ -3,6 +3,18 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.5.5
+
+- Bugfix: `files.exclude` sometimes includes an entry `{"": true}` (don't know why)
+
+## v1.5.4
+
+- Improve light/dark theme detection
+
+## v1.5.3
+
+- Fix a bug in the new `fzf` with `fd` command
+
 ## v1.5.2
 
 - Disable `alt+,` in terminal

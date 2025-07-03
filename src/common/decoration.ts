@@ -27,7 +27,6 @@ export function updateGlobalThemeType() {
       break;
   }
 }
-updateGlobalThemeType();
 
 export let stickyScrollMaxRows: number = 0;
 export function updateStickyScrollConf() {
