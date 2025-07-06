@@ -3,6 +3,11 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.5.6
+
+- Add config option `leaderkey.hideLeaderkeyMenu`. If set to `true`, the
+  leaderkey menu will not show in the editor until `?` is pressed.
+
 ## v1.5.5
 
 - Bugfix: `files.exclude` sometimes includes an entry `{"": true}` (don't know why)

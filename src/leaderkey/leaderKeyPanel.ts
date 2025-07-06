@@ -29,6 +29,8 @@ export class LeaderkeyPanel {
   when: string | undefined;
   disposableDecos: TextEditorDecorationType[] = [];
 
+  disableRenderUntilQuestionMark: boolean = false;
+
   onReset: () => void;
 
   static isConstructed: boolean = false;
@@ -117,7 +119,9 @@ export class LeaderkeyPanel {
             if (bOrC === undefined || isCommand(bOrC)) {
               // skip rendering
             } else {
-              this.disposableDecos = renderBinding(editor, bOrC, path, this.when);
+              if (!this.disableRenderUntilQuestionMark) {
+                this.disposableDecos = renderBinding(editor, bOrC, path, this.when);
+              }
             }
           }
         }
@@ -139,10 +143,18 @@ export class LeaderkeyPanel {
         : [keyOrObj.key, keyOrObj.when];
     this.when = when ?? this.when;
 
-    const newPath =
-      key === "<backspace>"
-        ? this.pop(this.path)
-        : (this.path === "" ? "" : this.path + " ") + key;
+    let newPath: string;
+    if (this.disableRenderUntilQuestionMark && key === "?") {
+      this.disableRenderUntilQuestionMark = false;
+      newPath = this.path;
+    } else {
+      if (key === "<backspace>") {
+        newPath = this.pop(this.path);
+      } else {
+        newPath = (this.path === "" ? "" : this.path + " ") + key;
+      }
+    }
+
     const bOrC = go(this.root, newPath, this.when);
     if (bOrC === undefined) {
       await this.setAndRenderPath("", undefined);
@@ -170,6 +182,9 @@ export class LeaderkeyPanel {
   }
 
   public render(pathOrWithWhen: string | { path: string; when: string }) {
+    this.disableRenderUntilQuestionMark = workspace
+      .getConfiguration("leaderkey")
+      .get("hideLeaderkeyMenu", false);
     if (typeof pathOrWithWhen === "string") {
       return this.setAndRenderPath(pathOrWithWhen, undefined);
     } else {
