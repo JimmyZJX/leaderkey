@@ -75,7 +75,7 @@ export class LeaderkeyPanel {
             overrideExn(
               newRoot,
               path,
-              typeof cmd === "string"
+              typeof cmd === "string" || cmd === null
                 ? cmd
                 : (Object.fromEntries(Object.entries(cmd as any)) as any as Command),
             );

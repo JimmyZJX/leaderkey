@@ -39,7 +39,7 @@ export function isCommand(x: Bindings | Command): x is Command {
 export function overrideExn(
   b: Bindings,
   path: string,
-  commandOrBindingName: Command | string,
+  commandOrBindingName: Command | string | null,
 ) {
   const keys = path.split(" ").filter((s) => s !== "");
   if (keys.length === 0) throw "leaderkey: path is empty";
@@ -53,7 +53,9 @@ export function overrideExn(
           )})`,
         );
       }
-      if (typeof commandOrBindingName === "string") {
+      if (commandOrBindingName === null) {
+        delete b.keys[key];
+      } else if (typeof commandOrBindingName === "string") {
         if (next !== undefined && isBindings(next)) {
           next.name = commandOrBindingName;
         } else {
