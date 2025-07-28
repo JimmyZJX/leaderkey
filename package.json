@@ -167,6 +167,11 @@
           "default": "fzf",
           "description": "path to the fzf executable (recommend 0.62.0 or above)"
         },
+        "leaderkey.dired.exe": {
+          "type": "string",
+          "default": "/bin/ls",
+          "description": "path to the an ls executable that supports --dired (e.g. GNU coreutils on macOS, or ls on Linux)"
+        },
         "leaderkey.find-file.RETisTAB": {
           "type": "boolean",
           "default": false,

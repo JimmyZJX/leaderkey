@@ -43,8 +43,11 @@ async function loadContent(uri: Uri): Promise<DecoratedPage<DiredMetadata>> {
       },
     };
   }
+
+  const prog = workspace.getConfiguration("leaderkey").get("dired.exe", "/bin/ls");
+
   return await runAndParseAnsi(
-    "/bin/ls",
+    prog,
     // l: long details, A: all but . and .., h: human readable, H: follow link for input
     [
       "-lAhH",
