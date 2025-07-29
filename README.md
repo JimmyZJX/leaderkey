@@ -15,7 +15,8 @@ configurations and UI.
 
   <img src="img/ripgrep.png" width="75%">
 
-(Make sure you set "leaderkey.fzf.exe" and "leaderkey.ripgrep.exe")
+(Make sure you set "leaderkey.fzf.exe" and "leaderkey.ripgrep.exe", and for macOS
+install coreutils to set "leaderkey.dired.exe")
 
 It can be considered an alternative implementation to
 [VSpaceCode](https://github.com/VSpaceCode/VSpaceCode) +
