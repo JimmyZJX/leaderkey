@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.5.8
+
+- Add config option `leaderkey.dired.exe` (should point to an `ls` exe)
+
 ## v1.5.6
 
 - Add config option `leaderkey.hideLeaderkeyMenu`. If set to `true`, the
