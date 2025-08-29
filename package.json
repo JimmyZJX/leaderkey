@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.5.8",
+  "version": "1.6.0",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -48,6 +48,11 @@
       {
         "command": "leaderkey.extensions.getAll",
         "title": "Get Installed (ui) Extensions (id and version)",
+        "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.registerInferPathCommand",
+        "title": "Register a command to infer path on given URI",
         "category": "Leaderkey"
       },
       {
@@ -127,6 +132,10 @@
           "when": "false"
         },
         {
+          "command": "leaderkey.registerInferPathCommand",
+          "when": "false"
+        },
+        {
           "command": "leaderkey.render",
           "when": "false"
         },
@@ -154,7 +163,7 @@
         },
         "leaderkey.overrides.user": {
           "type": "object",
-          "default": { },
+          "default": {},
           "description": "leaderkey user configuration dictionary.\nThe key of the dict is a leaderkey path (e.g. `SPC a f`).\nThe value is usually a command ({command: \"some-command\"}) but could also be a string (as the name of the binding group)"
         },
         "leaderkey.ripgrep.exe": {
@@ -1774,7 +1783,7 @@
           "comments": "off",
           "strings": "off"
         },
-        "editor.rulers": [ ],
+        "editor.rulers": [],
         "editor.stickyScroll.enabled": true,
         "editor.stickyScroll.maxLineCount": 2,
         "editor.occurrencesHighlight": "off",
@@ -1791,7 +1800,7 @@
           "comments": "off",
           "strings": "off"
         },
-        "editor.rulers": [ ],
+        "editor.rulers": [],
         "editor.stickyScroll.enabled": true,
         "editor.stickyScroll.maxLineCount": 2,
         "editor.occurrencesHighlight": "off",

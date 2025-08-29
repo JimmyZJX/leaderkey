@@ -8,7 +8,8 @@ import {
 } from "vscode";
 import { updateGlobalThemeType, updateStickyScrollConf } from "./common/decoration";
 import { commonPrefix, init as initGlobal } from "./common/global";
-import { ENV_HOME, init as initRemote, pickPathFromUri } from "./common/remote";
+import { getDir, inferPathFromHooks, inferPathFromUri } from "./common/inferPathFromUri";
+import { ENV_HOME, init as initRemote } from "./common/remote";
 import { register as registerCompare } from "./compare/compare";
 import { register as registerDired, showDir } from "./findFile/dired";
 import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
@@ -23,6 +24,8 @@ import {
 } from "./ripgrep/dummyFs";
 import { createRgPanel, CreateRgPanelOptions, RgPanel } from "./ripgrep/rgPanel";
 import { getQueryFromSelection } from "./ripgrep/utils";
+
+import { register as registerInferPath } from "./common/inferPathFromUri";
 
 type RipGrepCreateOption = CreateRgPanelOptions & { selectDir?: boolean };
 
@@ -84,9 +87,15 @@ class PanelManager {
     }
     const init = options?.init
       ? options.init
-      : options?.projectRoot
-        ? PanelManager.getWorkspaceRoot()
-        : await pickPathFromUri(editor.document.uri, "dirname");
+      : await (async () => {
+          if (options?.projectRoot) {
+            const inferred = await inferPathFromHooks(editor.document.uri);
+            if (inferred) return getDir(inferred);
+            return PanelManager.getWorkspaceRoot();
+          } else {
+            return await inferPathFromUri(editor.document.uri, "dirname");
+          }
+        })();
     return new Promise<string | undefined>(async (resolve) => {
       if (!options?.doNotResetPanel) {
         await this.forceReset();
@@ -146,7 +155,7 @@ class PanelManager {
         const editor = window.activeTextEditor;
         let dir: string;
         if (editor) {
-          dir = await pickPathFromUri(editor.document.uri, "dirname");
+          dir = await inferPathFromUri(editor.document.uri, "dirname");
         } else {
           dir = workspace.workspaceFolders?.[0]?.uri.fsPath ?? ENV_HOME;
         }
@@ -214,6 +223,7 @@ export async function activate(context: ExtensionContext) {
   initRemote();
   registerDired(context);
   registerRipgrepFs(context);
+  registerInferPath(context);
   detectFd();
 
   await panelManager.activate(context);

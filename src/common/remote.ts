@@ -1,11 +1,9 @@
 import { ExecException, ProcessEnvOptions, SpawnOptions } from "child_process";
-import { dirname } from "path-browserify";
-import { commands, TextDocumentShowOptions, Uri, window, workspace } from "vscode";
-import { scheme as diredScheme } from "../findFile/dired";
-import { commonPrefix, log } from "./global";
+import { commands, TextDocumentShowOptions, Uri, window } from "vscode";
+import { log } from "./global";
 import { throttler } from "./throttle";
 
-const RE_WINDOWS_URL_PATH = /^\/(?<drive>[a-zA-Z]):\/(?<rest>.+)$/;
+export const RE_WINDOWS_URL_PATH = /^\/(?<drive>[a-zA-Z]):\/(?<rest>.+)$/;
 function ppWinPath(arg: string) {
   if (isWin()) {
     const m = RE_WINDOWS_URL_PATH.exec(arg);
@@ -336,40 +334,4 @@ export async function init() {
 
 export function isWin() {
   return platform?.startsWith("win");
-}
-
-const COMMON_PATH_PREFIX = ["/tmp/", "/home/", "/usr/local/home/"];
-export async function pickPathFromUri(uri: Uri, mode?: "dirname") {
-  function modeOf(path: string) {
-    switch (mode) {
-      case "dirname":
-        if (path.endsWith("/")) return path.slice(0, -1);
-        return dirname(path);
-      case undefined:
-        return path;
-    }
-  }
-
-  function defaultPath() {
-    if (workspace.workspaceFolders) {
-      return commonPrefix(workspace.workspaceFolders.map((f) => f.uri.path));
-    }
-    return ENV_HOME;
-  }
-
-  if (
-    ["file", "vscode-remote", diredScheme].includes(uri.scheme) ||
-    COMMON_PATH_PREFIX.some((p) => uri.path.startsWith(p)) ||
-    RE_WINDOWS_URL_PATH.test(uri.path)
-  ) {
-    // looks like a path, accept immediately
-    return modeOf(uri.path);
-  } else if (uri.path === "/" || !uri.path.startsWith("/")) {
-    return defaultPath();
-  } else {
-    if (await fileExists(uri.path)) {
-      return modeOf(uri.path);
-    }
-    return defaultPath();
-  }
 }

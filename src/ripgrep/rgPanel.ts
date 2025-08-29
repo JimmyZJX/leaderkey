@@ -14,7 +14,8 @@ import {
 } from "../common/context";
 import { Decoration, renderDecorations } from "../common/decoration";
 import { commonPrefix, log } from "../common/global";
-import { createTempFile, ENV_HOME, pickPathFromUri, runProcess } from "../common/remote";
+import { inferPathFromUri } from "../common/inferPathFromUri";
+import { createTempFile, ENV_HOME, runProcess } from "../common/remote";
 import {
   getNumTotal,
   getRenderRangeFromTop,
@@ -605,7 +606,7 @@ export async function createRgPanel(
 
     switch (dirMode.type) {
       case "current":
-        dir = [await pickPathFromUri(editor.document.uri, "dirname")];
+        dir = [await inferPathFromUri(editor.document.uri, "dirname")];
         break;
       case "currentFile": {
         const uri = window.activeTextEditor?.document?.uri;
@@ -629,7 +630,7 @@ export async function createRgPanel(
       }
       case "bash": {
         const result = await runProcess("/bin/bash", ["-c", dirMode.bash], {
-          cwd: await pickPathFromUri(editor.document.uri, "dirname"),
+          cwd: await inferPathFromUri(editor.document.uri, "dirname"),
         });
         if (result.error !== null) {
           window.showErrorMessage(
