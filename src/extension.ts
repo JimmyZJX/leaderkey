@@ -26,6 +26,7 @@ import { createRgPanel, CreateRgPanelOptions, RgPanel } from "./ripgrep/rgPanel"
 import { getQueryFromSelection } from "./ripgrep/utils";
 
 import { register as registerInferPath } from "./common/inferPathFromUri";
+import { register as registerMultiCursorContext } from "./multiCursorContext/multiCursorContext";
 
 type RipGrepCreateOption = CreateRgPanelOptions & { selectDir?: boolean };
 
@@ -246,6 +247,8 @@ export async function activate(context: ExtensionContext) {
     }),
 
     window.onDidChangeActiveColorTheme((_ct) => updateGlobalThemeType()),
+
+    ...registerMultiCursorContext(),
   );
   updateGlobalThemeType();
 
