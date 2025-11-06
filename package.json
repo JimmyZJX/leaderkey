@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.6.1",
+  "version": "1.6.1-1",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -185,6 +185,14 @@
           "type": "boolean",
           "default": false,
           "description": "Turn `RET` into `TAB` in find-file. Use `C-l` to revert to the `RET` behavior e.g. when selecting directory."
+        },
+        "leaderkey.find-file.ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Glob patterns used to ignore file entries in the ls mode of find-file. (The fzf mode respects VSCode `files.exclude` setting if `fd` is present)"
         },
         "leaderkey.hideLeaderkeyMenu": {
           "type": "boolean",
@@ -1897,6 +1905,7 @@
   },
   "dependencies": {
     "assert": "^2.1.0",
+    "glob-regex": "0.3.2",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10"
   }

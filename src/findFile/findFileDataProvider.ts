@@ -1,3 +1,5 @@
+import globRegex from "glob-regex";
+import { window, workspace } from "vscode";
 import { readDirFilesAndDirs } from "../common/remote";
 import { stripSlash } from "../common/stripSlash";
 import { byLengthAsc, byStartAsc, Fzf } from "../fzf-for-js/src/lib/main";
@@ -31,7 +33,26 @@ async function ls(dir: string, dirOnly: boolean) {
   const dotAndDotDot = ["./", ...(dir.length > 1 ? ["../"] : [])];
   dirs = [...dotAndDotDot, ...dirs.map((dir) => dir + "/")];
   if (dirOnly) return dirs;
-  return [...dirs, ...filesAndDirs.files];
+
+  let ignoredGlobs = workspace
+    .getConfiguration("leaderkey.find-file")
+    .get("ignore") as string[];
+  if (!Array.isArray(ignoredGlobs)) {
+    ignoredGlobs = [];
+  }
+  if (ignoredGlobs.length === 0) {
+    return [...dirs, ...filesAndDirs.files];
+  }
+  try {
+    const isIgnored = globRegex(ignoredGlobs);
+    const files = filesAndDirs.files.filter((f) => !isIgnored.test(f));
+    return [...dirs, ...files];
+  } catch (error) {
+    window.showErrorMessage(
+      `Invalid glob patterns in leaderkey.find-file.ignore: ${JSON.stringify(error)}`,
+    );
+    return [...dirs, ...filesAndDirs.files];
+  }
 }
 
 export function dummyFzfResultItem(item: string): FzfResultItem {

@@ -3,6 +3,21 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.6.2
+
+- Add config option `leaderkey.find-file.ignore` to filter out file entries when in `ls`
+  mode.
+
+## v1.6.1
+
+- Add a minor helper `isMultiCursor` context. Trying to fix some bad interaction between
+  the vim extension and Python Jupyter notebook.
+
+## v1.6.0
+
+- Add `leaderkey.registerInferPathCommand(regexOfUri: string, command: string)` for 3rd
+  party extensions to provide context on the current path for custom documents.
+
 ## v1.5.8
 
 - Add config option `leaderkey.dired.exe` (should point to an `ls` exe)
