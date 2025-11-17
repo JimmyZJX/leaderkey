@@ -202,8 +202,9 @@ export class FzfProcess {
 
   public async quit() {
     if (this.stateResolved?.type === "ok") {
-      await fzfAbort(this.stateResolved.port);
+      const port = this.stateResolved.port;
       this.stateResolved = null;
+      await fzfAbort(port);
     }
   }
 }

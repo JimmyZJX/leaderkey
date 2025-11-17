@@ -46,15 +46,17 @@ class PanelManager {
 
   async forceReset(mode?: "normal" | "interrupt") {
     if (this.currentPanel === undefined) return;
-    switch (this.currentPanel.type) {
+    const panel = this.currentPanel;
+    this.currentPanel = undefined;
+    switch (panel.type) {
       case "leaderkey":
         this.leaderKeyPanel.reset();
         break;
       case "findfile":
-        await this.currentPanel.panel.quit();
+        await panel.panel.quit();
         break;
       case "ripgrep":
-        await this.currentPanel.panel.quit(mode ?? "normal");
+        await panel.panel.quit(mode ?? "normal");
         break;
     }
   }

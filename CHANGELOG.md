@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.6.3
+
+- Fix a bug where findFile or ripgrep mode is not quit properly.
+
 ## v1.6.2
 
 - Add config option `leaderkey.find-file.ignore` to filter out file entries when in `ls`

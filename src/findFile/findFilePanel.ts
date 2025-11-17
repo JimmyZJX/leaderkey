@@ -572,12 +572,12 @@ export class FindFilePanel {
 
   public async quit(path?: string) {
     if (this.isQuit) return;
-    this.isQuit = true;
     this.dataProvider.quit();
     for (const dsp of this.disposableDecos) dsp.dispose();
     this.disposableDecos = [];
     await disableLeaderKey();
     await enableVim();
     this.onQuit(path);
+    this.isQuit = true;
   }
 }
