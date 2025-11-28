@@ -3,6 +3,14 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.6.4
+
+- Improved ripgrep panel
+  - Last query (`SPC s l` or `SPC r l`) now remembers last query result and cursor
+    location, if the query was finished
+  - When query string is empty, `TAB` restores the last query result, just like `SPC s l`
+  - `C-<up>` and `C-<down>` to navigate through the history of queries
+
 ## v1.6.3
 
 - Fix a bug where findFile or ripgrep mode is not quit properly.

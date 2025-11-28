@@ -24,18 +24,21 @@ import {
 import { OneLineEditor } from "../common/singleLineEditor";
 import { eagerDebouncer } from "../common/throttle";
 import { panelManager } from "../extension";
-import { parseMagicQuery } from "./magicQuery";
 import {
-  doQuery,
-  GrepLine,
-  RipGrepQuery,
-  RipGrepSearchMode,
-  RipgrepStatusUpdate,
-} from "./rg";
+  getLast,
+  getSearchMode,
+  onHistoryDown,
+  onHistoryUp,
+  onQueryChange,
+  onQueryDone,
+  onQuit,
+} from "./history";
+import { parseMagicQuery } from "./magicQuery";
+import { doQuery, GrepLine, RipGrepQuery, RipgrepStatusUpdate } from "./rg";
 import { RgEditor } from "./rgEditor";
 import { getQueryFromSelection, GetQueryFromSelectionOptions } from "./utils";
 
-type RgMatchState = {
+export type RgMatchState = {
   matches: GrepLine[];
   message: string;
   selection: number | undefined;
@@ -61,18 +64,11 @@ function spcs(len: number) {
   return " ".repeat(len);
 }
 
-type Query = RipGrepQuery & {
+// TODO stale indictor if loaded from old query, and [TAB] to refresh result
+
+export type Query = RipGrepQuery & {
   dirHistory: { cwd: string; dir: string[] }[];
 };
-
-let lastRgQuery: Query | undefined;
-
-function getSearchMode(): RipGrepSearchMode {
-  if (lastRgQuery) {
-    return { case: lastRgQuery.case, regex: lastRgQuery.regex, word: lastRgQuery.word };
-  }
-  return { case: "smart", regex: "on", word: "off" };
-}
 
 export class RgPanel {
   private editor: OneLineEditor;
@@ -89,16 +85,27 @@ export class RgPanel {
   private onReset: () => void;
   private pauseRender: boolean = false;
 
-  constructor(query: RipGrepQuery, activeTextEditor: TextEditor, onReset: () => void) {
+  private canLoadQuery: boolean;
+
+  constructor(
+    query: RipGrepQuery,
+    activeTextEditor: TextEditor,
+    onReset: () => void,
+    matchState: RgMatchState | undefined,
+  ) {
     RgPanel.enterContext();
+    this.canLoadQuery = query.query ? false : true;
     this.editor = new OneLineEditor(query.query);
     this.query = { ...query, dirHistory: [] };
-    lastRgQuery = this.query;
     this.onReset = onReset;
     this.cancellationToken = new CancellationTokenSource();
     this.rgEditor = new RgEditor(activeTextEditor, () => this.render());
     this.spawnDebouncer = eagerDebouncer(() => this.doSpawn(), INPUT_DEBOUNCE_TIMEOUT);
-    this.spawn();
+    if (matchState) {
+      this.matchState = matchState;
+    } else {
+      this.spawn();
+    }
   }
 
   private joinWithCwd(basename: string): string | Uri {
@@ -119,6 +126,7 @@ export class RgPanel {
     mode: "interrupt" | "normal" | { file: string | Uri; lineNo: number },
   ) {
     this.cancellationToken.cancel();
+    onQuit();
     enableVim();
     if (mode === "interrupt") {
       await this.rgEditor?.quit(false);
@@ -195,6 +203,31 @@ export class RgPanel {
         file: this.joinWithCwd(match.file),
         lineNo: match.lineNo,
       });
+    },
+    // history
+    "C-<up>": () => {
+      this.query.query = onHistoryUp();
+      this.editor.reset(this.query.query);
+      this.spawn();
+    },
+    "C-<down>": () => {
+      this.query.query = onHistoryDown();
+      this.editor.reset(this.query.query);
+      this.spawn();
+    },
+    TAB: () => {
+      const lastQuery = getLast();
+      if (this.canLoadQuery && lastQuery) {
+        const { matchState, ...lastExceptMatch } = lastQuery;
+        this.query = structuredClone(lastExceptMatch);
+        this.editor.reset(this.query.query);
+        if (matchState) {
+          this.matchState = matchState;
+          this.render();
+        } else {
+          this.spawn();
+        }
+      }
     },
     "C-h": () => this.dirUp(),
     "M-h": () => this.dirUp(),
@@ -330,6 +363,10 @@ export class RgPanel {
   }
 
   doRender(editor: TextEditor) {
+    if (this.canLoadQuery && this.query.query) {
+      this.canLoadQuery = false;
+    }
+
     const ms = this.matchState;
     if (ms.selection === undefined && ms.matches.length > 0) {
       ms.selection = 0;
@@ -438,6 +475,17 @@ export class RgPanel {
       },
     ];
 
+    const loadLastHintDeco: Decoration[] = [];
+    const lastQuery = getLast();
+    if (this.canLoadQuery && lastQuery) {
+      loadLastHintDeco.push({
+        type: "text",
+        text: `[TAB] to load last query (${lastQuery.query})`,
+        foreground: "dim",
+        charOffset: rgIndicator.length,
+      });
+    }
+
     const modeHint = this.getModeHint();
     const modeHintMinPos = rgIndicator.length + query.length + 4;
     const modeHintPos = Math.max(modeHintMinPos, 80 - modeHint.length);
@@ -463,6 +511,7 @@ export class RgPanel {
         foreground: ms.isDone ? "arrow-bold" : "binding",
       },
       ...editorDecos,
+      ...loadLastHintDeco,
       modeDeco,
       { type: "text", text: status, foreground: "command", lineOffset: 1 },
       { type: "text", text: statusDim, foreground: "dim", lineOffset: 1 },
@@ -525,6 +574,7 @@ export class RgPanel {
               const _exhaustive: never = summary;
             }
           }
+          onQueryDone(this.query, this.matchState);
         }
         break;
       default: {
@@ -541,6 +591,7 @@ export class RgPanel {
     this.matchState = emptyRgMatchState();
     this.cancellationToken.cancel();
     this.cancellationToken = new CancellationTokenSource();
+    onQueryChange(this.query);
     if (this.query.query !== "") {
       doQuery(
         this.query,
@@ -584,8 +635,12 @@ export async function createRgPanel(
   }
 
   let rgQuery: RipGrepQuery;
-  if (mode?.resume && lastRgQuery) {
-    rgQuery = structuredClone(lastRgQuery);
+  const lastQuery = getLast();
+  let matchState: RgMatchState | undefined = undefined;
+  if (mode?.resume && lastQuery) {
+    const { matchState: lastMatchState, ...lastExceptMatch } = lastQuery;
+    rgQuery = structuredClone(lastExceptMatch);
+    matchState = lastMatchState;
   } else {
     const queryMode = mode?.query ?? { type: "selection-only" };
     const dirMode = mode?.dir ?? { type: "current" };
@@ -678,5 +733,5 @@ export async function createRgPanel(
     };
   }
 
-  return new RgPanel(rgQuery, editor, onReset);
+  return new RgPanel(rgQuery, editor, onReset, matchState);
 }
