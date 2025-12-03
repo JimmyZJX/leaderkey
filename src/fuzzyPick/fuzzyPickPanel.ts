@@ -10,6 +10,7 @@ import {
   createFuzzyMatchLayers,
   ListPanelRow,
   renderListPanel,
+  TextLayer,
 } from "../common/listPanelRender";
 import { indicesToRender } from "../common/renderRange";
 import { OneLineEditor as SingleLineEditor } from "../common/singleLineEditor";
@@ -312,13 +313,37 @@ export class FuzzyPickPanel {
           selectedRow = rows.length;
         }
 
-        // Label row with fuzzy match highlighting
-        rows.push({
-          textLayers: createFuzzyMatchLayers(
-            r.item.label + (r.item.description ? " " + r.item.description : ""),
-            r.positions,
-          ),
-        });
+        // Label row: [header] label [description]
+        // Header is dim, label has fuzzy match highlighting, description is dim
+        const headerPrefix = r.item.header ? r.item.header + " " : "";
+        const labelSuffix = r.item.description ? " " + r.item.description : "";
+
+        const textLayers: TextLayer[] = [];
+
+        // Header (dim, before label)
+        if (headerPrefix) {
+          textLayers.push({ text: headerPrefix, foreground: "dim" as const });
+        }
+
+        // Label with fuzzy match highlighting (offset by header length)
+        const fuzzyLayers = createFuzzyMatchLayers(r.item.label, r.positions);
+        for (const layer of fuzzyLayers) {
+          textLayers.push({
+            ...layer,
+            charOffset: headerPrefix.length,
+          });
+        }
+
+        // Description (dim, after label)
+        if (labelSuffix) {
+          textLayers.push({
+            text: labelSuffix,
+            foreground: "dim" as const,
+            charOffset: headerPrefix.length + r.item.label.length,
+          });
+        }
+
+        rows.push({ textLayers });
       }
     }
 

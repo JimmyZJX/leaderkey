@@ -2,6 +2,7 @@ import { window } from "vscode";
 
 export type FuzzyPickItem = {
   label: string;
+  header?: string;
   description?: string;
   score?: number;
 };
@@ -62,7 +63,14 @@ function parseItem(item: unknown, index: number): ItemParseResult {
       };
     }
 
-    const result: FuzzyPickItem = { label: obj.label };
+    if (obj.header !== undefined) {
+      if (typeof obj.header !== "string") {
+        return {
+          ok: false,
+          error: `Item at index ${index} has invalid 'header' (must be string)`,
+        };
+      }
+    }
 
     if (obj.description !== undefined) {
       if (typeof obj.description !== "string") {
@@ -71,7 +79,6 @@ function parseItem(item: unknown, index: number): ItemParseResult {
           error: `Item at index ${index} has invalid 'description' (must be string)`,
         };
       }
-      result.description = obj.description;
     }
 
     if (obj.score !== undefined) {
@@ -81,10 +88,9 @@ function parseItem(item: unknown, index: number): ItemParseResult {
           error: `Item at index ${index} has invalid 'score' (must be number)`,
         };
       }
-      result.score = obj.score;
     }
 
-    return { ok: true, item: result };
+    return { ok: true, item: obj as FuzzyPickItem };
   }
 
   return {

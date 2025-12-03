@@ -13,8 +13,8 @@ import { ENV_HOME, init as initRemote } from "./common/remote";
 import { register as registerCompare } from "./compare/compare";
 import { register as registerDired, showDir } from "./findFile/dired";
 import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
-import { FuzzyPickItem, FuzzyPickPanel } from "./fuzzyPick/fuzzyPickPanel";
 import { detectFd } from "./findFile/fzfProcess";
+import { FuzzyPickItem, FuzzyPickPanel } from "./fuzzyPick/fuzzyPickPanel";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
@@ -147,6 +147,7 @@ class PanelManager {
     provider: string;
     title?: string;
     placeholder?: string;
+    callback?: string;
   }): Promise<FuzzyPickItem | undefined> {
     let editor = window.activeTextEditor;
     if (!editor) {
@@ -163,7 +164,21 @@ class PanelManager {
         options.provider,
         dataPromise,
         { title: options.title, placeholder: options.placeholder },
-        (item) => resolve(item),
+        (item) => {
+          const callback = options.callback;
+          if (callback) {
+            (async () => {
+              try {
+                await commands.executeCommand(callback, item);
+              } catch {
+                window.showErrorMessage(
+                  `Leaderkey fails to execute callback command ${callback} on the selected item ${JSON.stringify(item)}`,
+                );
+              }
+            })();
+          }
+          resolve(item);
+        },
       );
       this.currentPanel = { type: "fuzzypick", panel };
     });
@@ -200,8 +215,12 @@ class PanelManager {
       ),
       commands.registerCommand(
         "leaderkey.showFuzzyPick",
-        async (options: { provider: string; title?: string; placeholder?: string }) =>
-          await this.showFuzzyPick(options),
+        async (options: {
+          provider: string;
+          title?: string;
+          placeholder?: string;
+          callback?: string;
+        }) => await this.showFuzzyPick(options),
       ),
       commands.registerCommand(
         "leaderkey.onkey",

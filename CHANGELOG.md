@@ -8,6 +8,31 @@ file.
 - Add a new command `leaderkey.showFuzzyPick` which allows third-party extensions to show
   a quick-pick like UI to the user with Leaderkey UI.
 
+  - Calling the command with
+
+  ```
+  {
+    provider: string; // command id
+    title?: string;
+    placeholder?: string;
+    callback?: string; // command id
+  }
+  ```
+
+  where `provider` command should return a list of objects of type
+
+  ```
+  {
+    label: string; // to match user query
+    header?: string; // to render before `label`
+    description?: string; // to render after `label`
+    score?: number; // used to fix the fzf score by fzf-for-js. Currently we use multiplication
+  }
+  ```
+
+  and the `callback` command accepts either `undefined` or an item object. Alternatively,
+  `leaderkey.showFuzzyPick` just returns either `undefined` or the selected item.
+
 ## v1.6.4
 
 - Improved ripgrep panel
