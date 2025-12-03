@@ -5,10 +5,15 @@ import {
   enableLeaderKeyAndDisableVim,
   enableVim,
 } from "../common/context";
-import { Decoration, renderDecorations } from "../common/decoration";
+import { Decoration } from "../common/decoration";
 import { assert, commonPrefix, log } from "../common/global";
+import {
+  createFuzzyMatchLayers,
+  ListPanelRow,
+  renderListPanel,
+} from "../common/listPanelRender";
 import { createFile, ENV_HOME, openFile } from "../common/remote";
-import { getRenderRangeFromTop, indicesToRender } from "../common/renderRange";
+import { indicesToRender } from "../common/renderRange";
 import { OneLineEditor as SingleLineEditor } from "../common/singleLineEditor";
 import { stripSlash } from "../common/stripSlash";
 import { FzfResultItem } from "../fzf-for-js/src/lib/main";
@@ -25,12 +30,6 @@ function RETisTAB() {
   return config.get("RETisTAB", false);
 }
 
-function nonHighlightChars(r: FzfResultItem<string>) {
-  return [...r.item].map((c, i) => (r.positions.has(i) ? " " : c)).join("");
-}
-function highlightChars(r: FzfResultItem<string>) {
-  return [...r.item].map((c, i) => (r.positions.has(i) ? c : " ")).join("");
-}
 
 type FindFileSelection =
   | { type: "none" }
@@ -449,14 +448,6 @@ export class FindFilePanel {
     });
     this.lastSelection = newSelection;
 
-    const fileListFiles = toRender
-      .map((r) => (r.item.endsWith("/") ? "" : nonHighlightChars(r)))
-      .join("\n");
-    const fileListDirs = toRender
-      .map((r) => (r.item.endsWith("/") ? nonHighlightChars(r) : ""))
-      .join("\n");
-    const fileListHighlight = toRender.map(highlightChars).join("\n");
-
     const counterInfo = `${curResults?.filtered ?? 0}/${curResults?.total ?? 0}`;
 
     const inputPostfix =
@@ -494,69 +485,28 @@ export class FindFilePanel {
       },
     ];
 
-    /* layout:
-       -------- top border --------
-       header
-       dir + input + tabCompletion preview
-       selections
-       ... (highlighted selection)
-       bottom border
-       -------- top border -------- */
+    // Build rows for the file list
+    const rows: ListPanelRow[] = toRender.map((r) => {
+      const isDir = r.item.endsWith("/");
+      return {
+        textLayers: createFuzzyMatchLayers(r.item, r.positions, isDir ? "dir" : "command"),
+      };
+    });
 
-    const decos: Decoration[] = [
-      // overall background
-      { type: "background", lines: toRender.length + 2 },
-      // header
-      {
-        type: "text",
-        text: `${counterInfo.padEnd(10)} ${this.title}`,
-        foreground: "binding",
-      },
-      // top border
-      {
-        type: "background",
-        background: "border",
-        lines: 0.5,
-        lineOffset: -0.5,
-      },
-      // bottom border
-      {
-        type: "background",
-        background: "border",
-        lines: 0.5,
-        lineOffset: toRender.length + 2,
-      },
-      // dir and input
-      ...inputDecos,
-      // selections
-      { type: "text", foreground: "dir", text: fileListDirs, lineOffset: 2 },
-      { type: "text", foreground: "command", text: fileListFiles, lineOffset: 2 },
-      { type: "text", foreground: "highlight", text: fileListHighlight, lineOffset: 2 },
-    ];
-    switch (newSelection.type) {
-      case "none":
-        break;
-      case "file":
-        decos.push({
-          type: "background",
-          background: "header",
-          lines: 1,
-          lineOffset: newSelection.idx - renderStart + 2,
-          zOffset: 1,
-        });
-        break;
-      case "input":
-        decos.push({
-          type: "background",
-          background: "header",
-          lines: 1,
-          lineOffset: 1,
-          zOffset: 1,
-        });
+    // Determine selected row index (-1 for input line, or row index)
+    let selectedRow: number | undefined;
+    if (newSelection.type === "input") {
+      selectedRow = -1;
+    } else if (newSelection.type === "file") {
+      selectedRow = newSelection.idx - renderStart;
     }
 
-    const range = getRenderRangeFromTop(editor, toRender.length + 2);
-    return renderDecorations(decos, editor, range);
+    return renderListPanel(editor, {
+      header: `${counterInfo.padEnd(10)} ${this.title}`,
+      inputDecos,
+      rows,
+      selectedRow,
+    });
   }
 
   public render() {

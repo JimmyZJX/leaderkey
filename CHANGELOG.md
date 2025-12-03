@@ -3,6 +3,11 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.7.0
+
+- Add a new command `leaderkey.showFuzzyPick` which allows third-party extensions to show
+  a quick-pick like UI to the user with Leaderkey UI.
+
 ## v1.6.4
 
 - Improved ripgrep panel

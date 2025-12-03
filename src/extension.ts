@@ -13,6 +13,7 @@ import { ENV_HOME, init as initRemote } from "./common/remote";
 import { register as registerCompare } from "./compare/compare";
 import { register as registerDired, showDir } from "./findFile/dired";
 import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
+import { FuzzyPickItem, FuzzyPickPanel } from "./fuzzyPick/fuzzyPickPanel";
 import { detectFd } from "./findFile/fzfProcess";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
@@ -35,6 +36,7 @@ class PanelManager {
     | { type: "leaderkey" }
     | { type: "findfile"; panel: FindFilePanel }
     | { type: "ripgrep"; panel: RgPanel }
+    | { type: "fuzzypick"; panel: FuzzyPickPanel }
     | undefined = undefined;
 
   // single instance only
@@ -57,6 +59,9 @@ class PanelManager {
         break;
       case "ripgrep":
         await panel.panel.quit(mode ?? "normal");
+        break;
+      case "fuzzypick":
+        await panel.panel.quit();
         break;
     }
   }
@@ -138,6 +143,32 @@ class PanelManager {
     this.currentPanel = { type: "ripgrep", panel };
   }
 
+  async showFuzzyPick(options: {
+    provider: string;
+    title?: string;
+    placeholder?: string;
+  }): Promise<FuzzyPickItem | undefined> {
+    let editor = window.activeTextEditor;
+    if (!editor) {
+      const doc = await workspace.openTextDocument({ language: "text" });
+      editor = await window.showTextDocument(doc, { preview: true });
+    }
+
+    // Start the provider command (don't await - let panel handle async loading)
+    const dataPromise = commands.executeCommand<unknown>(options.provider);
+
+    return new Promise<FuzzyPickItem | undefined>(async (resolve) => {
+      await this.forceReset();
+      const panel = new FuzzyPickPanel(
+        options.provider,
+        dataPromise,
+        { title: options.title, placeholder: options.placeholder },
+        (item) => resolve(item),
+      );
+      this.currentPanel = { type: "fuzzypick", panel };
+    });
+  }
+
   async activate(context: ExtensionContext) {
     await this.leaderKeyPanel.activate(context);
     registerCompare(context);
@@ -168,6 +199,11 @@ class PanelManager {
         this.ripgrep(mode),
       ),
       commands.registerCommand(
+        "leaderkey.showFuzzyPick",
+        async (options: { provider: string; title?: string; placeholder?: string }) =>
+          await this.showFuzzyPick(options),
+      ),
+      commands.registerCommand(
         "leaderkey.onkey",
         async (keyOrObj: string | { key: string; when: string }) => {
           if (keyOrObj === "ESC") {
@@ -187,6 +223,11 @@ class PanelManager {
               );
               break;
             case "ripgrep":
+              await this.currentPanel.panel.onKey(
+                typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
+              );
+              break;
+            case "fuzzypick":
               await this.currentPanel.panel.onKey(
                 typeof keyOrObj === "string" ? keyOrObj : keyOrObj.key,
               );
