@@ -15,6 +15,7 @@ file.
     provider: string; // command id
     title?: string;
     placeholder?: string;
+    allowLineNumber?: boolean; // allow suffix like `:XXX`
     callback?: string; // command id
   }
   ```
@@ -26,12 +27,20 @@ file.
     label: string; // to match user query
     header?: string; // to render before `label`
     description?: string; // to render after `label`
-    score?: number; // used to fix the fzf score by fzf-for-js. Currently we use multiplication
+    score?: number; // used to adjust the fzf score by fzf-for-js. Currently we use multiplication
   }
   ```
 
-  and the `callback` command accepts either `undefined` or an item object. Alternatively,
-  `leaderkey.showFuzzyPick` just returns either `undefined` or the selected item.
+  and the `callback` command accepts either `undefined` or an object of the following
+  type. This is also the return value of the `leaderkey.showFuzzyPick` command.
+
+  ```
+  {
+    query: string;
+    lineNumber?: number;
+    item: object; // the original item object
+  }
+  ```
 
 ## v1.6.4
 

@@ -19,6 +19,12 @@ import { FuzzyPickItem, parseProviderResult, showParseError } from "./fuzzyPickI
 
 export { FuzzyPickItem } from "./fuzzyPickInput";
 
+export type FuzzyPickResult = {
+  query: string;
+  lineNumber?: number;
+  item: FuzzyPickItem;
+};
+
 type DataState =
   | { status: "loading" }
   | { status: "loaded"; items: FuzzyPickItem[] }
@@ -37,7 +43,21 @@ type FuzzyPickSelection =
 export type FuzzyPickOptions = {
   title?: string;
   placeholder?: string;
+  /** If true, allow `:lineNumber` suffix in query that gets parsed and returned separately */
+  allowLineNumber?: boolean;
 };
+
+/** Parse query to extract optional :lineNumber suffix */
+function parseQuery(query: string): { searchQuery: string; lineNumber?: number } {
+  const match = query.match(/:(\d*)$/);
+  if (match) {
+    return {
+      searchQuery: query.slice(0, -match[0].length),
+      lineNumber: parseInt(match[1]) || undefined,
+    };
+  }
+  return { searchQuery: query };
+}
 
 export class FuzzyPickPanel {
   disposableDecos: TextEditorDecorationType[] = [];
@@ -52,15 +72,16 @@ export class FuzzyPickPanel {
 
   title: string;
   placeholder: string;
+  allowLineNumber: boolean;
 
   isQuit: boolean = false;
-  onQuit: (item: FuzzyPickItem | undefined) => void;
+  onQuit: (result: FuzzyPickResult | undefined) => void;
 
   constructor(
     providerName: string,
     dataPromise: Thenable<unknown>,
     options: FuzzyPickOptions,
-    onQuit: (item: FuzzyPickItem | undefined) => void,
+    onQuit: (result: FuzzyPickResult | undefined) => void,
   ) {
     enableLeaderKeyAndDisableVim(":fuzzyPick");
     this.onQuit = onQuit;
@@ -68,6 +89,7 @@ export class FuzzyPickPanel {
     this.editor = new SingleLineEditor("");
     this.title = options.title ?? "Pick";
     this.placeholder = options.placeholder ?? "";
+    this.allowLineNumber = options.allowLineNumber ?? false;
 
     // Start loading data asynchronously
     this.loadData(dataPromise);
@@ -101,10 +123,13 @@ export class FuzzyPickPanel {
       return { items: [], filtered: 0, total: 0 };
     }
 
+    // Strip line number suffix for filtering if enabled
+    const searchQuery = this.allowLineNumber ? parseQuery(query).searchQuery : query;
+
     const { items } = this.dataState;
     let filtered: FzfResultItem<FuzzyPickItem>[];
 
-    if (query === "") {
+    if (searchQuery === "") {
       filtered = items.map((item) => ({
         item,
         positions: new Set<number>(),
@@ -118,7 +143,7 @@ export class FuzzyPickPanel {
         sort: false,
         match: extendedMatch,
       });
-      filtered = fzf.find(query);
+      filtered = fzf.find(searchQuery);
       filtered.sort(
         (a, b) => -((a.item.score ?? 1) * a.score - (b.item.score ?? 1) * b.score),
       );
@@ -149,15 +174,19 @@ export class FuzzyPickPanel {
   };
 
   private async confirmSelection() {
+    let item: FuzzyPickItem | undefined;
     if (this.lastSelection.type === "item") {
-      await this.quit(this.lastSelection.item);
+      item = this.lastSelection.item;
+    } else if (this.filteredResults && this.filteredResults.items.length > 0) {
+      item = this.filteredResults.items[0].item;
+    }
+
+    if (item) {
+      const query = this.editor.value();
+      const { lineNumber } = this.allowLineNumber ? parseQuery(query) : {};
+      await this.quitWithResult({ query, lineNumber, item });
     } else {
-      // No selection, try to select first item
-      if (this.filteredResults && this.filteredResults.items.length > 0) {
-        await this.quit(this.filteredResults.items[0].item);
-      } else {
-        await this.quit();
-      }
+      await this.quitWithResult();
     }
   }
 
@@ -366,13 +395,18 @@ export class FuzzyPickPanel {
     }
   }
 
-  public async quit(item?: FuzzyPickItem) {
+  /** Quit without selection (e.g., ESC) */
+  public async quit() {
+    await this.quitWithResult();
+  }
+
+  private async quitWithResult(result?: FuzzyPickResult) {
     if (this.isQuit) return;
     for (const dsp of this.disposableDecos) dsp.dispose();
     this.disposableDecos = [];
     await disableLeaderKey();
     await enableVim();
-    this.onQuit(item);
+    this.onQuit(result);
     this.isQuit = true;
   }
 }

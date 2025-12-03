@@ -14,7 +14,7 @@ import { register as registerCompare } from "./compare/compare";
 import { register as registerDired, showDir } from "./findFile/dired";
 import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
 import { detectFd } from "./findFile/fzfProcess";
-import { FuzzyPickItem, FuzzyPickPanel } from "./fuzzyPick/fuzzyPickPanel";
+import { FuzzyPickPanel, FuzzyPickResult } from "./fuzzyPick/fuzzyPickPanel";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
@@ -147,8 +147,9 @@ class PanelManager {
     provider: string;
     title?: string;
     placeholder?: string;
+    allowLineNumber?: boolean;
     callback?: string;
-  }): Promise<FuzzyPickItem | undefined> {
+  }): Promise<FuzzyPickResult | undefined> {
     let editor = window.activeTextEditor;
     if (!editor) {
       const doc = await workspace.openTextDocument({ language: "text" });
@@ -158,26 +159,26 @@ class PanelManager {
     // Start the provider command (don't await - let panel handle async loading)
     const dataPromise = commands.executeCommand<unknown>(options.provider);
 
-    return new Promise<FuzzyPickItem | undefined>(async (resolve) => {
+    return new Promise<FuzzyPickResult | undefined>(async (resolve) => {
       await this.forceReset();
       const panel = new FuzzyPickPanel(
         options.provider,
         dataPromise,
-        { title: options.title, placeholder: options.placeholder },
-        (item) => {
+        { title: options.title, placeholder: options.placeholder, allowLineNumber: options.allowLineNumber },
+        (result) => {
           const callback = options.callback;
           if (callback) {
             (async () => {
               try {
-                await commands.executeCommand(callback, item);
+                await commands.executeCommand(callback, result);
               } catch {
                 window.showErrorMessage(
-                  `Leaderkey fails to execute callback command ${callback} on the selected item ${JSON.stringify(item)}`,
+                  `Leaderkey fails to execute callback command ${callback} on the selected item ${JSON.stringify(result)}`,
                 );
               }
             })();
           }
-          resolve(item);
+          resolve(result);
         },
       );
       this.currentPanel = { type: "fuzzypick", panel };
