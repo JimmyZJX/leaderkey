@@ -1,5 +1,12 @@
 import { dirname, normalize } from "path-browserify";
-import { Range, TextEditor, TextEditorDecorationType, window, workspace } from "vscode";
+import {
+  Range,
+  TextEditor,
+  TextEditorDecorationType,
+  ViewColumn,
+  window,
+  workspace,
+} from "vscode";
 import {
   disableLeaderKey,
   enableLeaderKeyAndDisableVim,
@@ -178,8 +185,11 @@ export class FindFilePanel {
     return { type: "none" };
   }
 
-  private async open(basename: string, mode?: "forceCreate" | "ret") {
-    if (mode === undefined && basename.endsWith("/")) {
+  private async open(
+    basename: string,
+    option?: { mode?: "forceCreate" | "ret"; aside?: boolean },
+  ) {
+    if (option?.mode === undefined && basename.endsWith("/")) {
       this.setDir(this.dir + basename);
     } else {
       const path = normalize(this.dir + basename);
@@ -187,16 +197,26 @@ export class FindFilePanel {
         await this.quit(path);
         if (!this.returnOnly) await showDir(path);
       } else {
-        if (mode === "forceCreate") {
+        if (option?.mode === "forceCreate") {
           await Promise.allSettled([createFile(path), this.quit(path)]);
         } else {
           await this.quit(path);
         }
+
         if (!this.returnOnly) {
           const lineNumber = this.getLineNumber();
           const selection =
-            lineNumber !== undefined ? new Range(lineNumber - 1, 0, lineNumber - 1, 0) : undefined;
-          await openFile(path, { preview: false, selection });
+            lineNumber !== undefined
+              ? new Range(lineNumber - 1, 0, lineNumber - 1, 0)
+              : undefined;
+
+          const viewColumn = option?.aside ? { viewColumn: ViewColumn.Beside } : {};
+
+          await openFile(path, {
+            preview: false,
+            selection,
+            ...viewColumn,
+          });
         }
       }
     }
@@ -222,26 +242,32 @@ export class FindFilePanel {
     }
   }
 
-  private async keyActionRET() {
+  private async keyActionRET(option?: { aside?: boolean }) {
     switch (this.lastSelection.type) {
       case "file":
         if (this.RETisTAB) {
           await this.keyActionTAB("TAB");
         } else {
-          await this.open(this.lastSelection.file, "ret");
+          await this.open(this.lastSelection.file, { mode: "ret", aside: option?.aside });
         }
         break;
       case "input":
-        await this.open(this.getQueryWithoutLineNumber(), "forceCreate");
+        await this.open(this.getQueryWithoutLineNumber(), {
+          mode: "forceCreate",
+          aside: option?.aside,
+        });
         break;
       case "none": {
         const results = await this.dataProvider.waitOne();
         if (results.items.length === 0) {
-          await this.open(this.getQueryWithoutLineNumber(), "forceCreate");
+          await this.open(this.getQueryWithoutLineNumber(), {
+            mode: "forceCreate",
+            aside: option?.aside,
+          });
           break;
         } else {
           const result = results.mode === "ls" ? results.items[0].item : results.items[0];
-          await this.open(result, "ret");
+          await this.open(result, { mode: "ret", aside: option?.aside });
           break;
         }
       }
@@ -283,8 +309,8 @@ export class FindFilePanel {
     SPC: () => {
       this.editor.insert(" ");
     },
-    "S-RET": async () => await this.open(this.editor.value(), "forceCreate"),
-    "C-RET": async () => await this.open(this.editor.value(), "forceCreate"),
+    "S-RET": async () => await this.open(this.editor.value(), { mode: "forceCreate" }),
+    "C-RET": async () => await this.keyActionRET({ aside: true }),
     RET: async () => await this.keyActionRET(),
     "C-l": async () => await this.keyActionRET(),
     TAB: async (last) => await this.keyActionTAB(last),
@@ -354,7 +380,9 @@ export class FindFilePanel {
 
     const dirPart = query.slice(0, lastSlashIdx);
     // For absolute paths, use dirPart directly; for relative, prepend current dir
-    const fullPath = query.startsWith("/") ? normalize(dirPart) : normalize(this.dir + dirPart);
+    const fullPath = query.startsWith("/")
+      ? normalize(dirPart)
+      : normalize(this.dir + dirPart);
 
     if (await isDirectory(fullPath)) {
       if (this.isQuit) return;
@@ -551,7 +579,11 @@ export class FindFilePanel {
     const rows: ListPanelRow[] = toRender.map((r) => {
       const isDir = r.item.endsWith("/");
       return {
-        textLayers: createFuzzyMatchLayers(r.item, r.positions, isDir ? "dir" : "command"),
+        textLayers: createFuzzyMatchLayers(
+          r.item,
+          r.positions,
+          isDir ? "dir" : "command",
+        ),
       };
     });
 

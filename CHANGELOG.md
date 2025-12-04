@@ -3,6 +3,16 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.7.1
+
+UX improvements for the findFile panel (`SPC f f`):
+
+- now paths pasted in are handled properly. If the target directory exists, it will change
+  to the target directory automatically
+- line number suffix (:XXX) is supported
+- `C-RET` now opens the target file in a seperate buffer. `S-RET` can be used to get the
+  old behavior, which forces creating the file with raw query string as its name.
+
 ## v1.7.0
 
 - Add a new command `leaderkey.showFuzzyPick` which allows third-party extensions to show
