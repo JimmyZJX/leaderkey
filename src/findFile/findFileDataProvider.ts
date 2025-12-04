@@ -28,7 +28,9 @@ export function getFileFromDataIdx(data: FindFileData, idx: number) {
 }
 
 async function ls(dir: string, dirOnly: boolean) {
-  const ok = await isRemoteCommonsInstalled();
+  if (!(await isRemoteCommonsInstalled())) {
+    return [];
+  }
   const filesAndDirs = await readDirFilesAndDirs(dir);
   let dirs = filesAndDirs.dirs;
   const dotAndDotDot = ["./", ...(dir.length > 1 ? ["../"] : [])];
