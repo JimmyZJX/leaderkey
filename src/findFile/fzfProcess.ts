@@ -1,6 +1,11 @@
 import { window, workspace } from "vscode";
 import { log } from "../common/global";
-import { fetchText, isWin, runProcess } from "../common/remote";
+import {
+  isRemoteCommonsInstalled,
+  fetchText,
+  isWin,
+  runProcess,
+} from "../common/remote";
 import { stripSlash } from "../common/stripSlash";
 
 type FzfState =
@@ -77,6 +82,9 @@ export class FzfProcess {
 
     const fzfExe = workspace.getConfiguration("leaderkey").get<string>("fzf.exe", "fzf");
     this.state = new Promise(async (resolveState) => {
+      if (!(await isRemoteCommonsInstalled())) {
+        return;
+      }
       const resolve = (s: FzfState) => {
         log(`fzf state -> ${JSON.stringify(s)}`);
         this.stateResolved = s;

@@ -1,7 +1,11 @@
 import { relative } from "path-browserify";
 import { CancellationToken, Uri, workspace } from "vscode";
 import { log } from "../common/global";
-import { normalizePath, ProcessLineStreamer } from "../common/remote";
+import {
+  isRemoteCommonsInstalled,
+  normalizePath,
+  ProcessLineStreamer,
+} from "../common/remote";
 import { magicSpace, matchMagic, parseMagicQuery } from "./magicQuery";
 
 //#region ripgrep message format (incomplete)
@@ -100,6 +104,9 @@ export async function doQuery(
   onUpdate: (update: RipgrepStatusUpdate) => void,
   cancellationToken: CancellationToken,
 ) {
+  if (!(await isRemoteCommonsInstalled())) {
+    return;
+  }
   const { prog, args, cwd, magicSpaceRegExp } = toArgs(query);
   const proc = new ProcessLineStreamer(prog, args, { cwd });
 
