@@ -37,7 +37,7 @@ export function normalizePath(path: string) {
 
 export async function readDirFilesAndDirs(
   path: string,
-): Promise<{ files: string[]; dirs: string[] }> {
+): Promise<{ files: string[]; dirs: string[]; error?: string }> {
   return await commands.executeCommand(
     "remote-commons.fs.readDirFilesAndDirs",
     ppWinPath(path),
@@ -65,6 +65,15 @@ export async function fileExists(
   path: string,
 ): Promise<{ files: string[]; dirs: string[] }> {
   return await commands.executeCommand("remote-commons.fs.fileExists", ppWinPath(path));
+}
+
+export async function isDirectory(path: string): Promise<boolean> {
+  try {
+    const { error } = await readDirFilesAndDirs(path);
+    return error === undefined;
+  } catch {
+    return false;
+  }
 }
 
 export type ProcessRunResult = {

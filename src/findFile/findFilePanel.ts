@@ -12,7 +12,7 @@ import {
   ListPanelRow,
   renderListPanel,
 } from "../common/listPanelRender";
-import { createFile, ENV_HOME, openFile } from "../common/remote";
+import { createFile, ENV_HOME, isDirectory, openFile } from "../common/remote";
 import { indicesToRender } from "../common/renderRange";
 import { OneLineEditor as SingleLineEditor } from "../common/singleLineEditor";
 import { stripSlash } from "../common/stripSlash";
@@ -290,6 +290,7 @@ export class FindFilePanel {
     this.lastKey = key;
 
     const lastInput = this.editor.value();
+    const lastDir = this.dir;
 
     const keyAction = this.keyActions[key];
     if (keyAction) {
@@ -302,7 +303,37 @@ export class FindFilePanel {
     if (this.editor.value() !== lastInput) {
       this.dataProvider.setQuery(this.editor.value());
     }
+    if (this.editor.value() !== lastInput || this.dir !== lastDir) {
+      this.tryAutoCd(this.editor.value());
+    }
     this.render();
+  }
+
+  /**
+   * Check if query contains a path with "/" and auto-cd if the directory exists.
+   * For "path/to/dir/file", check if "currentDir/path/to/dir" exists and cd into it.
+   * For "/abs/path/to/dir/file", check if "/abs/path/to/dir" exists and cd into it.
+   */
+  private async tryAutoCd(query: string) {
+    // Skip fzf mode (spaces) or no slash
+    if (query.includes(" ") || !query.includes("/")) return;
+
+    const lastSlashIdx = query.lastIndexOf("/");
+    if (lastSlashIdx <= 0) return;
+
+    const dirPart = query.slice(0, lastSlashIdx);
+    // For absolute paths, use dirPart directly; for relative, prepend current dir
+    const fullPath = query.startsWith("/") ? normalize(dirPart) : normalize(this.dir + dirPart);
+
+    if (await isDirectory(fullPath)) {
+      if (this.isQuit) return;
+      // Check if still relevant - accept if current query still has the same directory prefix
+      const currentQuery = this.editor.value();
+      if (!currentQuery.startsWith(dirPart + "/")) return;
+      const remaining = currentQuery.slice(dirPart.length + 1);
+      this.editor.reset(remaining);
+      this.setDir(fullPath, "keep");
+    }
   }
 
   private getCurResults() {
