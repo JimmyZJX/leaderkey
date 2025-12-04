@@ -1,5 +1,5 @@
 import { dirname, normalize } from "path-browserify";
-import { TextEditor, TextEditorDecorationType, window, workspace } from "vscode";
+import { Range, TextEditor, TextEditorDecorationType, window, workspace } from "vscode";
 import {
   disableLeaderKey,
   enableLeaderKeyAndDisableVim,
@@ -30,6 +30,21 @@ function RETisTAB() {
   return config.get("RETisTAB", false);
 }
 
+/** Parse query to extract optional :lineNumber suffix */
+function parseLineNumber(query: string): { query: string; lineNumber?: number } {
+  const match = query.match(/:(\d+)$/);
+  if (match) {
+    return {
+      query: query.slice(0, -match[0].length),
+      lineNumber: parseInt(match[1], 10),
+    };
+  }
+  // Strip trailing ":" without number
+  if (query.endsWith(":")) {
+    return { query: query.slice(0, -1) };
+  }
+  return { query };
+}
 
 type FindFileSelection =
   | { type: "none" }
@@ -88,6 +103,16 @@ export class FindFilePanel {
     this.setDir(options.init ?? ENV_HOME, "keep");
   }
 
+  /** Get query with line number suffix stripped */
+  private getQueryWithoutLineNumber(): string {
+    return parseLineNumber(this.editor.value()).query;
+  }
+
+  /** Get line number from query suffix, if present */
+  private getLineNumber(): number | undefined {
+    return parseLineNumber(this.editor.value()).lineNumber;
+  }
+
   setDir(dir: string, editor: "keep" | "reset" = "reset") {
     this.dir = normalize(dir.endsWith("/") ? dir : dir + "/");
     if (editor === "reset") {
@@ -106,7 +131,7 @@ export class FindFilePanel {
       (_) => this.render(),
     );
     if (this.editor.value() !== "") {
-      this.dataProvider.setQuery(this.editor.value());
+      this.dataProvider.setQuery(this.getQueryWithoutLineNumber());
     }
     this.render();
   }
@@ -167,7 +192,12 @@ export class FindFilePanel {
         } else {
           await this.quit(path);
         }
-        if (!this.returnOnly) await openFile(path, { preview: false });
+        if (!this.returnOnly) {
+          const lineNumber = this.getLineNumber();
+          const selection =
+            lineNumber !== undefined ? new Range(lineNumber - 1, 0, lineNumber - 1, 0) : undefined;
+          await openFile(path, { preview: false, selection });
+        }
       }
     }
   }
@@ -202,12 +232,12 @@ export class FindFilePanel {
         }
         break;
       case "input":
-        await this.open(this.editor.value(), "forceCreate");
+        await this.open(this.getQueryWithoutLineNumber(), "forceCreate");
         break;
       case "none": {
         const results = await this.dataProvider.waitOne();
         if (results.items.length === 0) {
-          await this.open(this.editor.value(), "forceCreate");
+          await this.open(this.getQueryWithoutLineNumber(), "forceCreate");
           break;
         } else {
           const result = results.mode === "ls" ? results.items[0].item : results.items[0];
@@ -301,10 +331,11 @@ export class FindFilePanel {
       log(`find-file: unknown key ${key} (last=${last})`);
     }
     if (this.editor.value() !== lastInput) {
-      this.dataProvider.setQuery(this.editor.value());
+      // Strip line number suffix when sending to data provider
+      this.dataProvider.setQuery(this.getQueryWithoutLineNumber());
     }
     if (this.editor.value() !== lastInput || this.dir !== lastDir) {
-      this.tryAutoCd(this.editor.value());
+      this.tryAutoCd(this.getQueryWithoutLineNumber());
     }
     this.render();
   }

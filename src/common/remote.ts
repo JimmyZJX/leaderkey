@@ -216,6 +216,14 @@ export async function openFile(file: string | Uri, options?: TextDocumentShowOpt
   if (file instanceof Uri) {
     file = file.toString();
   }
+  if (options?.selection) {
+    // `Range` cannot be properly serialized and deserialized by remote-commons.
+    const sel = options.selection;
+    options.selection = {
+      start: { line: sel.start.line, character: sel.start.character },
+      end: { line: sel.end.line, character: sel.end.character },
+    } as any;
+  }
   await commands.executeCommand("remote-commons.openFile", file, options);
 }
 
