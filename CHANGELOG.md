@@ -3,6 +3,10 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.7.2
+
+Minor fix on findFile where selection could go out of bound of result items.
+
 ## v1.7.1
 
 UX improvements for the findFile panel (`SPC f f`):

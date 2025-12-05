@@ -506,6 +506,7 @@ export class FindFilePanel {
         // don't move selection if never manually changed, or is fzf mode
         focusIdx = lastSelection.idx;
       }
+      focusIdx = Math.max(0, Math.min(focusIdx, curResults.items.length - 1));
       newSelection = {
         type: "file",
         file: getFileFromDataIdx(curResults, focusIdx),
