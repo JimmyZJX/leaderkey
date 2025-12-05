@@ -1,6 +1,11 @@
 import { window, workspace } from "vscode";
 import { log } from "../common/global";
-import { fetchText, isWin, runProcess } from "../common/remote";
+import {
+  isRemoteCommonsInstalled,
+  fetchText,
+  isWin,
+  runProcess,
+} from "../common/remote";
 import { stripSlash } from "../common/stripSlash";
 
 type FzfState =
@@ -92,6 +97,10 @@ export class FzfProcess {
         code: 0,
         detail: "fzf not initialized",
       };
+      if (!(await isRemoteCommonsInstalled())) {
+        resolve(lastResp);
+        return;
+      }
       for (let j = 0; j < 5; j++) {
         // try to spawn fzf up to 5 times
         const port = getRandomDynamicPort();

@@ -307,21 +307,33 @@ let workspaceExtensions: { id: string; version: string }[] | undefined = undefin
 let platform: string | undefined = undefined;
 export let ENV_HOME = "/";
 
+export async function isRemoteCommonsInstalled(): Promise<boolean> {
+  try {
+    // This command exists only when Remote Commons is installed.
+    await commands.executeCommand("remote-commons.extensions.getAll");
+    return true;
+  } catch (e) {
+    log(`Failed to get extensions: ${e}`);
+    const action = await window.showErrorMessage(
+      `Remote Commons extension not installed. It is needed for rg, find-file and fzf to work`,
+      "Install",
+    );
+    if (action === "Install") {
+      await goToExtensionSearchView(REMOTE_COMMONS_EXTENSION_ID);
+    }
+    return false;
+  }
+}
+
 export async function init() {
   try {
     workspaceExtensions = await commands.executeCommand(
       "remote-commons.extensions.getAll",
     );
   } catch (e) {
-    log(`Failed to get extensions: ${e}`);
-    if (
-      (await window.showErrorMessage(
-        "Remote Commons extension not installed. It is needed for rg, find-file and fzf to work",
-        "Install",
-      )) === "Install"
-    ) {
-      await goToExtensionSearchView(REMOTE_COMMONS_EXTENSION_ID);
-    }
+    // Keep init best-effort: just log here. Actual user-facing error will be
+    // shown when rg / find-file / fzf are really used.
+    log(`Failed to get extensions during init: ${e}`);
   }
 
   if (workspaceExtensions) {

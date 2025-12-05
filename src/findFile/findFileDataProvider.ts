@@ -1,6 +1,6 @@
 import globRegex from "glob-regex";
 import { window, workspace } from "vscode";
-import { readDirFilesAndDirs } from "../common/remote";
+import { isRemoteCommonsInstalled, readDirFilesAndDirs } from "../common/remote";
 import { stripSlash } from "../common/stripSlash";
 import { byLengthAsc, byStartAsc, Fzf } from "../fzf-for-js/src/lib/main";
 import { FzfResultItem } from "../fzf-for-js/src/lib/types";
@@ -28,6 +28,9 @@ export function getFileFromDataIdx(data: FindFileData, idx: number) {
 }
 
 async function ls(dir: string, dirOnly: boolean) {
+  if (!(await isRemoteCommonsInstalled())) {
+    return [];
+  }
   const filesAndDirs = await readDirFilesAndDirs(dir);
   let dirs = filesAndDirs.dirs;
   const dotAndDotDot = ["./", ...(dir.length > 1 ? ["../"] : [])];
