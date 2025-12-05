@@ -82,9 +82,6 @@ export class FzfProcess {
 
     const fzfExe = workspace.getConfiguration("leaderkey").get<string>("fzf.exe", "fzf");
     this.state = new Promise(async (resolveState) => {
-      if (!(await isRemoteCommonsInstalled())) {
-        return;
-      }
       const resolve = (s: FzfState) => {
         log(`fzf state -> ${JSON.stringify(s)}`);
         this.stateResolved = s;
@@ -100,6 +97,10 @@ export class FzfProcess {
         code: 0,
         detail: "fzf not initialized",
       };
+      if (!(await isRemoteCommonsInstalled())) {
+        resolve(lastResp);
+        return;
+      }
       for (let j = 0; j < 5; j++) {
         // try to spawn fzf up to 5 times
         const port = getRandomDynamicPort();
