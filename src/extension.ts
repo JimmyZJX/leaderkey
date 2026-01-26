@@ -164,7 +164,11 @@ class PanelManager {
       const panel = new FuzzyPickPanel(
         options.provider,
         dataPromise,
-        { title: options.title, placeholder: options.placeholder, allowLineNumber: options.allowLineNumber },
+        {
+          title: options.title,
+          placeholder: options.placeholder,
+          allowLineNumber: options.allowLineNumber,
+        },
         (result) => {
           const callback = options.callback;
           if (callback) {

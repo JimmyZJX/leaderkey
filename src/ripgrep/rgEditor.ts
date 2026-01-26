@@ -39,11 +39,11 @@ function guessGroupHeight() {
   return lineHeight * getNumTotal() + 60;
 }
 
-// TODO store old layout to restore!
 async function getRgPanelEditor(): Promise<{
   editor: TextEditor;
   layout: EditorGroupLayout;
 }> {
+  await commands.executeCommand("workbench.action.focusActiveEditorGroup");
   const file = Uri.from({ scheme, path: `/rg` });
   const doc = await workspace.openTextDocument(file);
   languages.setTextDocumentLanguage(doc, RIPGREP_LANGID);
@@ -77,7 +77,14 @@ async function getRgPanelEditor(): Promise<{
     selection: new Range(docLine0End, docLine0End),
   });
 
-  // try to adjust the height: three times should be enough
+  await adjustPanelSize(rgPanelEditor);
+  return { editor: rgPanelEditor, layout };
+}
+
+let lastPanelSize: { sumHeights: number; heights: number[] } | undefined = undefined;
+
+// try to adjust the height: three times should be enough
+async function adjustPanelSize(rgPanelEditor: TextEditor) {
   const targetLinesVisible = getNumTotal() + 3;
   for (let i = 0; i < 3; i++) {
     if (rgPanelEditor.visibleRanges.length > 0) {
@@ -97,20 +104,33 @@ async function getRgPanelEditor(): Promise<{
         ) {
           const groups = editorGroupLayout.groups;
           const sumHeights = groups.reduce((s, l) => s + l.size, 0);
-          const lastHeight = groups[groups.length - 1].size;
-          const targetHeight = Math.ceil(
-            (lastHeight / linesVisible) * targetLinesVisible,
-          );
 
-          const topGroupsRatio = (sumHeights - targetHeight) / (sumHeights - lastHeight);
-          groups.map((g, i) => {
-            if (i === groups.length - 1) {
-              g.size = targetHeight;
-            } else {
-              g.size = Math.floor(topGroupsRatio * g.size);
-            }
-          });
-          await commands.executeCommand("vscode.setEditorLayout", editorGroupLayout);
+          let targetHeight: number;
+          if (
+            lastPanelSize &&
+            lastPanelSize.sumHeights === sumHeights &&
+            lastPanelSize.heights.length === groups.length
+          ) {
+            groups.map((g, i) => {
+              g.size = lastPanelSize!.heights[i];
+            });
+            await commands.executeCommand("vscode.setEditorLayout", editorGroupLayout);
+            return;
+          } else {
+            const lastHeight = groups[groups.length - 1].size;
+            targetHeight = Math.ceil((lastHeight / linesVisible) * targetLinesVisible);
+
+            const topGroupsRatio =
+              (sumHeights - targetHeight) / (sumHeights - lastHeight);
+            groups.map((g, i) => {
+              if (i === groups.length - 1) {
+                g.size = targetHeight;
+              } else {
+                g.size = Math.floor(topGroupsRatio * g.size);
+              }
+            });
+            await commands.executeCommand("vscode.setEditorLayout", editorGroupLayout);
+          }
         } else {
           window.showWarningMessage(
             "leaderkey failed to adjust group height for ripgrep panel",
@@ -119,7 +139,17 @@ async function getRgPanelEditor(): Promise<{
       }
     }
   }
-  return { editor: rgPanelEditor, layout };
+
+  const editorGroupLayout: EditorGroupLayout = await commands.executeCommand(
+    "vscode.getEditorLayout",
+  );
+  if (editorGroupLayout.orientation === 1 && editorGroupLayout.groups !== undefined) {
+    const groups = editorGroupLayout.groups;
+    lastPanelSize = {
+      sumHeights: groups.reduce((s, l) => s + l.size, 0),
+      heights: groups.map((g) => g.size),
+    };
+  }
 }
 
 const focusDecoration = window.createTextEditorDecorationType({
