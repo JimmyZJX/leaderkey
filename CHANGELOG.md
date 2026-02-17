@@ -3,6 +3,12 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.7.5
+
+`SPC '` now opens a terminal at the inferred current directory (same path
+inference as find-file), falling back to focusing an existing terminal if no
+path can be determined.
+
 ## v1.7.4
 
 Add `leaderkey.dired.mode` setting to choose the directory viewer for find-file.

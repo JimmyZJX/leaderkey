@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -103,6 +103,11 @@
       {
         "command": "leaderkey.dired",
         "title": "Show dired buffer",
+        "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.openTerminal",
+        "title": "Open terminal at inferred current directory",
         "category": "Leaderkey"
       },
       {

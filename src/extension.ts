@@ -215,6 +215,15 @@ class PanelManager {
         }
         await showDir(dir);
       }),
+      commands.registerCommand("leaderkey.openTerminal", async () => {
+        const editor = window.activeTextEditor;
+        if (!editor) {
+          await commands.executeCommand("workbench.action.terminal.focus");
+          return;
+        }
+        const cwd = await inferPathFromUri(editor.document.uri, "dirname");
+        await commands.executeCommand("workbench.action.terminal.newWithCwd", { cwd });
+      }),
       commands.registerCommand("leaderkey.ripgrep", (mode?: RipGrepCreateOption) =>
         this.ripgrep(mode),
       ),

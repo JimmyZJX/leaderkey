@@ -257,8 +257,8 @@ const SpaceRoot: Bindings = {
       command: "workbench.action.terminal.runRecentCommand",
     },
     "'": {
-      name: "Show terminal",
-      command: "workbench.action.terminal.focus",
+      name: "Open terminal here",
+      command: "leaderkey.openTerminal",
     },
     "*": RipGrepKeys["D"],
     // ".": {
