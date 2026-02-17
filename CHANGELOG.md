@@ -3,6 +3,13 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.7.4
+
+Add `leaderkey.dired.mode` setting to choose the directory viewer for find-file.
+Defaults to `oil-code.open`. Set to `builtin` for the built-in dired (ls-based)
+viewer, or any command ID to use that instead. An empty value is treated as
+`builtin`.
+
 ## v1.7.3
 
 Fixes rg panel hiding itself if no editor was focused.

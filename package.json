@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -185,6 +185,11 @@
           "type": "string",
           "default": "/bin/ls",
           "description": "path to the an ls executable that supports --dired (e.g. GNU coreutils on macOS, or ls on Linux)"
+        },
+        "leaderkey.dired.mode": {
+          "type": "string",
+          "default": "oil-code.open",
+          "markdownDescription": "Which directory viewer to use for find-file. Set to `builtin` to use the built-in dired (ls-based) viewer, or any command ID to execute that command instead (e.g. `oil-code.open`). An empty value is treated as `builtin`."
         },
         "leaderkey.find-file.RETisTAB": {
           "type": "boolean",

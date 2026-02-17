@@ -90,8 +90,25 @@ async function loadContent(uri: Uri): Promise<DecoratedPage<DiredMetadata>> {
   );
 }
 
+function getDiredMode(): string {
+  const value = workspace.getConfiguration("leaderkey").get<string>("dired.mode", "oil-code.open");
+  return value === "" ? "builtin" : value;
+}
+
 export async function showDir(path: string) {
   if (!path.endsWith("/")) path += "/";
+
+  const mode = getDiredMode();
+  if (mode !== "builtin") {
+    // Try the configured command; fall back to built-in dired if it fails.
+    try {
+      await commands.executeCommand(mode, path);
+      return;
+    } catch {
+      // Command not available or failed – fall through to built-in dired
+    }
+  }
+
   const uri = Uri.from({ scheme, path });
   const pagePromise = loadContent(uri);
   const doc = await workspace.openTextDocument(uri);
