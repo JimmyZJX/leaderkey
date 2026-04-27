@@ -1748,8 +1748,9 @@ const CommaRoot: Bindings = {
           args: "editor.action.revealDefinition",
         },
         D: {
-          command: "editor.action.goToDeclaration",
           name: "Go to declaration",
+          command: "leaderkey.pushGotoStack",
+          args: "editor.action.goToDeclaration",
         },
         g: {
           name: "Go to definition",
