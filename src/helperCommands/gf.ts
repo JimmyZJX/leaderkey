@@ -1,53 +1,44 @@
+import path from "path-browserify";
 import {
   commands,
   ExtensionContext,
   Position,
   Range,
   TextDocument,
-  Uri,
   window,
   workspace,
 } from "vscode";
-import { ENV_HOME } from "../common/remote";
+import { ENV_HOME, openFile } from "../common/remote";
 import { FileAtPoint, findFileAtPointInLine, parseFileAtPoint } from "./fileAtPoint";
 
-function uriDirname(uri: Uri): Uri {
-  const lastSlash = uri.path.lastIndexOf("/");
-  const path = lastSlash <= 0 ? "/" : uri.path.slice(0, lastSlash);
-  return uri.with({ path, query: "", fragment: "" });
+function documentDirname(document: TextDocument): string | undefined {
+  if (document.uri.scheme === "untitled") return undefined;
+  return path.posix.dirname(document.uri.path);
 }
 
-function uriForAbsolutePath(document: TextDocument, path: string): Uri[] {
-  const uris: Uri[] = [];
-  if (document.uri.scheme !== "untitled") {
-    uris.push(document.uri.with({ path, query: "", fragment: "" }));
-  }
-  for (const folder of workspace.workspaceFolders ?? []) {
-    uris.push(folder.uri.with({ path, query: "", fragment: "" }));
-  }
-  uris.push(Uri.file(path));
-  return uris;
+function expandHome(rawPath: string): string {
+  return rawPath.startsWith("~/") ? path.posix.join(ENV_HOME, rawPath.slice(2)) : rawPath;
 }
 
-function candidateUris(document: TextDocument, rawPath: string): Uri[] {
-  const path = rawPath.startsWith("~/") ? `${ENV_HOME}/${rawPath.slice(2)}` : rawPath;
-  const candidates: Uri[] = [];
-  if (path.startsWith("/")) {
-    candidates.push(...uriForAbsolutePath(document, path));
+function candidatePaths(document: TextDocument, rawPath: string): string[] {
+  const pathAtPoint = expandHome(rawPath);
+  const candidates: string[] = [];
+  if (pathAtPoint.startsWith("/")) {
+    candidates.push(pathAtPoint);
   } else {
-    if (document.uri.scheme !== "untitled") {
-      candidates.push(Uri.joinPath(uriDirname(document.uri), path));
+    const documentDir = documentDirname(document);
+    if (documentDir !== undefined) {
+      candidates.push(path.posix.normalize(path.posix.join(documentDir, pathAtPoint)));
     }
     for (const folder of workspace.workspaceFolders ?? []) {
-      candidates.push(Uri.joinPath(folder.uri, path));
+      candidates.push(path.posix.normalize(path.posix.join(folder.uri.path, pathAtPoint)));
     }
   }
 
   const seen = new Set<string>();
-  return candidates.filter((uri) => {
-    const key = uri.toString();
-    if (seen.has(key)) return false;
-    seen.add(key);
+  return candidates.filter((candidate) => {
+    if (seen.has(candidate)) return false;
+    seen.add(candidate);
     return true;
   });
 }
@@ -68,18 +59,14 @@ function fileAtPoint(): FileAtPoint | undefined {
   );
 }
 
-async function showTextDocumentAtTarget(uri: Uri, target: FileAtPoint) {
-  const document = await workspace.openTextDocument(uri);
+async function openPathAtTarget(path: string, target: FileAtPoint) {
   if (target.line === undefined) {
-    await window.showTextDocument(document, { preview: false });
+    await openFile(path, { preview: false });
   } else {
-    const line = Math.min(document.lineCount - 1, Math.max(0, target.line - 1));
-    const character = Math.min(
-      document.lineAt(line).text.length,
-      Math.max(0, (target.column ?? 1) - 1),
-    );
+    const line = Math.max(0, target.line - 1);
+    const character = Math.max(0, (target.column ?? 1) - 1);
     const position = new Position(line, character);
-    await window.showTextDocument(document, {
+    await openFile(path, {
       preview: false,
       selection: new Range(position, position),
     });
@@ -96,21 +83,21 @@ export async function openFileAtPoint() {
 
   const target = fileAtPoint();
   if (target === undefined) {
-    await window.showWarningMessage("gf: no file found under cursor");
+    window.showWarningMessage("gf: no file found under cursor");
     return;
   }
 
   let lastError: unknown = undefined;
-  for (const uri of candidateUris(editor.document, target.path)) {
+  for (const path of candidatePaths(editor.document, target.path)) {
     try {
-      await showTextDocumentAtTarget(uri, target);
+      await openPathAtTarget(path, target);
       return;
     } catch (error) {
       lastError = error;
     }
   }
 
-  await window.showErrorMessage(
+  window.showErrorMessage(
     `gf: failed to open ${target.path}: ${errorMessage(lastError)}`,
   );
 }
