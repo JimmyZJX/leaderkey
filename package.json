@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.7.7",
+  "version": "1.7.9",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -93,6 +93,11 @@
       {
         "command": "leaderkey.findFile",
         "title": "Show find-file panel",
+        "category": "Leaderkey"
+      },
+      {
+        "command": "leaderkey.gf",
+        "title": "Open File Under Cursor",
         "category": "Leaderkey"
       },
       {
@@ -213,6 +218,36 @@
           "type": "boolean",
           "default": false,
           "description": "Hide the leaderkey menu until `?` is pressed."
+        },
+        "vim.normalModeKeyBindingsNonRecursive___leaderkey": {
+          "type": "array",
+          "default": [
+            {
+              "before": [
+                "g",
+                "f"
+              ],
+              "commands": [
+                "leaderkey.gf"
+              ]
+            }
+          ],
+          "description": "Leaderkey VSCodeVim normal-mode keybindings"
+        },
+        "vim.visualModeKeyBindingsNonRecursive___leaderkey": {
+          "type": "array",
+          "default": [
+            {
+              "before": [
+                "g",
+                "f"
+              ],
+              "commands": [
+                "leaderkey.gf"
+              ]
+            }
+          ],
+          "description": "Leaderkey VSCodeVim visual-mode keybindings"
         }
       }
     },

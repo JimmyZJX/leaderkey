@@ -15,6 +15,7 @@ import { register as registerDired, showDir } from "./findFile/dired";
 import { FindFileOptions, FindFilePanel } from "./findFile/findFilePanel";
 import { detectFd } from "./findFile/fzfProcess";
 import { FuzzyPickPanel, FuzzyPickResult } from "./fuzzyPick/fuzzyPickPanel";
+import { register as registerGf } from "./helperCommands/gf";
 import { popGotoStack, pushGotoStack } from "./helperCommands/gotoStack";
 import { migrateFromVSpaceCode } from "./helperCommands/migrateFromVSpaceCode";
 import { registerCommands } from "./helperCommands/pathCommands";
@@ -299,6 +300,7 @@ export async function activate(context: ExtensionContext) {
   initGlobal();
   initRemote();
   registerDired(context);
+  registerGf(context);
   registerRipgrepFs(context);
   registerInferPath(context);
   detectFd();
