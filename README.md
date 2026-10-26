@@ -145,6 +145,28 @@ All the keys are recommended to follow the emacs/spacemacs convention. E.g. use 
 (but not both). It should be straightfoward to extend if you set custom ones following the
 default keybindings in `package.json`.
 
+### find-file arguments
+
+`leaderkey.findFile` accepts optional args to choose where it starts and what it starts
+with:
+
+- `init`: start directory.
+- `initAncestor`: a basename (or list of basenames); start in the nearest ancestor of the
+  current file's directory (inclusive) with that name. Falls back to `projectRoot` / the
+  current file's directory when there is no such ancestor.
+- `projectRoot`: start in the project root.
+- `query`: initial query. A query containing a space (e.g. `" "`) starts in fzf mode.
+
+```json
+"leaderkey.overrides.user": {
+    "SPC p F": {
+        "name": "Find file in repo root",
+        "command": "leaderkey.findFile",
+        "args": { "initAncestor": ["+share+", "+clone+"], "query": " " }
+    }
+}
+```
+
 ### Migrating from VSpaceCode
 
 If you have a complex set of vspacecode keybindings like I do, Leaderkey provides a

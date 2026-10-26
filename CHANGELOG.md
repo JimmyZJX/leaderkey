@@ -3,6 +3,12 @@
 All notable changes to the "leaderkey" extension will be documented in this
 file.
 
+## v1.8.0
+
+`leaderkey.findFile` accepts an `initAncestor` arg (a directory basename or a list of
+them) to start in the nearest ancestor of the current file's directory with that name,
+e.g. a repo root. Falls back to `projectRoot`/the default when there is no match.
+
 ## v1.7.5
 
 `SPC '` now opens a terminal at the inferred current directory (same path

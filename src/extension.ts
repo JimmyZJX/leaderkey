@@ -7,6 +7,7 @@ import {
   workspace,
 } from "vscode";
 import { updateGlobalThemeType, updateStickyScrollConf } from "./common/decoration";
+import { findAncestorDir } from "./common/findAncestorDir";
 import { commonPrefix, init as initGlobal } from "./common/global";
 import { getDir, inferPathFromHooks, inferPathFromUri } from "./common/inferPathFromUri";
 import { ENV_HOME, init as initRemote } from "./common/remote";
@@ -31,6 +32,12 @@ import { register as registerInferPath } from "./common/inferPathFromUri";
 import { register as registerMultiCursorContext } from "./multiCursorContext/multiCursorContext";
 
 type RipGrepCreateOption = CreateRgPanelOptions & { selectDir?: boolean };
+
+/** Normalizes a user-provided `string | string[]` command argument. */
+function toStringArray(value: unknown): string[] {
+  const values = Array.isArray(value) ? value : [value];
+  return values.filter((v): v is string => typeof v === "string" && v !== "");
+}
 
 class PanelManager {
   currentPanel:
@@ -94,15 +101,23 @@ class PanelManager {
       const doc = await workspace.openTextDocument({ language: "text" });
       editor = await window.showTextDocument(doc, { preview: true });
     }
+    const uri = editor.document.uri;
     const init = options?.init
       ? options.init
       : await (async () => {
+          let currentDir: string | undefined;
+          const ancestorNames = toStringArray(options?.initAncestor);
+          if (ancestorNames.length > 0) {
+            currentDir = await inferPathFromUri(uri, "dirname");
+            const ancestor = findAncestorDir(currentDir, ancestorNames);
+            if (ancestor !== undefined) return ancestor;
+          }
           if (options?.projectRoot) {
-            const inferred = await inferPathFromHooks(editor.document.uri);
+            const inferred = await inferPathFromHooks(uri);
             if (inferred) return getDir(inferred);
             return PanelManager.getWorkspaceRoot();
           } else {
-            return await inferPathFromUri(editor.document.uri, "dirname");
+            return currentDir ?? (await inferPathFromUri(uri, "dirname"));
           }
         })();
     return new Promise<string | undefined>(async (resolve) => {

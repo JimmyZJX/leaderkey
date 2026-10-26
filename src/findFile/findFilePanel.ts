@@ -60,6 +60,12 @@ type FindFileSelection =
 
 export type FindFileOptions = {
   projectRoot?: boolean;
+  /**
+   * Start in the nearest ancestor (inclusive) of the current file's directory whose
+   * basename is one of these names, e.g. `["+share+", "+clone+"]`. Falls back to the
+   * `projectRoot`/default behavior if there is no such ancestor. Ignored if `init` is set.
+   */
+  initAncestor?: string | string[];
   init?: string;
   dirOnly?: boolean;
   title?: string;
