@@ -3,7 +3,7 @@
   "publisher": "JimmyZJX",
   "displayName": "Leader Key",
   "description": "Leader key with a which-key like menu",
-  "version": "1.8.0",
+  "version": "1.8.2",
   "homepage": "https://github.com/JimmyZJX/leaderkey",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
   },
   "icon": "img/logo.png",
   "engines": {
-    "vscode": "^1.89.0"
+    "vscode": "^1.94.0"
   },
   "extensionKind": [
     "ui"
@@ -34,8 +34,10 @@
     "findfile",
     "dired"
   ],
+  "extensionDependencies": [
+    "JimmyZJX.remote-commons"
+  ],
   "extensionPack": [
-    "jimmyzjx.remote-commons",
     "kahole.magit"
   ],
   "activationEvents": [
@@ -43,6 +45,7 @@
   ],
   "main": "dist/extension.js",
   "browser": "dist/extension.js",
+  "api": "none",
   "contributes": {
     "commands": [
       {

@@ -268,12 +268,9 @@ Basically you just need to declare a configuration contribution point with defau
 }
 ```
 
-Additionally, you should depend on leaderkey
+Additionally, you should depend on leaderkey.
 
 ```json
-"extensionPack": [
-    "JimmyZJX.leaderkey"
-],
 "extensionDependencies": [
     "JimmyZJX.leaderkey"
 ],
